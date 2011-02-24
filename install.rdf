@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+
+<RDF xmlns="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:em="http://www.mozilla.org/2004/em-rdf#">
+
+  <Description about="urn:mozilla:install-manifest">
+    <em:id>senseo@nicosteiner.de</em:id>
+    <em:version>1.5.5</em:version>
+    <em:type>2</em:type>
+   
+    <!-- Target Application this extension can install into, 
+         with minimum and maximum supported versions. --> 
+    <em:targetApplication>
+      <Description>
+        <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
+        <em:minVersion>1.5</em:minVersion>
+        <em:maxVersion>4.0.*</em:maxVersion>
+      </Description> 
+    </em:targetApplication>
+   
+    <!-- Front End MetaData -->
+    <em:name>SenSEO</em:name>
+    <em:description>
+      SenSEO ist an extension checking some SEO-critical On-Page Criteria.
+    </em:description>
+    <em:creator>Nico Steiner</em:creator>
+    <em:homepageURL>http://www.sensational-seo.com/</em:homepageURL>
+    <em:optionsURL>chrome://senseo/content/senseoOptions.xul</em:optionsURL>
+    <em:iconURL>chrome://senseo/content/logo-32.png</em:iconURL>
+  </Description>
+</RDF>

@@ -1,0 +1,16 @@
+<!-- Wordings for XUL Firebug console -->
+<!ENTITY console.keywords "Keywords">
+<!ENTITY console.inspect-seo-criteria "SEO-Analyse starten">
+<!ENTITY console.show-components "Komponenten zeigen">
+<!ENTITY console.printview "Druckansicht">
+<!ENTITY console.snippetpreview "Rich Snippet Vorschau">
+<!ENTITY console.senseo "SenSEO">
+
+<!ENTITY menu.home "SenSEO im Internet">
+<!ENTITY menu.hide-status-bar "SenSEO in Statusleiste ausblenden">
+<!ENTITY menu.high-contrast-view "Kontrastreiche Ansicht">
+
+<!ENTITY pref.title "SenSEO Optionen">
+<!ENTITY pref.options "SenSEO Optionen">
+<!ENTITY pref.do-not-show-status-bar "SenSEO nicht in der Statusleiste zeigen">
+<!ENTITY pref.high-contrast-view "Kontrastreiche Ansicht">
