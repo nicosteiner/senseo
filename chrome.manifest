@@ -1,8 +1,0 @@
-content senseo chrome/content/
-
-overlay chrome://firebug/content/firebugOverlay.xul         chrome://senseo/content/senseo.xul
-
-locale	senseo	en-US	locale/en-US/
-locale	senseo	en-GB	locale/en-US/
-locale	senseo	de-DE	locale/de-DE/
-
