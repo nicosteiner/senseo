@@ -96,7 +96,7 @@ FBL.ns(function() { with (FBL) {
         
     },
     
-    onClickLabel: function(context, event, ele) {
+    onClickLabel: function(event, ele) {
     
       if (event.button != 0) {
       
@@ -105,19 +105,12 @@ FBL.ns(function() { with (FBL) {
       } else {
       
         Firebug.toggleBar();
-        Firebug.tabBrowser.selectedBrowser.chrome.selectPanel('senseo');
-        
+		
+		var fbCtx = typeof FirebugContext !== 'undefined' ? FirebugContext : Firebug.currentContext;
+
+        fbCtx.getPanel('senseo');
+				
       }
-      
-    },
-    
-    reattachContext: function(browser, context) {
-    
-      var panel = context.getPanel('senseo');
-      
-      this.addStyleSheet(panel.document);
-      
-      FirebugChrome = browser.chrome;
       
     },
     
@@ -389,7 +382,7 @@ FBL.ns(function() { with (FBL) {
         levels++;
       }
       
-      if (pathData.match(/\//g).length > levels) {
+      if (pathData && pathData.match(/\//g).length > levels) {
         status_path_levels = 'fail';
       } else {
         status_path_levels = 'pass';
@@ -629,7 +622,7 @@ FBL.ns(function() { with (FBL) {
     
     checkForKeywords: function() {
     
-      var senseoTextBox = FirebugChrome.$("senseoTextBox");
+      var senseoTextBox = Firebug.chrome.$("senseoTextBox");
       
       if (senseoTextBox.value == '') {
         
@@ -774,7 +767,7 @@ FBL.ns(function() { with (FBL) {
 
     inspectRelatedKeyword: function(relatedKeyword) {
       
-      var senseoTextBox = FirebugChrome.$("senseoTextBox");
+      var senseoTextBox = Firebug.chrome.$("senseoTextBox");
       
       senseoTextBox.value = relatedKeyword;
       
@@ -782,9 +775,9 @@ FBL.ns(function() { with (FBL) {
     
     },
     
-    inspectDocument: function(context) {
+    inspectDocument: function() {
 
-      var senseoTextBox = FirebugChrome.$("senseoTextBox");
+      var senseoTextBox = Firebug.chrome.$("senseoTextBox");
       
       if (senseoTextBox.value != '') {
       
@@ -824,31 +817,36 @@ FBL.ns(function() { with (FBL) {
     },
 
     // handles Inspect button
-    inspect: function(context) {
+    inspect: function() {
     
-      Firebug.tabBrowser.selectedBrowser.chrome.selectPanel('senseo');
+	  var fbCtx = typeof FirebugContext !== 'undefined' ? FirebugContext : Firebug.currentContext;
+
+	  fbCtx.getPanel('senseo');
       
       /* this is the normal behaviour */
       this.checkForKeywords();
-      this.inspectDocument(context);
+      this.inspectDocument();
       
       /* if user presses the button before document is ready content is checked again */
       if (document.addEventListener) {
-        document.addEventListener('DOMContentLoaded', function(scope, context) {
+        document.addEventListener('DOMContentLoaded', function(scope) {
           return function(e) {
             document.removeEventListener('DOMContentLoaded', arguments.callee, false);
-            scope.inspectDocument(context);
+            scope.inspectDocument();
           }
-        }(this, context), false);
+        }(this), false);
       }
       
     },
 
     // handles Show Components button
-    components: function(context) {
+    components: function() {
     
-      Firebug.tabBrowser.selectedBrowser.chrome.selectPanel('senseo');
-      var senseoTextBox = FirebugChrome.$("senseoTextBox");
+      var fbCtx = typeof FirebugContext !== 'undefined' ? FirebugContext : Firebug.currentContext;
+
+      fbCtx.getPanel('senseo');
+				
+      var senseoTextBox = Firebug.chrome.$("senseoTextBox");
 
       var sHtml = this.getComponentsHtml(senseoTextBox.value);
       var cHtml = this.getContributionHtml();
@@ -858,9 +856,9 @@ FBL.ns(function() { with (FBL) {
     },
 
     // handles Printview button
-    printview: function(context) {
+    printview: function() {
     
-      var senseoTextBox = FirebugChrome.$("senseoTextBox");
+      var senseoTextBox = Firebug.chrome.$("senseoTextBox");
 
       var sHtmlAnalyse, sHtmlComponents;
       
@@ -937,17 +935,8 @@ FBL.ns(function() { with (FBL) {
       
     },
     
-    snippetpreview: function(context) {
-    
-      Firebug.tabBrowser.selectedBrowser.chrome.selectPanel('senseo');
-
-      SENSEO.Panel.renderPanel('senseo-snippetpreview', '<div id="snippet-container"><img src="chrome://senseo/content/img/roller.gif"/></div>');
-
-      this.getSnippetCode();
-      
-    },
     */
-    goHome: function(context) {
+    goHome: function() {
       gBrowser.selectedTab = gBrowser.addTab("http://www.sensational-seo.com/");
     },
 

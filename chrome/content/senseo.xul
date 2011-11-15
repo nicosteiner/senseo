@@ -13,10 +13,10 @@
   </stringbundleset>
 
   <commandset id="mainCommandSet">
-    <!--<command id="cmd_senseo_clear" oncommand="Firebug.SenSEOModule.clear(FirebugContext)"/>-->
-    <command id="cmd_senseo_inspect" oncommand="Firebug.SenSEOModule.inspect(FirebugContext)"/>
-    <command id="cmd_senseo_components" oncommand="Firebug.SenSEOModule.components(FirebugContext)"/>
-    <command id="cmd_senseo_printview" oncommand="Firebug.SenSEOModule.printview(FirebugContext)"/>
+    <!--<command id="cmd_senseo_clear" oncommand="Firebug.SenSEOModule.clear()"/>-->
+    <command id="cmd_senseo_inspect" oncommand="Firebug.SenSEOModule.inspect()"/>
+    <command id="cmd_senseo_components" oncommand="Firebug.SenSEOModule.components()"/>
+    <command id="cmd_senseo_printview" oncommand="Firebug.SenSEOModule.printview()"/>
   </commandset>
 
   <toolbar id="fbToolbar" align="center">
@@ -34,8 +34,8 @@
 
   <statusbar id="status-bar">
     <statusbarpanel id="senseo-panel" insertafter="fbStatusBar" context="senseoStatusContextMenu">
-      <image id="senseoStatusIcon" src="chrome://senseo/content/img/logo-16.png" onmouseover="this.style.cursor = 'pointer';" onmousedown="Firebug.SenSEOModule.onClickLabel(FirebugContext, event)"/>
-      <!--<label id="senseoStatusLabel" onmousedown="Firebug.SenSEOModule.onClickLabel(FirebugContext, event)">&console.senseo;</label>-->
+      <image id="senseoStatusIcon" src="chrome://senseo/content/img/logo-16.png" onmouseover="this.style.cursor = 'pointer';" onmousedown="Firebug.SenSEOModule.onClickLabel(event)"/>
+      <!--<label id="senseoStatusLabel" onmousedown="Firebug.SenSEOModule.onClickLabel(event)">&console.senseo;</label>-->
     </statusbarpanel>
     <menupopup id="senseoStatusContextMenu">
       <menuitem label="&menu.home;" oncommand="Firebug.SenSEOModule.goHome()"/>
