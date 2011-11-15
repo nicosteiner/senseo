@@ -1,6 +1,7 @@
 <!-- Wordings for XUL Firebug console -->
 <!ENTITY console.keywords "Keywords">
 <!ENTITY console.inspect-seo-criteria "SEO-Analyse starten">
+<!ENTITY console.crawl-all-pages "Alle Seiten crawlen">
 <!ENTITY console.show-components "Komponenten zeigen">
 <!ENTITY console.printview "Druckansicht">
 <!ENTITY console.snippetpreview "Rich Snippet Vorschau">

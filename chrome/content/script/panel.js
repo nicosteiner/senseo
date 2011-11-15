@@ -14,9 +14,9 @@ SENSEO.Panel = {
     
     containerDiv.id = 'senseo-panel-container';
     
-    panel.panelNode.appendChild(containerDiv);
+    containerDivElement = panel.panelNode.appendChild(containerDiv);
     
-    SENSEO.Panel.container = containerDiv;
+    SENSEO.Panel.container = containerDivElement;
       
   },
   

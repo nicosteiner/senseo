@@ -145,7 +145,7 @@ FBL.ns(function() { with (FBL) {
       var status_title_length;
       var status_title_words;
       
-      var titleData = SENSEO.Utils.getTitleData();
+      var titleData = SENSEO.Utils.getTitleData(content.document);
       
       if (titleData.length != 1) {
         status_title_onetime = 'fail';
@@ -184,7 +184,7 @@ FBL.ns(function() { with (FBL) {
       var status_description_length;
       var status_description_words;
       
-      var descriptionData = SENSEO.Utils.getMetaDescriptionData();
+      var descriptionData = SENSEO.Utils.getMetaDescriptionData(content.document);
       
       if (descriptionData.length != 1) {
         status_description_onetime = 'fail';
@@ -220,7 +220,7 @@ FBL.ns(function() { with (FBL) {
       
       var status_robots, status_sitemap;
       
-      var robotsData = SENSEO.Utils.getMetaRobotsData();
+      var robotsData = SENSEO.Utils.getMetaRobotsData(content.document);
       
       if ((robotsData[0] && robotsData[0] != '') || SENSEO.Utils.robotsTxtContent) {
         status_robots = 'pass';
@@ -241,12 +241,12 @@ FBL.ns(function() { with (FBL) {
       var status_headlines_include;
       var status_headlines_other;
 
-      var h1Data = SENSEO.Utils.getHeadlineData(1);
-      var h2Data = SENSEO.Utils.getHeadlineData(2);
-      var h3Data = SENSEO.Utils.getHeadlineData(3);
-      var h4Data = SENSEO.Utils.getHeadlineData(4);
-      var h5Data = SENSEO.Utils.getHeadlineData(5);
-      var h6Data = SENSEO.Utils.getHeadlineData(6);
+      var h1Data = SENSEO.Utils.getHeadlineData(content.document, 1);
+      var h2Data = SENSEO.Utils.getHeadlineData(content.document, 2);
+      var h3Data = SENSEO.Utils.getHeadlineData(content.document, 3);
+      var h4Data = SENSEO.Utils.getHeadlineData(content.document, 4);
+      var h5Data = SENSEO.Utils.getHeadlineData(content.document, 5);
+      var h6Data = SENSEO.Utils.getHeadlineData(content.document, 6);
       
       if (h1Data.length >= 1 || h2Data.length >= 1 || h3Data.length >= 1 || h4Data.length >= 1 || h5Data.length >= 1 || h6Data.length >= 1) {
         status_headlines_structure = 'pass';
@@ -282,15 +282,15 @@ FBL.ns(function() { with (FBL) {
       var status_content_amount;
       var status_content_links;
 
-      if (SENSEO.Utils.altImagesGrade() > 90 || SENSEO.Utils.altImagesGrade() == 0) {
+      if (SENSEO.Utils.altImagesGrade(content.document) > 90 || SENSEO.Utils.altImagesGrade(content.document) == 0) {
         status_content_alt = 'pass';
-      } else if (SENSEO.Utils.altImagesGrade() > 80) {
+      } else if (SENSEO.Utils.altImagesGrade(content.document) > 80) {
         status_content_alt = 'warning';
       } else {
         status_content_alt = 'fail';
       }
       
-      var bodyData = SENSEO.Utils.getBodyData();
+      var bodyData = SENSEO.Utils.getBodyData(content.document);
       
       if (SENSEO.Utils.getKeywordMatches(bodyData, keywords) >= 2 && SENSEO.Utils.getKeywordMatches(bodyData, keywords) <= 50) {
         status_content_amount = 'pass';
@@ -300,9 +300,9 @@ FBL.ns(function() { with (FBL) {
         status_content_amount = 'fail';
       }
       
-      if (SENSEO.Utils.numberOfLinks() < 80) {
+      if (SENSEO.Utils.numberOfLinks(content.document) < 80) {
         status_content_links = 'pass';
-      } else if (SENSEO.Utils.numberOfLinks() < 100) {
+      } else if (SENSEO.Utils.numberOfLinks(content.document) < 100) {
         status_content_links = 'warning';
       } else {
         status_content_links = 'fail';
@@ -508,7 +508,7 @@ FBL.ns(function() { with (FBL) {
       var sHtml = '<table border="0" cellpadding="0" cellspacing="0">';
       sHtml += '<tbody>';
 
-      var titleData = SENSEO.Utils.getTitleData();
+      var titleData = SENSEO.Utils.getTitleData(content.document);
       
       if (!titleData[0]) {
         sHtml += '<tr><th>' + this.strbundle.getString('sc.Title') + '</th><td><span class="failed">n/a</span></td></tr>';
@@ -518,7 +518,7 @@ FBL.ns(function() { with (FBL) {
         }
       }
       
-      var metaDescriptionData = SENSEO.Utils.getMetaDescriptionData();
+      var metaDescriptionData = SENSEO.Utils.getMetaDescriptionData(content.document);
       
       if (!metaDescriptionData.length) {
         sHtml += '<tr><th>' + this.strbundle.getString('sc.MetaDescription') + '</th><td><span class="failed">n/a</span></td></tr>';
@@ -528,7 +528,7 @@ FBL.ns(function() { with (FBL) {
         }
       }
       
-      var metaKeywordsData = SENSEO.Utils.getMetaKeywordsData();
+      var metaKeywordsData = SENSEO.Utils.getMetaKeywordsData(content.document);
       
       if (!metaKeywordsData.length) {
         sHtml += '<tr><th>' + this.strbundle.getString('sc.MetaKeywords') + '</th><td><span class="failed">n/a</span></td></tr>';
@@ -538,7 +538,7 @@ FBL.ns(function() { with (FBL) {
         }
       }
 
-      var metaRobotsData = SENSEO.Utils.getMetaRobotsData();
+      var metaRobotsData = SENSEO.Utils.getMetaRobotsData(content.document);
       
       if (!metaRobotsData.length) {
         sHtml += '<tr><th>' + this.strbundle.getString('sc.MetaRobots') + '</th><td><span class="failed">n/a</span></td></tr>';
@@ -561,14 +561,14 @@ FBL.ns(function() { with (FBL) {
       }
 
       for (var i = 0; i <= 6; i++) {
-        var headlineData = SENSEO.Utils.getHeadlineData(i);
+        var headlineData = SENSEO.Utils.getHeadlineData(content.document, i);
       
         for (var j = 0; j < headlineData.length; j++) {
           sHtml += '<tr><th>' + i + '. ' + this.strbundle.getString('sc.LevelHeadline') + '</th><td>' + SENSEO.Utils.markKeywordMatches(headlineData[j], keywords) + '</td></tr>';
         }
       }
       
-      var imageAltData = SENSEO.Utils.getImageAltData(keywords);
+      var imageAltData = SENSEO.Utils.getImageAltData(content.document, keywords);
 
       for (var i = 0; i < imageAltData.length; i++) {
         var imageName = imageAltData[i][0];
@@ -576,7 +576,7 @@ FBL.ns(function() { with (FBL) {
         sHtml += '<tr><th>' + this.strbundle.getString('sc.Image') + ' (' + imageName + ')</th><td>' + imageAltData[i][1] + '</td></tr>';
       }
 
-      var numberOfLinks = SENSEO.Utils.numberOfLinks();
+      var numberOfLinks = SENSEO.Utils.numberOfLinks(content.document);
       
       sHtml += '<tr><th>' + this.strbundle.getString('sc.NumberOfLinks') + '</th><td>' + numberOfLinks + '</td></tr>';
 
@@ -592,7 +592,7 @@ FBL.ns(function() { with (FBL) {
       
       sHtml += '<tr><th>' + this.strbundle.getString('sc.LocationPath') + '</th><td>' + SENSEO.Utils.markKeywordMatches(pathData, keywords) + '</td></tr>';
 
-      var bodyData = SENSEO.Utils.getBodyData();
+      var bodyData = SENSEO.Utils.getBodyData(content.document);
       
       sHtml += '<tr><th>' + this.strbundle.getString('sc.VisibleContent') + '</th><td>' + SENSEO.Utils.markKeywordMatches(bodyData, keywords) + '</td></tr>';
 
@@ -600,7 +600,7 @@ FBL.ns(function() { with (FBL) {
       var keywordMatches = SENSEO.Utils.getKeywordMatches(bodyData, keywords);
       var keywordDensity = SENSEO.Utils.getKeywordDensity(bodyData, keywords);
 	  
-  	  var numberOfElements = SENSEO.Utils.numberOfElements();
+  	  var numberOfElements = SENSEO.Utils.numberOfElements(content.document);
   	  
   	  var elementsTextRatio = SENSEO.Utils.getElementWordRatio(textLength, numberOfElements);
 
@@ -819,9 +819,9 @@ FBL.ns(function() { with (FBL) {
     // handles Inspect button
     inspect: function() {
     
-	  var fbCtx = typeof FirebugContext !== 'undefined' ? FirebugContext : Firebug.currentContext;
+      var fbCtx = typeof FirebugContext !== 'undefined' ? FirebugContext : Firebug.currentContext;
 
-	  fbCtx.getPanel('senseo');
+      fbCtx.getPanel('senseo');
       
       /* this is the normal behaviour */
       this.checkForKeywords();
@@ -839,6 +839,42 @@ FBL.ns(function() { with (FBL) {
       
     },
 
+    crawlDocument: function() {
+
+      var senseoTextBox = Firebug.chrome.$("senseoTextBox");
+      
+      if (senseoTextBox.value != '') {
+      
+        mse.Crawler.init(this, content.window.location.href, senseoTextBox.value);
+        
+      }
+        
+    },
+        
+    crawl: function() {
+    
+      var fbCtx = typeof FirebugContext !== 'undefined' ? FirebugContext : Firebug.currentContext;
+
+      fbCtx.getPanel('senseo');
+      
+      this.checkForKeywords();
+      this.crawlDocument();
+      
+    },
+    
+    crawlingDone: function(sHtml) {
+
+      var cHtml = this.getContributionHtml();
+          
+      SENSEO.Panel.renderPanel( 'senseo-crawl', 
+                     sHtml + 
+                     '<div class="contribution">' + 
+                     cHtml + 
+                     '</div>'
+                    );
+        
+    },
+    
     // handles Show Components button
     components: function() {
     

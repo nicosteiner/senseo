@@ -1,10 +1,10 @@
 SENSEO.Utils = {
 
-  getTitleData: function() {
+  getTitleData: function(contentDocument) {
 
     var titleData = [];
 
-    var iterator = content.document.evaluate('/html/head//title', content.document, null, XPathResult.UNORDERED_NODE_ITERATOR_TYPE, null );
+    var iterator = contentDocument.evaluate('/html/head//title', contentDocument, null, XPathResult.UNORDERED_NODE_ITERATOR_TYPE, null );
 
     var thisNode = iterator.iterateNext();
     
@@ -17,11 +17,11 @@ SENSEO.Utils = {
     
   },
 
-  getMetaDescriptionData: function() {
+  getMetaDescriptionData: function(contentDocument) {
 
     var metaDescriptionData = [];
 
-    var iterator = content.document.evaluate('/html/head//meta[translate(@name,"ABCDEFGHIJKLMNOPQRSTUVWXYZ","abcdefghijklmnopqrstuvwxyz") = "description"]/@content', content.document, null, XPathResult.UNORDERED_NODE_ITERATOR_TYPE, null );
+    var iterator = contentDocument.evaluate('/html/head//meta[translate(@name,"ABCDEFGHIJKLMNOPQRSTUVWXYZ","abcdefghijklmnopqrstuvwxyz") = "description"]/@content', contentDocument, null, XPathResult.UNORDERED_NODE_ITERATOR_TYPE, null );
 
     var thisNode = iterator.iterateNext();
     
@@ -34,11 +34,11 @@ SENSEO.Utils = {
 
   },
 
-  getMetaKeywordsData: function() {
+  getMetaKeywordsData: function(contentDocument) {
 
     var metaKeywordsData = [];
 
-    var iterator = content.document.evaluate('/html/head//meta[translate(@name,"ABCDEFGHIJKLMNOPQRSTUVWXYZ","abcdefghijklmnopqrstuvwxyz") = "keywords"]/@content', content.document, null, XPathResult.UNORDERED_NODE_ITERATOR_TYPE, null );
+    var iterator = contentDocument.evaluate('/html/head//meta[translate(@name,"ABCDEFGHIJKLMNOPQRSTUVWXYZ","abcdefghijklmnopqrstuvwxyz") = "keywords"]/@content', contentDocument, null, XPathResult.UNORDERED_NODE_ITERATOR_TYPE, null );
 
     var thisNode = iterator.iterateNext();
     
@@ -50,12 +50,30 @@ SENSEO.Utils = {
     return metaKeywordsData;
 
   },
+  
+  getCanonicalUrl: function(contentDocument) {
 
-  getMetaRobotsData: function() {
+    var iterator = contentDocument.evaluate('/html/head//link[translate(@rel,"ABCDEFGHIJKLMNOPQRSTUVWXYZ","abcdefghijklmnopqrstuvwxyz") = "canonical"]/@href', contentDocument, null, XPathResult.UNORDERED_NODE_ITERATOR_TYPE, null );
+
+    var thisNode = iterator.iterateNext();
+    
+    if (thisNode) {
+    
+      return thisNode.textContent;
+      
+    }	else {
+    
+      return false;
+    
+    }
+    
+  },
+  
+  getMetaRobotsData: function(contentDocument) {
 
     var metaRobotsData = [];
 
-    var iterator = content.document.evaluate('/html/head//meta[translate(@name,"ABCDEFGHIJKLMNOPQRSTUVWXYZ","abcdefghijklmnopqrstuvwxyz") = "robots"]/@content', content.document, null, XPathResult.UNORDERED_NODE_ITERATOR_TYPE, null );
+    var iterator = contentDocument.evaluate('/html/head//meta[translate(@name,"ABCDEFGHIJKLMNOPQRSTUVWXYZ","abcdefghijklmnopqrstuvwxyz") = "robots"]/@content', contentDocument, null, XPathResult.UNORDERED_NODE_ITERATOR_TYPE, null );
 
     var thisNode = iterator.iterateNext();
     
@@ -120,11 +138,11 @@ SENSEO.Utils = {
     
   },
 
-  getHeadlineData: function(level) {
+  getHeadlineData: function(contentDocument, level) {
 
     var headlineData = [];
 
-    var iterator = content.document.evaluate('/html/body//h' + level, content.document, null, XPathResult.UNORDERED_NODE_ITERATOR_TYPE, null );
+    var iterator = contentDocument.evaluate('/html/body//h' + level, contentDocument, null, XPathResult.UNORDERED_NODE_ITERATOR_TYPE, null );
 
     var thisNode = iterator.iterateNext();
     
@@ -137,10 +155,10 @@ SENSEO.Utils = {
 
   },
 
-  getImageAltData: function(keywords) {
+  getImageAltData: function(contentDocument, keywords) {
 
-    var iteratorImgSrc = content.document.evaluate('/html/body//img/@src', content.document, null, XPathResult.UNORDERED_NODE_ITERATOR_TYPE, null );
-    var iteratorImgAlt = content.document.evaluate('/html/body//img/@alt', content.document, null, XPathResult.UNORDERED_NODE_ITERATOR_TYPE, null );
+    var iteratorImgSrc = contentDocument.evaluate('/html/body//img/@src', contentDocument, null, XPathResult.UNORDERED_NODE_ITERATOR_TYPE, null );
+    var iteratorImgAlt = contentDocument.evaluate('/html/body//img/@alt', contentDocument, null, XPathResult.UNORDERED_NODE_ITERATOR_TYPE, null );
     
     var imageData = [];
     
@@ -171,9 +189,35 @@ SENSEO.Utils = {
     
   },
 
-  numberOfLinks: function() {
+  getAllLinkHrefs : function(contentDocument) {
+    
+    var allLinksXpath = contentDocument.evaluate('/html/body//a/@href', contentDocument, null, XPathResult.ANY_TYPE, null );
+    
+    var allLinkHrefs = [];
+    
+    var thisNodeLinkHref = allLinksXpath.iterateNext();
+    
+    while (thisNodeLinkHref) {
+    
+      var linkHref = thisNodeLinkHref.textContent;
+    
+      if (linkHref != '') {
+      
+        allLinkHrefs.push(linkHref);
+        
+      }
+      
+      thisNodeLinkHref = allLinksXpath.iterateNext();
+    
+    }
+    
+    return allLinkHrefs;
+  
+  },
+  
+  numberOfLinks: function(contentDocument) {
 
-    var numberOfLinks = content.document.evaluate('count(/html/body//a)', content.document, null, XPathResult.ANY_TYPE, null );
+    var numberOfLinks = contentDocument.evaluate('count(/html/body//a)', contentDocument, null, XPathResult.ANY_TYPE, null );
 
     var allLinksCount = numberOfLinks.numberValue;
 
@@ -181,10 +225,10 @@ SENSEO.Utils = {
 
   },
 
-  altImagesGrade: function() {
+  altImagesGrade: function(contentDocument) {
 
-    var allImages = content.document.evaluate('count(/html/body//img)', content.document, null, XPathResult.ANY_TYPE, null );
-    var allAltImages = content.document.evaluate('count(/html/body//img[@alt != ""])', content.document, null, XPathResult.ANY_TYPE, null );
+    var allImages = contentDocument.evaluate('count(/html/body//img)', contentDocument, null, XPathResult.ANY_TYPE, null );
+    var allAltImages = contentDocument.evaluate('count(/html/body//img[@alt != ""])', contentDocument, null, XPathResult.ANY_TYPE, null );
 
     var allImagesCount = allImages.numberValue;
     var allAltImagesCount = allAltImages.numberValue;
@@ -197,9 +241,9 @@ SENSEO.Utils = {
 
   },
 
-  numberOfElements: function() {
+  numberOfElements: function(contentDocument) {
 
-    var allElements = content.document.evaluate('count(descendant-or-self::*)', content.document, null, XPathResult.ANY_TYPE, null );
+    var allElements = contentDocument.evaluate('count(descendant-or-self::*)', contentDocument, null, XPathResult.ANY_TYPE, null );
 
     var allElementsCount = allElements.numberValue;
 
@@ -321,9 +365,9 @@ SENSEO.Utils = {
 
   },
    
-  getBodyData: function() {
+  getBodyData: function(contentDocument) {
 
-    var bodyText = content.document.evaluate('/html/body//.[name() != "SCRIPT"]/text()', content.document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null );
+    var bodyText = contentDocument.evaluate('/html/body//.[name() != "SCRIPT"]/text()', contentDocument, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null );
     
     var bodyData = '';
     
@@ -484,71 +528,61 @@ SENSEO.Utils = {
     
   },
   
-  setShortURL: function(shortURL) {
+  // new stuff
   
-    if (SENSEO.Panel.panelDocument.getElementById('twitter-grade') && SENSEO.Panel.panelDocument.getElementById('twitter-site-url')) {
+  getDomain: function() {
   
-      SENSEO.Panel.panelDocument.getElementById('twitter-grade').innerHTML = SENSEO.grade;
-      SENSEO.Panel.panelDocument.getElementById('twitter-site-url').innerHTML = shortURL;
-    
-      SENSEO.Panel.panelDocument.getElementById('twitter-container').style.display = 'inline-block';
-      
-      SENSEO.Panel.panelDocument.getElementById('tweet-this').href = 'http://twitter.com/home?status=' + encodeURI('I got grade A (' + SENSEO.grade + '/100) for optimizing my site ' + shortURL + ' with SenSEO Firefox extension http://goo.gl/d7dp');
-      
-    }
+    var url = content.window.location.href;
+
+    var url_parts = url.split('/');
+
+    var domain_name = url_parts[0] + '//' + url_parts[2];
+
+    return domain_name; 
   
   },
   
-  getShortURL: function(url) {
-
-    // google shortener service is unstable (Labs status)
+  normalizeUrl: function(url, domain, documentLocationHref) {
   
-    var req = new XMLHttpRequest();
+    var normalizedUrl;
     
-    req.onreadystatechange = function(scope) {
+    if (url.substring(0, 1) == '/') {
+
+      if (!url.match(/Jumpto/)) {
     
-      return function(aEvt) {
+        // normalizedUrl starts with /
       
-        if (req.readyState == 4) {
-        
-          if (req.status == 200) {
-          
-            var ajaxResponse = req.responseText;
-            
-            if (ajaxResponse) {
-            
-              var firstSplit = ajaxResponse.split(',');
-              
-              var secondSplit = firstSplit[1].split(': ');
-              
-            }
-            
-            if (ajaxResponse.substring(0, 14) == '{"short_url":"') {
-          
-              var shortURL = ajaxResponse.substring(14, ajaxResponse.length - 2);
-          
-              if (shortURL) {
-              
-                scope.setShortURL(shortURL);
-                
-              }
-          
-            }
-          
-          }
-          
-        }
+        normalizedUrl = domain + url;
         
       }
+    
+    } else {
+    
+      if (url.substring(0, 5) != 'http:' && url.substring(0, 6) != 'https:' && url.substring(0, 7) != 'chrome:' && url.substring(0, 4) != 'ftp:' && url.substring(0, 5) != 'mail:') {
+      
+        // normalizedUrl is relative without /
+      
+        normalizedUrl = documentLocationHref.substring(0, documentLocationHref.lastIndexOf('/')) + '/' + url;
+      
+      } else {
+      
+        // url has same domain
         
-    }(this);
+        if (url.slice(0, url.slice(0, domain.length)) == domain) {
+        
+          normalizedUrl = url;
+        
+        }
+      
+      }
     
-    req.open('POST', 'https://www.googleapis.com/urlshortener/v1/url', true);
-
-    req.setRequestHeader('Content-Type', 'application/json');
-
-    req.send('{"longUrl": "' + encodeURIComponent(content.window.location) + '"}');
+    }
     
+    // normalizedUrl can be undefined
+    // in this case, canonical tag is not useful
+    
+    return normalizedUrl;
+  
   }
 
 };

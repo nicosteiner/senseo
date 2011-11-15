@@ -4,6 +4,7 @@
 <overlay id="senseo" 
          xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
+  <script type="application/x-javascript" src="chrome://senseo/content/script/crawler.js"/>
   <script type="application/x-javascript" src="chrome://senseo/content/script/senseo.js"/>
   <script type="application/x-javascript" src="chrome://senseo/content/script/utils.js"/>
   <script type="application/x-javascript" src="chrome://senseo/content/script/panel.js"/>
@@ -15,6 +16,7 @@
   <commandset id="mainCommandSet">
     <!--<command id="cmd_senseo_clear" oncommand="Firebug.SenSEOModule.clear()"/>-->
     <command id="cmd_senseo_inspect" oncommand="Firebug.SenSEOModule.inspect()"/>
+    <command id="cmd_senseo_crawl" oncommand="Firebug.SenSEOModule.crawl()"/>
     <command id="cmd_senseo_components" oncommand="Firebug.SenSEOModule.components()"/>
     <command id="cmd_senseo_printview" oncommand="Firebug.SenSEOModule.printview()"/>
   </commandset>
@@ -26,6 +28,7 @@
         <label value="&console.keywords;:" style="padding-top: 5px;" control="senseoTextBox"/>
         <textbox id="senseoTextBox" style="padding-top: 4px;"/>
         <toolbarbutton label="&console.inspect-seo-criteria;" id="senseoInspectButton" class="toolbar-text-button" command="cmd_senseo_inspect"/>
+        <toolbarbutton label="&console.crawl-all-pages;" id="senseoCrawlButton" class="toolbar-text-button" command="cmd_senseo_crawl"/>
         <toolbarbutton label="&console.show-components;" id="senseoComponentsButton" class="toolbar-text-button" command="cmd_senseo_components"/>
         <toolbarbutton label="&console.printview;" id="senseoPrintviewButton" class="toolbar-text-button" command="cmd_senseo_printview"/>
       </hbox>
