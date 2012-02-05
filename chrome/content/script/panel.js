@@ -14,7 +14,7 @@ SENSEO.Panel = {
     
     containerDiv.id = 'senseo-panel-container';
     
-    containerDivElement = panel.panelNode.appendChild(containerDiv);
+    var containerDivElement = panel.panelNode.appendChild(containerDiv);
     
     SENSEO.Panel.container = containerDivElement;
       
@@ -36,9 +36,15 @@ SENSEO.Panel = {
     
     panelDiv.id = panelName;
 
-    SENSEO.Panel.container.appendChild(panelDiv);
+    var panelDivElement = SENSEO.Panel.container.appendChild(panelDiv);
     
-    return panelDiv;
+    return panelDivElement;
+  
+  },
+  
+  getPanelElement: function(panelName) {
+  
+    return SENSEO.Panel.panelDocument.getElementById(panelName);
   
   },
   
@@ -48,9 +54,15 @@ SENSEO.Panel = {
   
     var panelDiv = SENSEO.Panel.addPanel(panelName);
   
-    panelDiv.innerHTML = panelContent;
+    if (panelContent) {
+  
+      panelDiv.innerHTML = panelContent;
+    
+    }
     
     panelDiv.style.display = 'block';
+    
+    return panelDiv;
   
   }
   

@@ -22,6 +22,8 @@ mse.Crawler = (function() {
   
   var keywords = [];
   
+  var maxCrawlResults = 500;
+  
   return {
 
     init: function(scope, startUrl, keywordsRaw) {
@@ -65,6 +67,8 @@ mse.Crawler = (function() {
     
       if (crawlingActive && internalLinkList.length) {
     
+        senseoObjectScope.updateCrawlingInfo(internalLinkList, numberOfCrawledLinks, maxCrawlResults);
+          
         // get first url and remove it from the array the same time
     
         var url = internalLinkList.shift();
@@ -74,17 +78,11 @@ mse.Crawler = (function() {
         // stop crawling after 500 steps for preventing algorithm going crazy
           
         if (numberOfCrawledLinks > 500) {
-        
+
           crawlingActive = false;
         
         }
         
-        if (numberOfCrawledLinks == 10 || numberOfCrawledLinks == 20 || numberOfCrawledLinks == 30 || numberOfCrawledLinks == 40) {
-        
-          alert(numberOfCrawledLinks);
-        
-        }
-    
         var req = new XMLHttpRequest();
     
         req.open('GET', url, true);
@@ -172,9 +170,22 @@ mse.Crawler = (function() {
       
       var canonicalTagUrl = SENSEO.Utils.getCanonicalUrl(responseXML);
       
-      var canonicalUrl = canonicalTagUrl ? SENSEO.Utils.normalizeUrl(canonicalTagUrl, domain, url) : url;
+      var canonicalUrl = SENSEO.Utils.normalizeUrl(canonicalTagUrl, domain, url);
+/*
+        if (numberOfCrawledLinks < 5) {
+        
+          alert(canonicalTagUrl + ' #' + domain + ' # ' + url + ' = ' + canonicalUrl);
+          alert(canonicalTagUrl.slice(0, domain.length));
+        
+        }
+*/    
+
+      if (!canonicalUrl) {
       
-      if (!mse.Crawler.urlHasAlreadyBeenCrawled(canonicalUrl)) {
+        canonicalUrl = url;
+      }
+      
+      if (!mse.Crawler.urlHasAlreadyBeenCrawled(canonicalUrl) && (numberOfCrawledLinks + internalLinkList.length <= maxCrawlResults)) {
       
         // extract ALL links first
         
@@ -193,7 +204,7 @@ mse.Crawler = (function() {
           }
         
         }
-        
+        //alert(canonicalUrl);
         // extract some seo relevant elements
         
         // title, description, bodytext, h1, h2

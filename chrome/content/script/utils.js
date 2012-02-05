@@ -548,7 +548,7 @@ SENSEO.Utils = {
     
     if (url.substring(0, 1) == '/') {
 
-      if (!url.match(/Jumpto/)) {
+      if (!url.match(/Jumpto/) && !url.match(/deref/)) {
     
         // normalizedUrl starts with /
       
@@ -568,7 +568,7 @@ SENSEO.Utils = {
       
         // url has same domain
         
-        if (url.slice(0, url.slice(0, domain.length)) == domain) {
+        if (url.slice(0, domain.length) == domain) {
         
           normalizedUrl = url;
         

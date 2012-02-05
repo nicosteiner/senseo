@@ -862,17 +862,54 @@ FBL.ns(function() { with (FBL) {
       
     },
     
+    updateCrawlingInfo: function(internalLinkList, numberOfCrawledLinks, maxCrawlResults) {
+    
+      var crawlPanelElement = SENSEO.Panel.getPanelElement('senseo-crawl');
+    
+      if (!crawlPanelElement) {
+    
+         crawlPanelElement = SENSEO.Panel.renderPanel('senseo-crawl');
+         
+      }
+      
+      var numberOfInternalLinks = internalLinkList.length;
+      
+      var maxWidth = 300;
+      
+      var numberOfLinks = numberOfInternalLinks + numberOfCrawledLinks;
+      
+      var widthStep = maxWidth / numberOfLinks;
+      
+      var internalWidth = parseInt(widthStep * numberOfInternalLinks);
+      
+      var crawledWidth = parseInt(widthStep * numberOfCrawledLinks);
+      
+      crawlPanelElement.innerHTML = '<ul id="crawlstatus">' + 
+                                    '<li class="internalLinks" style="width: ' + internalWidth + 'px;">' + numberOfInternalLinks + '</li>' +
+                                    '<li class="crawledLinks" style="width: ' + crawledWidth + 'px;">' + numberOfCrawledLinks + '</li>' +
+                                    '</ul>' +
+                                    '<ul><li>URL crawled right now: ' + internalLinkList[0] + '</li><li>A maximum of ' + maxCrawlResults + ' links will be crawled.</li></ul>';
+                      
+    },
+
     crawlingDone: function(sHtml) {
 
       var cHtml = this.getContributionHtml();
-          
-      SENSEO.Panel.renderPanel( 'senseo-crawl', 
-                     sHtml + 
-                     '<div class="contribution">' + 
-                     cHtml + 
-                     '</div>'
-                    );
-        
+      
+      var crawlPanelElement = SENSEO.Panel.getPanelElement('senseo-crawl');
+    
+      if (!crawlPanelElement) {
+    
+         crawlPanelElement = SENSEO.Panel.renderPanel('senseo-crawl');
+         
+      }
+      
+      crawlPanelElement.innerHTML =
+        sHtml + 
+        '<div class="contribution">' + 
+        cHtml + 
+        '</div>';
+      
     },
     
     // handles Show Components button
