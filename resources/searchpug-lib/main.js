@@ -6,6 +6,7 @@ var panel = require("panel");
 var tabs = require("tabs");
 var pageMod = require("page-mod");
 var request = require("request").Request;
+var ss = require("simple-storage");
 
 var activeDocumentComponents;
 

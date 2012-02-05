@@ -431,32 +431,38 @@ WatchPug.Analyze = {
       data: 'n/a'
       
     };
-          
-    req.open('GET', WatchPug.Analyze.data['location-protocol'].data + '//' + WatchPug.Analyze.data['location-hostname'].data + '/robots.txt', true);
     
-    req.onreadystatechange = function () {
+    // there might by strange protocols
     
-      if (req.readyState == 4) {
+    if (WatchPug.Analyze.data['location-protocol'].data.substr(0, 4) === 'http') {
+    
+      req.open('GET', WatchPug.Analyze.data['location-protocol'].data + '//' + WatchPug.Analyze.data['location-hostname'].data + '/robots.txt', true);
       
-        if (req.status == 200) {
-
-          WatchPug.Analyze.data['robots-file'] = {
-            
-            head: 'robots.txt',
-            
-            data: 'found (<a id="show-robots" href="' + url + '">show</a>)'
-            
-          };
-          
-          WatchPug.Analyze.sendData(WatchPug.Analyze.data['robots-file']);
+      req.onreadystatechange = function () {
+      
+        if (req.readyState == 4) {
         
+          if (req.status == 200) {
+
+            WatchPug.Analyze.data['robots-file'] = {
+              
+              head: 'robots.txt',
+              
+              data: 'found (<a id="show-robots" href="' + url + '">show</a>)'
+              
+            };
+            
+            WatchPug.Analyze.sendData(WatchPug.Analyze.data['robots-file']);
+          
+          }
+          
         }
         
-      }
+      };
+        
+      req.send(null);
       
-    };
-      
-    req.send(null);
+    }
     
   },
   
@@ -474,31 +480,37 @@ WatchPug.Analyze = {
       
     };
     
-    req.open('GET', url, true);
+    // there might by strange protocols
     
-    req.onreadystatechange = function () {
+    if (WatchPug.Analyze.data['location-protocol'].data.substr(0, 4) === 'http') {
     
-      if (req.readyState == 4) {
+      req.open('GET', url, true);
       
-        if (req.status == 200) {
-
-          WatchPug.Analyze.data['sitemap-file'] = {
-            
-            head: 'sitemap.xml',
-            
-            data: 'found (<a id="show-sitemap" href="' + url + '">show</a>)'
-            
-          };
-          
-          WatchPug.Analyze.sendData(WatchPug.Analyze.data['sitemap-file']);
+      req.onreadystatechange = function () {
+      
+        if (req.readyState == 4) {
         
+          if (req.status == 200) {
+
+            WatchPug.Analyze.data['sitemap-file'] = {
+              
+              head: 'sitemap.xml',
+              
+              data: 'found (<a id="show-sitemap" href="' + url + '">show</a>)'
+              
+            };
+            
+            WatchPug.Analyze.sendData(WatchPug.Analyze.data['sitemap-file']);
+          
+          }
+          
         }
         
-      }
+      };
+        
+      req.send(null);
       
-    };
-      
-    req.send(null);
+    }
     
   },
   
