@@ -132,15 +132,24 @@ WatchPug.Analyze = {
         
         missing: false,
       
-        data: []
+        data: [],
+        
+        element: []
         
       };
       
+      // class of anker maps to the WatchPug.Anaalyze.data key / index
+      // => class="level-index"
+      
       for (i = 0; i < headlines.length; i += 1) {
+      
+        var headlineTextContent = headlines[i].textContent + ' <a href="#" class="highlight-headline ' + level + '-' + i + '">highlight</a>';
       
         WatchPug.Analyze.data['headline-' + level].head.push('&lt;h' + level + '&gt; heading tag');
         
-        WatchPug.Analyze.data['headline-' + level].data.push(headlines[i].textContent);
+        WatchPug.Analyze.data['headline-' + level].data.push(headlineTextContent);
+        
+        WatchPug.Analyze.data['headline-' + level].element.push(headlines[i]);
         
       }
     
@@ -161,6 +170,10 @@ WatchPug.Analyze = {
   },
   
   getMicrodata: function() {
+  
+    // needs to be extended
+    
+    // every microdata is relevant for highlighting
   
     var microdata = $('body [itemscope]');
 
@@ -200,7 +213,9 @@ WatchPug.Analyze = {
       
       missing: [],
       
-      data: []
+      data: [],
+      
+      element: []
       
     };
 
@@ -217,6 +232,8 @@ WatchPug.Analyze = {
       WatchPug.Analyze.data['img-alt'].missing.push(imgAltMissing);
       
       WatchPug.Analyze.data['img-alt'].data.push(imgAlt);
+      
+      WatchPug.Analyze.data['img-alt'].element.push(allImages[i]);
       
     }
     
@@ -530,6 +547,80 @@ WatchPug.Analyze = {
 
   },
   
+  highlightElement: function(highlightInfo) {
+  
+    // highlightInfo in this case contains type and level/index of the element
+  
+    var targetData = highlightInfo.split(' ');
+    
+    // first value contains type of element
+    
+    var targetDataKey = targetData[0];
+    
+    var targetDataValue = targetData[1];
+
+    if (targetDataKey === 'highlight-headline') {
+    
+      var level = targetDataValue.split('-')[0];
+    
+      var index = targetDataValue.split('-')[1];
+    
+      // try to localize target element
+      
+      var targetElement = WatchPug.Analyze.data['headline-' + level].element[index];
+      
+      // get offset / dimension of target element
+      
+      var targetElementOffset = $(targetElement).offset();
+      
+      var targetElementWidth = $(targetElement).width();
+      
+      var targetElementHeight = $(targetElement).height();
+
+      // if there is no highlight element, create one
+      
+      if (!WatchPug.Analyze.$highlightElement) {
+      
+        WatchPug.Analyze.$highlightElement = $('<div></div>')
+                                            .css({
+                                              'position': 'absolute',
+                                              'z-index': '9999',
+                                              'border': '1px red solid',
+                                              'background-color': 'rgba(255, 255, 0, 0.5)',
+                                              '-moz-box-sizing': 'border-box',
+                                              'padding': '3px 5px',
+                                              'text-align': 'right',
+                                              'color': 'red',
+                                              'font-family': 'Arial, Verdana, sans serif',
+                                              'font-size': '18px',
+                                              'font-weight': 'bold'
+                                            });
+                                            
+        $('body').append(WatchPug.Analyze.$highlightElement);
+        
+      }
+      
+      WatchPug.Analyze.$highlightElement.html('h' + level);
+      
+      WatchPug.Analyze.$highlightElement.css({
+                                          'left': targetElementOffset.left,
+                                          'top': targetElementOffset.top,
+                                          'width': targetElementWidth,
+                                          'height': targetElementHeight
+                                        });
+                                        
+      // show highlighted area
+      
+      var scrollTop = targetElementOffset.top - 50 < 0 ? 0 : targetElementOffset.top - 50;
+      
+      $('html, body').animate({scrollTop: scrollTop}, 300);
+      
+      
+
+    }
+  
+  },
+  
   init: function() {
 
     WatchPug.Analyze.getTitle();
@@ -591,7 +682,23 @@ WatchPug.Analyze = {
     WatchPug.Analyze.getElementWordRatio();
 
     WatchPug.Analyze.sendData();
-  
+
+    // initialize message listener
+    
+    self.on('message', function(message) {
+    
+      if (message.command) {
+      
+        if (message.command === 'highlight-element') {
+        
+          WatchPug.Analyze.highlightElement(message.highlightInfo);
+        
+        }
+        
+      }
+      
+    });
+    
   }
 
 };

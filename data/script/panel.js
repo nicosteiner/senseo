@@ -67,6 +67,7 @@ WatchPug.StrBundle = {
     'al.tt.Path': 'Path',
     'al.tt.NotFound': 'not found',
     'al.tt.MoreInfo': 'more info',
+    'al.tt.Highlight': 'highlight',
 
     'al.st.TitleOnetime': 'Use this tag only one time.',
     'al.st.TitleIncludes': 'Title should include all keywords.',
@@ -582,6 +583,44 @@ WatchPug.Panel = {
       
     }
   
+    var highlightHeadline = $('#' + componentsTable + ' tbody .highlight-headline');
+  
+    // later
+    // var highlightMicroformats = $('#' + componentsTable + ' tbody .highlight');
+  
+    if (highlightHeadline.length) {
+  
+      var i;
+      
+      for (i = 0; i < highlightHeadline.length; i++) {
+  
+        $(highlightHeadline[i]).click(function(e) {
+        
+          // second class contains pointer to data object
+        
+          var targetClass = e.target.className;
+          
+          self.postMessage({
+          
+            command: 'highlight-element',
+            
+            highlightInfo: targetClass
+            
+          });
+          
+          e.preventDefault();
+        
+        });
+        
+      }
+      
+    }
+  
+    // later
+    //var highlightMatches = $('#' + componentsTable + ' tbody .highlight-h1');
+  
+    var highlightImage = $('#' + componentsTable + ' tbody .highlight-image');
+
   },
   
   getKeywordMatches: function() {
