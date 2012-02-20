@@ -505,7 +505,7 @@ WatchPug.Panel = {
       
         // one dataset
         
-        componentsTableBody.append('<tr><th>' + components[key].head + '</th><td>' + WatchPug.Panel.markKeywordMatches(components[key].data) + '</td></tr>');
+        componentsTableBody.append('<tr><th>' + components[key].head + '</th><td>' + WatchPug.Panel.formatOutput(components[key].data) + '</td></tr>');
         
       } else {
       
@@ -513,7 +513,7 @@ WatchPug.Panel = {
         
         for (i = 0; i < components[key].head.length; i += 1) {
         
-          componentsTableBody.append('<tr><th>' + components[key].head[i] + '</th><td>' + WatchPug.Panel.markKeywordMatches(components[key].data[i]) + '</td></tr>');
+          componentsTableBody.append('<tr><th>' + components[key].head[i] + '</th><td>' + WatchPug.Panel.formatOutput(components[key].data[i]) + '</td></tr>');
           
         }
       
@@ -681,7 +681,7 @@ WatchPug.Panel = {
   
   },
 
-  markKeywordMatches: function(text) {
+  formatOutput: function(text) {
   
     if (text && WatchPug.Panel.keywords.length) {
     
@@ -701,6 +701,12 @@ WatchPug.Panel = {
         
       }
       
+    }
+    
+    if (text && text === 'n/a') {
+    
+      text = '<span class="info">' + text + '</span>';
+    
     }
     
     return text;

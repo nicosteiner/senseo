@@ -14,7 +14,7 @@ WatchPug.Analyze = {
 
       count: $('head title').length,
 
-      data: title && title !== '' ? title : '<span class="info">n/a</span>'
+      data: title && title !== '' ? title : 'n/a'
       
     };
   
@@ -26,7 +26,7 @@ WatchPug.Analyze = {
       
       head: 'title tag length',
       
-      data: WatchPug.Analyze.data['title'].data !== '<span class="info">n/a</span>' ? WatchPug.Analyze.data['title'].data.length : '<span class="info">n/a</span>'
+      data: WatchPug.Analyze.data['title'].data !== 'n/a' ? WatchPug.Analyze.data['title'].data.length : 'n/a'
       
     };
   
@@ -42,7 +42,7 @@ WatchPug.Analyze = {
       
       count: $('head meta[name = "description"]').length,
       
-      data: metaDescription && metaDescription.attr('content') ? metaDescription.attr('content') : '<span class="info">n/a</span>'
+      data: metaDescription && metaDescription.attr('content') ? metaDescription.attr('content') : 'n/a'
       
     };
   
@@ -54,7 +54,7 @@ WatchPug.Analyze = {
       
       head: 'description meta tag length',
       
-      data: WatchPug.Analyze.data['meta-description'].data !== '<span class="info">n/a</span>' ? WatchPug.Analyze.data['meta-description'].data.length : '<span class="info">n/a</span>'
+      data: WatchPug.Analyze.data['meta-description'].data !== 'n/a' ? WatchPug.Analyze.data['meta-description'].data.length : 'n/a'
       
     };
   
@@ -68,7 +68,7 @@ WatchPug.Analyze = {
       
       head: 'keywords meta tag',
       
-      data: metaKeywords && metaKeywords.attr('content') ? metaKeywords.attr('content') : '<span class="info">n/a</span>'
+      data: metaKeywords && metaKeywords.attr('content') ? metaKeywords.attr('content') : 'n/a'
       
     };
   
@@ -82,7 +82,7 @@ WatchPug.Analyze = {
       
       head: 'robots meta tag',
       
-      data: metaRobots && metaRobots.attr('content') ? metaRobots.attr('content') : '<span class="info">n/a</span>'
+      data: metaRobots && metaRobots.attr('content') ? metaRobots.attr('content') : 'n/a'
       
     };
   
@@ -96,7 +96,7 @@ WatchPug.Analyze = {
       
       head: 'canonical URL',
       
-      data: linkCanonical && linkCanonical.attr('href') ? linkCanonical.attr('href') : '<span class="info">n/a</span>'
+      data: linkCanonical && linkCanonical.attr('href') ? linkCanonical.attr('href') : 'n/a'
       
     };
   
@@ -173,7 +173,7 @@ WatchPug.Analyze = {
         
         missing: true,
         
-        data: '<span class="info">n/a</span>'
+        data: 'n/a'
         
       };
     
@@ -264,7 +264,7 @@ WatchPug.Analyze = {
         
         missing: true,
         
-        data: '<span class="info">n/a</span>'
+        data: 'n/a'
         
       };
     
@@ -304,7 +304,7 @@ WatchPug.Analyze = {
         
       }
       
-      imgAlt = allImages[i].alt && allImages[i].alt !== '' ? allImages[i].alt : '<span class="info">n/a</span>';
+      imgAlt = allImages[i].alt && allImages[i].alt !== '' ? allImages[i].alt : 'n/a';
     
       imgAltMissing = allImages[i].alt && allImages[i].alt !== '' ? false : true;
     
@@ -523,7 +523,7 @@ WatchPug.Analyze = {
     
       head: 'robots.txt',
       
-      data: '<span class="info">n/a</span>'
+      data: 'n/a'
       
     };
     
@@ -570,7 +570,7 @@ WatchPug.Analyze = {
       
       head: 'sitemap.xml',
       
-      data: '<span class="info">n/a</span>'
+      data: 'n/a'
       
     };
     
