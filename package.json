@@ -3,7 +3,7 @@
     "description": "SenSEO ist an extension checking SEO-critical on page criteria.",
     "license": "MPL 1.1/GPL 2.0/LGPL 2.1",
     "author": "Nico Steiner",
-    "version": "2.0.2",
+    "version": "2.1.0",
     "fullName": "SenSEO",
     "id": "senseo@nicosteiner.de",
     "homepage": "http://www.sensational-seo.com/"
