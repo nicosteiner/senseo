@@ -4,17 +4,17 @@ WatchPug.Analyze = {
 
   data: {},
 
-  getTitle: function() {
-  
+  getTitle: function () {
+
     var title = $('head title')[0].text;
-  
+
     WatchPug.Analyze.data['title'] = {
-      
+
       head: 'title tag',
-      
+
       count: $('head title').length,
-      
-      data: title && title !== '' ? title : 'n/a'
+
+      data: title && title !== '' ? title : '<span class="info">n/a</span>'
       
     };
   
@@ -26,7 +26,7 @@ WatchPug.Analyze = {
       
       head: 'title tag length',
       
-      data: WatchPug.Analyze.data['title'].data !== 'n/a' ? WatchPug.Analyze.data['title'].data.length : 'n/a'
+      data: WatchPug.Analyze.data['title'].data !== '<span class="info">n/a</span>' ? WatchPug.Analyze.data['title'].data.length : '<span class="info">n/a</span>'
       
     };
   
@@ -42,7 +42,7 @@ WatchPug.Analyze = {
       
       count: $('head meta[name = "description"]').length,
       
-      data: metaDescription && metaDescription.attr('content') ? metaDescription.attr('content') : 'n/a'
+      data: metaDescription && metaDescription.attr('content') ? metaDescription.attr('content') : '<span class="info">n/a</span>'
       
     };
   
@@ -54,7 +54,7 @@ WatchPug.Analyze = {
       
       head: 'description meta tag length',
       
-      data: WatchPug.Analyze.data['meta-description'].data !== 'n/a' ? WatchPug.Analyze.data['meta-description'].data.length : 'n/a'
+      data: WatchPug.Analyze.data['meta-description'].data !== '<span class="info">n/a</span>' ? WatchPug.Analyze.data['meta-description'].data.length : '<span class="info">n/a</span>'
       
     };
   
@@ -68,7 +68,7 @@ WatchPug.Analyze = {
       
       head: 'keywords meta tag',
       
-      data: metaKeywords && metaKeywords.attr('content') ? metaKeywords.attr('content') : 'n/a'
+      data: metaKeywords && metaKeywords.attr('content') ? metaKeywords.attr('content') : '<span class="info">n/a</span>'
       
     };
   
@@ -82,7 +82,7 @@ WatchPug.Analyze = {
       
       head: 'robots meta tag',
       
-      data: metaRobots && metaRobots.attr('content') ? metaRobots.attr('content') : 'n/a'
+      data: metaRobots && metaRobots.attr('content') ? metaRobots.attr('content') : '<span class="info">n/a</span>'
       
     };
   
@@ -96,7 +96,7 @@ WatchPug.Analyze = {
       
       head: 'canonical URL',
       
-      data: linkCanonical && linkCanonical.attr('href') ? linkCanonical.attr('href') : 'n/a'
+      data: linkCanonical && linkCanonical.attr('href') ? linkCanonical.attr('href') : '<span class="info">n/a</span>'
       
     };
   
@@ -104,9 +104,8 @@ WatchPug.Analyze = {
   
   getPageLoadTime: function() {
 
-    var perfData = window.performance.timing;
-
-    var pageLoadTime = perfData.loadEventEnd - perfData.navigationStart;
+    var perfData = window.performance.timing,
+        pageLoadTime = perfData.loadEventEnd - perfData.navigationStart;
 
     WatchPug.Analyze.data['page-load-time'] = {
       
@@ -120,9 +119,10 @@ WatchPug.Analyze = {
   
   getHeadlineData: function(level) {
 
-    var headlines = $('body h' + level);
-    
-    var i;
+    var headlines = $('body h' + level),
+        headlineTextContent,
+        highlightHeadlineLink,
+        i;
     
     if (headlines.length) {
       
@@ -143,7 +143,19 @@ WatchPug.Analyze = {
       
       for (i = 0; i < headlines.length; i += 1) {
       
-        var headlineTextContent = headlines[i].textContent + ' <a href="#" class="highlight-headline ' + level + '-' + i + '">highlight</a>';
+        // try to find out if headline is visible
+      
+        if ($(headlines[i]).width() && $(headlines[i]).height() && $(headlines[i]).css('display') !== 'none' && $(headlines[i]).css('visibility') !== 'hidden') {
+        
+          highlightHeadlineLink = ' <a href="#" class="highlight-headline ' + level + '-' + i + '">highlight</a>';
+        
+        } else {
+        
+          highlightHeadlineLink = ' <span class="info">(hidden)</span>';
+          
+        }
+      
+        headlineTextContent = headlines[i].textContent + highlightHeadlineLink;
       
         WatchPug.Analyze.data['headline-' + level].head.push('&lt;h' + level + '&gt; heading tag');
         
@@ -161,7 +173,7 @@ WatchPug.Analyze = {
         
         missing: true,
         
-        data: 'n/a'
+        data: '<span class="info">n/a</span>'
         
       };
     
@@ -175,37 +187,98 @@ WatchPug.Analyze = {
     
     // every microdata is relevant for highlighting
   
-    var microdata = $('body [itemscope]');
+    var microdata = $('body [itemscope]'),
+        microdataType,
+        highlightMicrodataLink,
+        i, j;
 
     if (microdata.length) {
-    
-      WatchPug.Analyze.data['microdata'] = {
+      
+      WatchPug.Analyze.data['microdata-found'] = {
         
-        head: 'Microdata',
+        head: 'microdata',
         
         data: 'found (<a id="go-to-testing-tool" href="http://www.google.com/webmasters/tools/richsnippets?url=' + WatchPug.Analyze.data['location-href'].data + '">show</a>)'
         
       };
       
-    } else {
-
-      WatchPug.Analyze.data['microdata'] = {
+      WatchPug.Analyze.data['microdata-itemprop'] = {
         
-        head: 'Microdata',
+        head: [],
         
-        data: 'n/a'
+        missing: [],
+      
+        data: [],
+        
+        element: []
         
       };
       
+      for (i = 0; i < microdata.length; i += 1) {
+
+        // find itemprops
+        
+        var itempropElements = $(microdata[i]).find('[itemprop]');
+        
+        var itemprops = '';
+        
+        for (j = 0; j < itempropElements.length; j += 1) {
+
+          itemprops += $(itempropElements[j]).attr('itemprop');
+          
+          if (j < itempropElements.length - 1) {
+          
+            itemprops += ', ';
+          
+          }
+        
+        }
+      
+        // try to find out if microdata is visible
+      
+        if ($(microdata[i]).width() && $(microdata[i]).height() && $(microdata[i]).css('display') !== 'none' && $(microdata[i]).css('visibility') !== 'hidden') {
+        
+          highlightMicrodataLink = ' <a href="#" class="highlight-microdata index-' + i + '">highlight</a>';
+        
+        } else {
+        
+          highlightMicrodataLink = ' <span class="info">(hidden)</span>';
+          
+        }
+        
+        WatchPug.Analyze.data['microdata-itemprop'].head.push('microdata (' + i + ')');
+        
+        WatchPug.Analyze.data['microdata-itemprop'].missing.push(false);
+        
+        WatchPug.Analyze.data['microdata-itemprop'].data.push(itemprops + highlightMicrodataLink);
+        
+        WatchPug.Analyze.data['microdata-itemprop'].element.push(microdata[i]);
+      
+      }
+    
+    } else {
+    
+      WatchPug.Analyze.data['microdata-found'] = {
+        
+        head: 'microdata',
+        
+        missing: true,
+        
+        data: '<span class="info">n/a</span>'
+        
+      };
+    
     }
-  
+    
   },
   
   getImageAltData: function() {
 
-    var allImages = $('body img');
-    
-    var i;
+    var allImages = $('body img'),
+        i,
+        imgAlt,
+        imgAltMissing,
+        highlightImageLink;
     
     WatchPug.Analyze.data['img-alt'] = {
       
@@ -219,11 +292,19 @@ WatchPug.Analyze = {
       
     };
 
-    var imgAlt, imgAltMissing;
-    
     for (i = 0; i < allImages.length; i += 1) {
     
-      imgAlt = allImages[i].alt && allImages[i].alt !== '' ? allImages[i].alt : 'n/a';
+      if ($(allImages[i]).width() && $(allImages[i]).height() && $(allImages[i]).css('display') !== 'none' && $(allImages[i]).css('visibility') !== 'hidden') {
+      
+        highlightImageLink = ' <a href="#" class="highlight-image index-' + i + '">highlight</a>';
+      
+      } else {
+      
+        highlightImageLink = ' <span class="info">(hidden)</span>';
+        
+      }
+      
+      imgAlt = allImages[i].alt && allImages[i].alt !== '' ? allImages[i].alt : '<span class="info">n/a</span>';
     
       imgAltMissing = allImages[i].alt && allImages[i].alt !== '' ? false : true;
     
@@ -231,7 +312,7 @@ WatchPug.Analyze = {
       
       WatchPug.Analyze.data['img-alt'].missing.push(imgAltMissing);
       
-      WatchPug.Analyze.data['img-alt'].data.push(imgAlt);
+      WatchPug.Analyze.data['img-alt'].data.push(imgAlt + highlightImageLink);
       
       WatchPug.Analyze.data['img-alt'].element.push(allImages[i]);
       
@@ -241,11 +322,10 @@ WatchPug.Analyze = {
   
   getImagesWithoutAlt: function() {
 
-    var allImages = $('body img');
-    var allAltImages = $('body img[alt != ""]');
-
-    var allImagesCount = allImages.length;
-    var allAltImagesCount = allAltImages.length;
+    var allImages = $('body img'),
+    allAltImages = $('body img[alt != ""]'),
+    allImagesCount = allImages.length,
+    allAltImagesCount = allAltImages.length;
 
     WatchPug.Analyze.data['img-without-alt'] = {
       
@@ -273,13 +353,13 @@ WatchPug.Analyze = {
   
   trim: function(s) {
 
-    while (s.substring(0,1) == ' ') {
+    while (s.substring(0,1) === ' ') {
     
       s = s.substring(1,s.length);
       
     }
     
-    while (s.substring(s.length-1,s.length) == ' ') {
+    while (s.substring(s.length-1,s.length) === ' ') {
     
       s = s.substring(0,s.length-1);
       
@@ -291,17 +371,16 @@ WatchPug.Analyze = {
   
   getBodyData: function() {
   
-    var trimtext;
-  
-    var bodyText = document.evaluate('/html/body//.[name() != "SCRIPT"]/text()', document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null );
+    var trimtext,
+        bodyText = document.evaluate('/html/body//.[name() != "SCRIPT"]/text()', document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null ),
+        bodyData = '',
+        i;
     
-    var bodyData = '';
-    
-    for (var i = 0; i < bodyText.snapshotLength; i++) {
+    for (i = 0; i < bodyText.snapshotLength; i += 1) {
     
       trimtext = bodyText.snapshotItem(i).textContent;
       
-      while (trimtext.search(/\s\s+/g) != -1) {
+      while (trimtext.search(/\s\s+/g) !== -1) {
       
         trimtext = trimtext.replace(/\s\s+/g, ' ');
         
@@ -309,7 +388,7 @@ WatchPug.Analyze = {
     
       trimtext = trimtext.replace(/\015\012|\015|\012/g, '');
     
-      if (WatchPug.Analyze.trim(trimtext) != '') {
+      if (WatchPug.Analyze.trim(trimtext) !== '') {
       
         bodyData = bodyData + WatchPug.Analyze.trim(trimtext) + ' ';
         
@@ -437,15 +516,14 @@ WatchPug.Analyze = {
 
   getRobotsFileContent: function() {
 
-    var req = new XMLHttpRequest();
-    
-    var url = WatchPug.Analyze.data['location-protocol'].data + '//' + WatchPug.Analyze.data['location-hostname'].data + '/robots.txt';
+    var req = new XMLHttpRequest(),
+        url = WatchPug.Analyze.data['location-protocol'].data + '//' + WatchPug.Analyze.data['location-hostname'].data + '/robots.txt';
     
     WatchPug.Analyze.data['robots-file'] = {
     
       head: 'robots.txt',
       
-      data: 'n/a'
+      data: '<span class="info">n/a</span>'
       
     };
     
@@ -457,9 +535,9 @@ WatchPug.Analyze = {
       
       req.onreadystatechange = function () {
       
-        if (req.readyState == 4) {
+        if (req.readyState === 4) {
         
-          if (req.status == 200) {
+          if (req.status === 200) {
 
             WatchPug.Analyze.data['robots-file'] = {
               
@@ -485,15 +563,14 @@ WatchPug.Analyze = {
   
   getSitemapContent: function() {
   
-    var req = new XMLHttpRequest();
-    
-    var url = WatchPug.Analyze.data['location-protocol'].data + '//' + WatchPug.Analyze.data['location-hostname'].data + '/sitemap.xml';
+    var req = new XMLHttpRequest(),
+        url = WatchPug.Analyze.data['location-protocol'].data + '//' + WatchPug.Analyze.data['location-hostname'].data + '/sitemap.xml';
     
     WatchPug.Analyze.data['sitemap-file'] = {
       
       head: 'sitemap.xml',
       
-      data: 'n/a'
+      data: '<span class="info">n/a</span>'
       
     };
     
@@ -505,9 +582,9 @@ WatchPug.Analyze = {
       
       req.onreadystatechange = function () {
       
-        if (req.readyState == 4) {
+        if (req.readyState === 4) {
         
-          if (req.status == 200) {
+          if (req.status === 200) {
 
             WatchPug.Analyze.data['sitemap-file'] = {
               
@@ -549,36 +626,72 @@ WatchPug.Analyze = {
   
   highlightElement: function(highlightInfo) {
   
-    // highlightInfo in this case contains type and level/index of the element
-  
-    var targetData = highlightInfo.split(' ');
-    
-    // first value contains type of element
-    
-    var targetDataKey = targetData[0];
-    
-    var targetDataValue = targetData[1];
+    var targetData = highlightInfo.split(' '),  // highlightInfo in this case contains type and level/index of the element
+        targetDataKey = targetData[0],  // first value contains type of element
+        targetDataValue = targetData[1],
+        level,
+        index,
+        targetElement;
 
     if (targetDataKey === 'highlight-headline') {
     
-      var level = targetDataValue.split('-')[0];
+      level = targetDataValue.split('-')[0];
     
-      var index = targetDataValue.split('-')[1];
+      index = targetDataValue.split('-')[1];
     
       // try to localize target element
       
-      var targetElement = WatchPug.Analyze.data['headline-' + level].element[index];
+      targetElement = WatchPug.Analyze.data['headline-' + level].element[index];
       
-      // get offset / dimension of target element
+      WatchPug.Analyze.highlightTargetElement(targetElement, 'h' + level);
       
-      var targetElementOffset = $(targetElement).offset();
+    }
+    
+    if (targetDataKey === 'highlight-image') {
+    
+      index = targetDataValue.split('-')[1];
+    
+      // try to localize target element
       
-      var targetElementWidth = $(targetElement).width();
+      targetElement = WatchPug.Analyze.data['img-alt'].element[index];
       
-      var targetElementHeight = $(targetElement).height();
+      WatchPug.Analyze.highlightTargetElement(targetElement, 'img');
+      
+    }
+    
+    if (targetDataKey === 'highlight-microdata') {
+    
+      index = targetDataValue.split('-')[1];
+    
+      // try to localize target element
+      
+      targetElement = WatchPug.Analyze.data['microdata-itemprop'].element[index];
+      
+      WatchPug.Analyze.highlightTargetElement(targetElement, 'microdata');
+      
+    }
+    
+  },
+  
+  highlightTargetElement: function(targetElement, content) {
+    
+    var targetElementOffset,
+        targetElementWidth,
+        targetElementHeight,
+        scrollTop;
+        
+    // get offset / dimension of target element
+    
+    targetElementOffset = $(targetElement).offset();
+    
+    targetElementWidth = $(targetElement).width();
+    
+    targetElementHeight = $(targetElement).height();
 
-      // if there is no highlight element, create one
-      
+    // if there is no highlight element, create one
+    
+    if (targetElementWidth && targetElementHeight) {
+    
       if (!WatchPug.Analyze.$highlightElement) {
       
         WatchPug.Analyze.$highlightElement = $('<div></div>')
@@ -600,7 +713,7 @@ WatchPug.Analyze = {
         
       }
       
-      WatchPug.Analyze.$highlightElement.html('h' + level);
+      WatchPug.Analyze.$highlightElement.html(content);
       
       WatchPug.Analyze.$highlightElement.css({
                                           'left': targetElementOffset.left,
@@ -611,14 +724,12 @@ WatchPug.Analyze = {
                                         
       // show highlighted area
       
-      var scrollTop = targetElementOffset.top - 50 < 0 ? 0 : targetElementOffset.top - 50;
+      scrollTop = targetElementOffset.top - 50 < 0 ? 0 : targetElementOffset.top - 50;
       
       $('html, body').animate({scrollTop: scrollTop}, 300);
-      
-      
-
+    
     }
-  
+    
   },
   
   init: function() {

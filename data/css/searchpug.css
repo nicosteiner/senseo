@@ -422,6 +422,11 @@ section#components-container > section {
   color: #009900;
 }
 
+#components-table td span.info {
+  font-style: italic;
+  color: #990000;
+}
+
 section#settings-container form {
   margin: 15px;
   padding: 10px;

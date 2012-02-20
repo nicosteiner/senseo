@@ -1,6 +1,5 @@
 var WatchPug = WatchPug || {};
 
-
 // temp fake strBundle
   
 WatchPug.StrBundle = {
@@ -218,6 +217,7 @@ WatchPug.Panel = {
       }
       
     });
+    
   },
   
   getRelatedKeywords: function() {
@@ -244,17 +244,17 @@ WatchPug.Panel = {
 
   updateRelatedKeywords: function(response) {
   
-    var relatedKeywordsContainer = $('#related-keywords');
+    var relatedKeywordsContainer = $('#related-keywords'),
+        relatedKeywordsArray = response.split('\n'),
+        rHtml = '',
+        relatedKeyword,
+        i;
 
     if (relatedKeywordsContainer) {
     
-      var relatedKeywordsArray = response.split('\n');
-    
-      var rHtml = '';
+      for (i = 1; i < relatedKeywordsArray.length - 1; i += 1) {
       
-      for (var i = 1; i < relatedKeywordsArray.length - 1; i++) {
-      
-        var relatedKeyword = relatedKeywordsArray[i];
+        relatedKeyword = relatedKeywordsArray[i];
     
         if (relatedKeyword) {
     
@@ -264,7 +264,7 @@ WatchPug.Panel = {
 
       }
       
-      if (!relatedKeywordsArray || relatedKeywordsArray.length == 1) {
+      if (!relatedKeywordsArray || relatedKeywordsArray.length === 1) {
       
         rHtml += '<em>no keyword matches</em> ';
       
@@ -483,25 +483,17 @@ WatchPug.Panel = {
   
   },
   
-  renderExtraInfo: function(container, info) {
-  
-    $('#' + container).html(info);
-    
-    alert(document.getElementById(container).innerHTML);
-  
-  },
-  
   renderComponentsTable: function(componentsTable, components) {
     
-    var i;
-    
-    var componentsTableBody = $('#' + componentsTable + ' tbody');
+    var i,
+        key,
+        componentsTableBody = $('#' + componentsTable + ' tbody');
     
     // remove outdated table content
   
     componentsTableBody.empty();
   
-    for (var key in components) {
+    for (key in components) {
     
       if (key === 'body-text') {
       
@@ -513,15 +505,15 @@ WatchPug.Panel = {
       
         // one dataset
         
-        componentsTableBody.append('<tr><th>' + components[key].head + '</th><td>' + components[key].data + '</td></tr>');
+        componentsTableBody.append('<tr><th>' + components[key].head + '</th><td>' + WatchPug.Panel.markKeywordMatches(components[key].data) + '</td></tr>');
         
       } else {
       
         // multible datasets
         
-        for (i = 0; i < components[key].head.length; i++) {
+        for (i = 0; i < components[key].head.length; i += 1) {
         
-          componentsTableBody.append('<tr><th>' + components[key].head[i] + '</th><td>' + components[key].data[i] + '</td></tr>');
+          componentsTableBody.append('<tr><th>' + components[key].head[i] + '</th><td>' + WatchPug.Panel.markKeywordMatches(components[key].data[i]) + '</td></tr>');
           
         }
       
@@ -584,17 +576,18 @@ WatchPug.Panel = {
     }
   
     var highlightHeadline = $('#' + componentsTable + ' tbody .highlight-headline');
+    var highlightImage = $('#' + componentsTable + ' tbody .highlight-image');
+    var highlightMicrodata = $('#' + componentsTable + ' tbody .highlight-microdata');
   
-    // later
-    // var highlightMicroformats = $('#' + componentsTable + ' tbody .highlight');
+    var allHighlightElements = highlightHeadline.add(highlightImage).add(highlightMicrodata);
   
-    if (highlightHeadline.length) {
+    if (allHighlightElements.length) {
   
       var i;
       
-      for (i = 0; i < highlightHeadline.length; i++) {
+      for (i = 0; i < allHighlightElements.length; i++) {
   
-        $(highlightHeadline[i]).click(function(e) {
+        $(allHighlightElements[i]).click(function(e) {
         
           // second class contains pointer to data object
         
@@ -616,11 +609,6 @@ WatchPug.Panel = {
       
     }
   
-    // later
-    //var highlightMatches = $('#' + componentsTable + ' tbody .highlight-h1');
-  
-    var highlightImage = $('#' + componentsTable + ' tbody .highlight-image');
-
   },
   
   getKeywordMatches: function() {
@@ -1200,7 +1188,7 @@ WatchPug.Panel = {
       
     }
     
-    if (WatchPug.Panel.activeDocumentComponents['microdata'].data !== 'n/a') {
+    if (WatchPug.Panel.activeDocumentComponents['microdata-found'].data !== 'n/a') {
     
       WatchPug.Panel.status['content-microdata'] = 'pass';
       
