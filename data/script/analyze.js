@@ -198,7 +198,7 @@ WatchPug.Analyze = {
         
         head: 'microdata',
         
-        data: 'found (<a id="go-to-testing-tool" href="http://www.google.com/webmasters/tools/richsnippets?url=' + WatchPug.Analyze.data['location-href'].data + '">show</a>)'
+        data: 'found (<a id="go-to-testing-tool" href="http://www.google.com/webmasters/tools/richsnippets?url=' + encodeURI(WatchPug.Analyze.data['location-href'].data) + '">preview</a>)'
         
       };
       
