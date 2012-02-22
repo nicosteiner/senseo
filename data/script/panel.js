@@ -142,6 +142,8 @@ WatchPug.Panel = {
   
   setting: [],
   
+  callback: [],
+  
   tabs: ['intro', 'inspect', 'components', 'settings'],
   
   keywordsString: '',
@@ -154,64 +156,82 @@ WatchPug.Panel = {
 
     self.on('message', function(activeDocumentComponents) {
     
-      if (activeDocumentComponents.requestUrl) {
+      // is it a data message?
       
-        WatchPug.Panel.updateRelatedKeywords(activeDocumentComponents.response);
+      if (activeDocumentComponents.readData === true) {
       
-      } else if (activeDocumentComponents.head === 'sitemap.xml') {
-
-        WatchPug.Panel.activeDocumentComponents['sitemap-file'] = activeDocumentComponents;
+        // in the next version this code will be useful
       
-      } else if (activeDocumentComponents.head === 'robots.txt') {
+        /*
+        activeDocumentComponents.callback.apply({
+        
+          dataValue: activeDocumentComponents.dataValue
+        
+        });
+        */
       
-        WatchPug.Panel.activeDocumentComponents['robots-file'] = activeDocumentComponents;
-
       } else {
+    
+        if (activeDocumentComponents.requestUrl) {
+        
+          WatchPug.Panel.updateRelatedKeywords(activeDocumentComponents.response);
+        
+        } else if (activeDocumentComponents.head === 'sitemap.xml') {
 
-        // this should always be the first message when opening the panel
-      
-        WatchPug.Panel.activeDocumentComponents = activeDocumentComponents;
+          WatchPug.Panel.activeDocumentComponents['sitemap-file'] = activeDocumentComponents;
         
-      }
-      
-      // got all data? => do keyword related actions
-      
-      if (WatchPug.Panel.activeDocumentComponents['sitemap-file'] && WatchPug.Panel.activeDocumentComponents['robots-file']) {
-      
-        WatchPug.Panel.getKeywordValue();
-    
-        WatchPug.Panel.getKeywordMatches();
-    
-        WatchPug.Panel.getKeywordDensity();
-          
-        // community wants last tab to be active when panel is reopened
+        } else if (activeDocumentComponents.head === 'robots.txt') {
         
-        // check for updating active tab
-        
-        if (!$('#intro-container').hasClass('hidden')) {
-        
-          // at the moment do nothing when intro tab is active
-        
-        } else if (!$('#inspect-container').hasClass('hidden')) {
-        
-          WatchPug.Panel.handleInspectButton();
-        
-        } else if (!$('#components-container').hasClass('hidden')) {
-        
-          WatchPug.Panel.handleComponentsButton();
-        
-        } else if (!$('#settings-container').hasClass('hidden')) {
-        
-          WatchPug.Panel.handleSettingsButton();
-        
+          WatchPug.Panel.activeDocumentComponents['robots-file'] = activeDocumentComponents;
+
         } else {
 
-          // if all containers are hidden, panel is opened first time
+          // this should always be the first message when opening the panel
         
-          WatchPug.Panel.initPanel();
+          WatchPug.Panel.activeDocumentComponents = activeDocumentComponents;
           
-          WatchPug.Panel.initInputsAndButtons();
-    
+        }
+        
+        // got all data? => do keyword related actions
+        
+        if (WatchPug.Panel.activeDocumentComponents['sitemap-file'] && WatchPug.Panel.activeDocumentComponents['robots-file']) {
+        
+          WatchPug.Panel.getKeywordValue();
+      
+          WatchPug.Panel.getKeywordMatches();
+      
+          WatchPug.Panel.getKeywordDensity();
+            
+          // community wants last tab to be active when panel is reopened
+          
+          // check for updating active tab
+          
+          if (!$('#intro-container').hasClass('hidden')) {
+          
+            // at the moment do nothing when intro tab is active
+          
+          } else if (!$('#inspect-container').hasClass('hidden')) {
+          
+            WatchPug.Panel.handleInspectButton();
+          
+          } else if (!$('#components-container').hasClass('hidden')) {
+          
+            WatchPug.Panel.handleComponentsButton();
+          
+          } else if (!$('#settings-container').hasClass('hidden')) {
+          
+            WatchPug.Panel.handleSettingsButton();
+          
+          } else {
+
+            // if all containers are hidden, panel is opened first time
+          
+            WatchPug.Panel.initPanel();
+            
+            WatchPug.Panel.initInputsAndButtons();
+      
+          }
+          
         }
         
       }
@@ -358,6 +378,50 @@ WatchPug.Panel = {
       WatchPug.Panel.handleColorBlindSettings(e.target.checked);
     
     });
+    
+    // init settings
+    
+    WatchPug.Panel.readData('color-blind-friendly', WatchPug.Panel.initCBFCheckbox);
+  
+  },
+  
+  initCBFCheckbox: function(params) {
+  
+    // this is not working / propably an addon sdk bug
+    
+    // keep an eye on: https://bugzilla.mozilla.org/show_bug.cgi?id=723502
+  
+    // console.log(params.dataValue);
+  
+  },
+  
+  readData: function(dataKey, callback) {
+  
+    WatchPug.Panel.callback[dataKey] = callback;
+  
+    self.postMessage({
+    
+      command: 'read-data',
+      
+      dataKey: dataKey
+      
+    });
+  
+  },
+  
+  storeData: function(dataKey, dataValue) {
+  
+    self.postMessage({
+    
+      command: 'store-data',
+      
+      dataKey: dataKey,
+      
+      dataValue: dataValue
+      
+    });
+  
+    return true;
   
   },
   
@@ -431,12 +495,12 @@ WatchPug.Panel = {
   
   },
   
-  handleColorBlindSettings: function(checked) {
+  handleColorBlindSettings: function(isChecked) {
   
-    WatchPug.Panel.setting['color-blind-friendly'] = checked;
-  
-    //WatchPug.Panel.saveSetting('color-blind-friendly', checked);
-  
+    WatchPug.Panel.setting['color-blind-friendly'] = isChecked;
+
+    WatchPug.Panel.storeData('color-blind-friendly', isChecked);
+
   },
   
   setActiveTab: function(tab) {
@@ -487,7 +551,8 @@ WatchPug.Panel = {
     
     var i,
         key,
-        componentsTableBody = $('#' + componentsTable + ' tbody');
+        componentsTableBody = $('#' + componentsTable + ' tbody'),
+        tableRowMarkup;
     
     // remove outdated table content
   
@@ -495,30 +560,44 @@ WatchPug.Panel = {
   
     for (key in components) {
     
-      if (key === 'body-text') {
+      if (components.hasOwnProperty(key)) {
       
-        components[key].data = WatchPug.Panel.encodeMarkup(components[key].data);
+        if (key === 'body-text') {
         
-      }
-    
-      if (typeof(components[key].data) === 'string' || typeof(components[key].data) === 'number') {
-      
-        // one dataset
-        
-        componentsTableBody.append('<tr><th>' + components[key].head + '</th><td>' + WatchPug.Panel.formatOutput(components[key].data) + '</td></tr>');
-        
-      } else {
-      
-        // multible datasets
-        
-        for (i = 0; i < components[key].head.length; i += 1) {
-        
-          componentsTableBody.append('<tr><th>' + components[key].head[i] + '</th><td>' + WatchPug.Panel.formatOutput(components[key].data[i]) + '</td></tr>');
+          components[key].data = WatchPug.Panel.encodeMarkup(components[key].data);
           
         }
       
+        if (typeof(components[key].data) === 'string' || typeof(components[key].data) === 'number') {
+        
+          // one dataset
+          
+          componentsTableBody.append($('<tr>')
+                             .append($('<th>')
+                             .text(components[key].head))
+                             .append($('<td>')
+                             .append(components[key].data)
+                             ));
+          
+        } else {
+        
+          // multible datasets
+          
+          for (i = 0; i < components[key].head.length; i += 1) {
+
+            componentsTableBody.append($('<tr>')
+                               .append($('<th>')
+                               .text(components[key].head[i]))
+                               .append($('<td>')
+                               .append(components[key].data[i])
+                               ));
+            
+          }
+
+        }
+        
       }
-    
+      
     }
     
     if ($('#go-to-testing-tool')) {
@@ -575,55 +654,60 @@ WatchPug.Panel = {
       
     }
   
-    var highlightHeadline = $('#' + componentsTable + ' tbody .highlight-headline');
-    var highlightImage = $('#' + componentsTable + ' tbody .highlight-image');
-    var highlightMicrodata = $('#' + componentsTable + ' tbody .highlight-microdata');
+    WatchPug.Panel.createHighlightEvents(componentsTable);
   
-    var allHighlightElements = highlightHeadline.add(highlightImage).add(highlightMicrodata);
+  },
+  
+  createHighlightEvents: function(componentsTable) {
+  
+    var highlightHeadline = $('#' + componentsTable + ' tbody .highlight-headline'),
+        highlightImage = $('#' + componentsTable + ' tbody .highlight-image'),
+        highlightMicrodata = $('#' + componentsTable + ' tbody .highlight-microdata'),
+        allHighlightElements = highlightHeadline.add(highlightImage).add(highlightMicrodata),
+        i;
   
     if (allHighlightElements.length) {
   
-      var i;
-      
-      for (i = 0; i < allHighlightElements.length; i++) {
+      for (i = 0; i < allHighlightElements.length; i += 1) {
   
-        $(allHighlightElements[i]).click(function(e) {
-        
-          // second class contains pointer to data object
-        
-          var targetClass = e.target.className;
-          
-          self.postMessage({
-          
-            command: 'highlight-element',
-            
-            highlightInfo: targetClass
-            
-          });
-          
-          e.preventDefault();
-        
-        });
-        
+        $(allHighlightElements[i]).click(WatchPug.Panel.highlightElementCommand);
+
       }
       
     }
   
   },
   
+  highlightElementCommand: function(e) {
+  
+    e.preventDefault();
+    
+    // second class contains pointer to data object
+        
+    self.postMessage({
+    
+      command: 'highlight-element',
+      
+      highlightInfo: e.target.className
+      
+    });
+    
+  },
+  
   getKeywordMatches: function() {
 
-    var bodyData = WatchPug.Panel.activeDocumentComponents['body-text'].data;
-  
-    var matches = 0;
+    var bodyData = WatchPug.Panel.activeDocumentComponents['body-text'].data,
+        matches = 0,
+        rx,
+        i;
     
     if (bodyData && WatchPug.Panel.keywords.length) {
     
-      for (var i = 0; i < WatchPug.Panel.keywords.length; i++) {
+      for (i = 0; i < WatchPug.Panel.keywords.length; i += 1) {
       
         if (WatchPug.Panel.keywords[i] !== '') {
       
-          var rx = new RegExp(WatchPug.Panel.keywords[i], 'gi');
+          rx = new RegExp(WatchPug.Panel.keywords[i], 'gi');
           
           if (bodyData && bodyData.match && bodyData.match(rx)) {
           
@@ -653,7 +737,7 @@ WatchPug.Panel = {
   
     if (encodedMarkup && encodedMarkup.replace) {
   
-      encodedMarkup.replace(/\</g, '&lt;').replace(/\>/g, '&gt;');
+      encodedMarkup.replace(/</g, '&lt;').replace(/>/g, '&gt;');
       
     }
     
@@ -663,11 +747,12 @@ WatchPug.Panel = {
 
   getKeywordDensity: function() {
 
-    var bodyData = WatchPug.Panel.activeDocumentComponents['body-text'].data;
+    var bodyData = WatchPug.Panel.activeDocumentComponents['body-text'].data,
+        keywordDensity;
   
     if (WatchPug.Panel.activeDocumentComponents['keyword-matches']) {
   
-      var keywordDensity = Math.round(WatchPug.Panel.activeDocumentComponents['keyword-matches'].data / WatchPug.Panel.activeDocumentComponents['number-words'].data * 100 * 100) / 100;
+      keywordDensity = Math.round(WatchPug.Panel.activeDocumentComponents['keyword-matches'].data / WatchPug.Panel.activeDocumentComponents['number-words'].data * 100 * 100) / 100;
       
       WatchPug.Panel.activeDocumentComponents['keyword-density'] = {
         
@@ -683,13 +768,15 @@ WatchPug.Panel = {
 
   formatOutput: function(text) {
   
+    var i, rx;
+  
     if (text && WatchPug.Panel.keywords.length) {
     
-      for (var i = 0; i < WatchPug.Panel.keywords.length; i++) {
+      for (i = 0; i < WatchPug.Panel.keywords.length; i += 1) {
       
         if (WatchPug.Panel.keywords[i] !== '') {
       
-          var rx = new RegExp(WatchPug.Panel.keywords[i], 'gi');
+          rx = new RegExp(WatchPug.Panel.keywords[i], 'gi');
           
           if (text && text.replace && text.match(rx)) {
           
@@ -723,19 +810,20 @@ WatchPug.Panel = {
 
   similarGrade: function(text1, text2) {
 
-    var matches = 0;
+    var matches = 0,
+        i, j;
     
     if (text1 && text2) {
     
-      var text1 = text1.split(" ");
+      text1 = text1.split(" ");
       
-      var text2 = text2.split(" ");
+      text2 = text2.split(" ");
       
-      for (var i = 0; i < text1.length; i++) {
+      for (i = 0; i < text1.length; i += 1) {
       
-        for (var j = 0; j < text2.length; j++) {
+        for (j = 0; j < text2.length; j += 1) {
         
-          if (text1[i].toLowerCase() == text2[j].toLowerCase()) {
+          if (text1[i].toLowerCase() === text2[j].toLowerCase()) {
           
             matches = matches + 1;
             
@@ -755,11 +843,13 @@ WatchPug.Panel = {
 
   includesAllKeywords: function(text, keywords) {
 
+    var i, rx;
+  
     if (text && keywords) {
     
-      for (var i = 0; i < keywords.length; i++) {
+      for (i = 0; i < keywords.length; i += 1) {
       
-        var rx = new RegExp(WatchPug.Panel.trimWhitespace(keywords[i].replace(/^\W/g, ' ').replace(/\W$/g, ' ')), 'i');
+        rx = new RegExp(WatchPug.Panel.trimWhitespace(keywords[i].replace(/^\W/g, ' ').replace(/\W$/g, ' ')), 'i');
         
         if (text.match) {
         
@@ -780,11 +870,13 @@ WatchPug.Panel = {
 
   includesSomeKeywords: function(text, keywords) {
 
+    var i, rx;
+  
     if (text && keywords) {
     
-      for (var i = 0; i < keywords.length; i++) {
+      for (i = 0; i < keywords.length; i += 1) {
       
-        var rx = new RegExp(WatchPug.Panel.trimWhitespace(keywords[i].replace(/^\W/g, ' ').replace(/\W$/g, ' ')), 'i');
+        rx = new RegExp(WatchPug.Panel.trimWhitespace(keywords[i].replace(/^\W/g, ' ').replace(/\W$/g, ' ')), 'i');
         
         if (text.match) {
         
@@ -806,20 +898,22 @@ WatchPug.Panel = {
 
   calculateGrade: function(grades) {
 
+    var count, index, i, percent;
+  
     if (grades) {
     
-      var count = grades.length;
-      var index = 0;
+      count = grades.length;
+      index = 0;
       
-      for (var i = 0; i < count; i++) {
+      for (i = 0; i < count; i += 1) {
       
-        if (grades[i] == 'pass') {
+        if (grades[i] === 'pass') {
         
           index += 3;
           
         }
         
-        if (grades[i] == 'warning') {
+        if (grades[i] === 'warning') {
         
           index += 1;
           
@@ -827,45 +921,49 @@ WatchPug.Panel = {
         
       }
       
-      var percent = parseInt(index / (count * 3) * 100);
+      percent = parseInt(index / (count * 3) * 100, 10);
 
-      if (percent >= 90)
+      if (percent >= 90) {
       
         return ['A', percent];
         
-      else if (percent >= 80)
+      } else if (percent >= 80) {
       
         return ['B', percent];
         
-      else if (percent >= 70)
+      } else if (percent >= 70) {
       
         return ['C', percent];
         
-      else if (percent >= 60)
+      } else if (percent >= 60) {
       
         return ['D', percent];
         
-      else if (percent >= 50)
+      } else if (percent >= 50) {
       
         return ['E', percent];
         
-      else
+      } else {
       
         return ['F', percent];
-        
+      
+      }
+      
     }
     
   },
 
   calculateWeightedGrade: function(grades) {
 
+    var count, index, avweight, i, percent;
+  
     if (grades) {
     
-      var count = grades.length;
-      var index = 0;
-      var avweight = 0;
+      count = grades.length;
+      index = 0;
+      avweight = 0;
       
-      for (var i = 0; i < count; i++) {
+      for (i = 0; i < count; i += 1) {
       
         index = index + grades[i][0] * grades[i][1];
         
@@ -873,45 +971,58 @@ WatchPug.Panel = {
         
       }
       
-      var percent = parseInt(index / (count * 100 * (avweight / count)) * 100);
+      percent = parseInt(index / (count * 100 * (avweight / count)) * 100, 10);
 
-      if (percent > 90)
+      if (percent > 90) {
       
         return ['A', percent];
         
-      else if (percent > 80)
+      } else if (percent > 80) {
       
         return ['B', percent];
         
-      else if (percent > 70)
+      } else if (percent > 70) {
       
         return ['C', percent];
         
-      else if (percent > 60)
+      } else if (percent > 60) {
       
         return ['D', percent];
         
-      else if (percent > 50)
+      } else if (percent > 50) {
       
         return ['E', percent];
         
-      else
+      } else {
       
         return ['F', percent];
-        
+      
+      }
+      
     }
     
   },
   
   analyzeForKeyword: function() {
   
-    var keywords = WatchPug.Panel.keywords;
+    var keywords,
+        titleData, titleCount,
+        metaDescription, descriptionData,
+        robotsData, robotsFile,
+        sitemapFile,
+        h1Data, h2Data, h3Data, h4Data, h5Data, h6Data,
+        altImagesGrade,
+        hostData,
+        pathData,
+        levels;
+  
+    keywords = WatchPug.Panel.keywords;
 
-    var titleData = WatchPug.Panel.activeDocumentComponents['title'].data;
+    titleData = WatchPug.Panel.activeDocumentComponents['title-found'].data;
     
-    var titleCount = WatchPug.Panel.activeDocumentComponents['title'].count;
+    titleCount = WatchPug.Panel.activeDocumentComponents['title-found'].count;
     
-    WatchPug.Panel.found['title'] = titleData === 'n/a' ? false : true;
+    WatchPug.Panel.found.title = titleData === 'n/a' ? false : true;
     
     if (titleCount && titleCount !== 1) {
     
@@ -965,13 +1076,13 @@ WatchPug.Panel = {
       
     }
     
-    WatchPug.Panel.grade['title'] = WatchPug.Panel.calculateGrade([WatchPug.Panel.status['title-onetime'], WatchPug.Panel.status['title-includes'], WatchPug.Panel.status['title-length'], WatchPug.Panel.status['title-words']]);
+    WatchPug.Panel.grade.title = WatchPug.Panel.calculateGrade([WatchPug.Panel.status['title-onetime'], WatchPug.Panel.status['title-includes'], WatchPug.Panel.status['title-length'], WatchPug.Panel.status['title-words']]);
     
-    var metaDescription = WatchPug.Panel.activeDocumentComponents['meta-description'];
+    metaDescription = WatchPug.Panel.activeDocumentComponents['meta-description'];
     
-    var descriptionData = WatchPug.Panel.activeDocumentComponents['meta-description'].data;
+    descriptionData = WatchPug.Panel.activeDocumentComponents['meta-description'].data;
     
-    WatchPug.Panel.found['description'] = descriptionData === 'n/a' ? false : true;
+    WatchPug.Panel.found.description = descriptionData === 'n/a' ? false : true;
     
     if (metaDescription.count === 1) {
     
@@ -1025,50 +1136,50 @@ WatchPug.Panel = {
       
     }
     
-    WatchPug.Panel.grade['description'] = WatchPug.Panel.calculateGrade([WatchPug.Panel.status['description-onetime'], WatchPug.Panel.status['description-includes'], WatchPug.Panel.status['description-length'], WatchPug.Panel.status['description-words']]);
+    WatchPug.Panel.grade.description = WatchPug.Panel.calculateGrade([WatchPug.Panel.status['description-onetime'], WatchPug.Panel.status['description-includes'], WatchPug.Panel.status['description-length'], WatchPug.Panel.status['description-words']]);
     
-    var robotsData = WatchPug.Panel.activeDocumentComponents['meta-robots'];
+    robotsData = WatchPug.Panel.activeDocumentComponents['meta-robots'];
     
-    var robotsFile = WatchPug.Panel.activeDocumentComponents['robots-file'];
+    robotsFile = WatchPug.Panel.activeDocumentComponents['robots-file'];
     
     if ((robotsData && robotsData.data !== '') || (robotsFile && robotsFile.data !== 'n/a')) {
     
-      WatchPug.Panel.status['robots'] = 'pass';
+      WatchPug.Panel.status['robots-exists'] = 'pass';
       
     } else {
     
-      WatchPug.Panel.status['robots'] = 'fail';
+      WatchPug.Panel.status['robots-exists'] = 'fail';
       
     }
     
-    WatchPug.Panel.found['robots'] = WatchPug.Panel.status['robots'] === 'pass' ? true : false;
+    WatchPug.Panel.found.robots = WatchPug.Panel.status['robots-exists'] === 'pass' ? true : false;
     
-    WatchPug.Panel.grade['robots'] = WatchPug.Panel.calculateGrade([WatchPug.Panel.status['robots']]);
+    WatchPug.Panel.grade.robots = WatchPug.Panel.calculateGrade([WatchPug.Panel.status['robots-exists']]);
     
-    var sitemapFile = WatchPug.Panel.activeDocumentComponents['sitemap-file'];
+    sitemapFile = WatchPug.Panel.activeDocumentComponents['sitemap-file'];
     
     if (sitemapFile && sitemapFile.data !== 'n/a') {
     
-      WatchPug.Panel.status['sitemap'] = 'pass';
+      WatchPug.Panel.status['sitemap-exists'] = 'pass';
       
     } else {
     
-      WatchPug.Panel.status['sitemap'] = 'fail';
+      WatchPug.Panel.status['sitemap-exists'] = 'fail';
       
     }
     
-    WatchPug.Panel.found['sitemap'] = WatchPug.Panel.status['sitemap'] === 'pass' ? true : false;
+    WatchPug.Panel.found.sitemap = WatchPug.Panel.status['sitemap-exists'] === 'pass' ? true : false;
     
-    WatchPug.Panel.grade['sitemap'] = WatchPug.Panel.calculateGrade([WatchPug.Panel.status['sitemap']]);
+    WatchPug.Panel.grade.sitemap = WatchPug.Panel.calculateGrade([WatchPug.Panel.status['sitemap-exists']]);
     
-    var h1Data = WatchPug.Panel.activeDocumentComponents['headline-1'];
-    var h2Data = WatchPug.Panel.activeDocumentComponents['headline-2'];
-    var h3Data = WatchPug.Panel.activeDocumentComponents['headline-3'];
-    var h4Data = WatchPug.Panel.activeDocumentComponents['headline-4'];
-    var h5Data = WatchPug.Panel.activeDocumentComponents['headline-5'];
-    var h6Data = WatchPug.Panel.activeDocumentComponents['headline-6'];
+    h1Data = WatchPug.Panel.activeDocumentComponents['headline-1'];
+    h2Data = WatchPug.Panel.activeDocumentComponents['headline-2'];
+    h3Data = WatchPug.Panel.activeDocumentComponents['headline-3'];
+    h4Data = WatchPug.Panel.activeDocumentComponents['headline-4'];
+    h5Data = WatchPug.Panel.activeDocumentComponents['headline-5'];
+    h6Data = WatchPug.Panel.activeDocumentComponents['headline-6'];
     
-    WatchPug.Panel.found['headlines'] = h1Data || h2Data || h3Data || h4Data || h5Data || h6Data ? true : false;
+    WatchPug.Panel.found.headlines = h1Data || h2Data || h3Data || h4Data || h5Data || h6Data ? true : false;
     
     if (h1Data.missing && h2Data.missing && h3Data.missing && h4Data.missing && h5Data.missing && h6Data.missing) {
     
@@ -1118,11 +1229,10 @@ WatchPug.Panel = {
       
     }
 
-    WatchPug.Panel.grade['headlines'] = WatchPug.Panel.calculateGrade([WatchPug.Panel.status['headlines-structure'], WatchPug.Panel.status['headlines-onetime'], WatchPug.Panel.status['headlines-includes'], WatchPug.Panel.status['headlines-other']]);
+    WatchPug.Panel.grade.headlines = WatchPug.Panel.calculateGrade([WatchPug.Panel.status['headlines-structure'], WatchPug.Panel.status['headlines-onetime'], WatchPug.Panel.status['headlines-includes'], WatchPug.Panel.status['headlines-other']]);
 
-    WatchPug.Panel.found['content'] = WatchPug.Panel.activeDocumentComponents['body-text'] && WatchPug.Panel.activeDocumentComponents['body-text'] !== '' ? true : false;
+    WatchPug.Panel.found.content = WatchPug.Panel.activeDocumentComponents['body-text'] && WatchPug.Panel.activeDocumentComponents['body-text'] !== '' ? true : false;
     
-    var altImagesGrade;
     
     if (WatchPug.Panel.activeDocumentComponents['img-without-alt'].data === 0) {
     
@@ -1204,11 +1314,11 @@ WatchPug.Panel = {
       
     }
     
-    WatchPug.Panel.grade['content'] = WatchPug.Panel.calculateGrade([WatchPug.Panel.status['content-alt'], WatchPug.Panel.status['content-keywords'], WatchPug.Panel.status['content-links'], WatchPug.Panel.status['content-load-time'], WatchPug.Panel.status['content-microdata']]);
+    WatchPug.Panel.grade.content = WatchPug.Panel.calculateGrade([WatchPug.Panel.status['content-alt'], WatchPug.Panel.status['content-keywords'], WatchPug.Panel.status['content-links'], WatchPug.Panel.status['content-load-time'], WatchPug.Panel.status['content-microdata']]);
     
-    WatchPug.Panel.found['host'] = WatchPug.Panel.activeDocumentComponents['location-hostname'].data ? true : false;
+    WatchPug.Panel.found.host = WatchPug.Panel.activeDocumentComponents['location-hostname'].data ? true : false;
     
-    var hostData = WatchPug.Panel.activeDocumentComponents['location-hostname'].data;
+    hostData = WatchPug.Panel.activeDocumentComponents['location-hostname'].data;
     
     if (hostData && WatchPug.Panel.includesAllKeywords(hostData, keywords)) {
     
@@ -1244,11 +1354,11 @@ WatchPug.Panel = {
       
     }
     
-    WatchPug.Panel.grade['host'] = WatchPug.Panel.calculateGrade([WatchPug.Panel.status['host-includes'], WatchPug.Panel.status['host-idn'], WatchPug.Panel.status['host-hyphen']]);
+    WatchPug.Panel.grade.host = WatchPug.Panel.calculateGrade([WatchPug.Panel.status['host-includes'], WatchPug.Panel.status['host-idn'], WatchPug.Panel.status['host-hyphen']]);
     
-    WatchPug.Panel.found['path'] = WatchPug.Panel.activeDocumentComponents['path-name'].data ? true : false;
+    WatchPug.Panel.found.path = WatchPug.Panel.activeDocumentComponents['path-name'].data ? true : false;
     
-    var pathData = WatchPug.Panel.activeDocumentComponents['path-name'].data;
+    pathData = WatchPug.Panel.activeDocumentComponents['path-name'].data;
     
     if (pathData && pathData.length <= 65) {
     
@@ -1284,7 +1394,7 @@ WatchPug.Panel = {
       
     }
     
-    if (pathData.toLowerCase() == pathData) {
+    if (pathData.toLowerCase() === pathData) {
     
       WatchPug.Panel.status['path-lowercase'] = 'pass';
       
@@ -1294,17 +1404,17 @@ WatchPug.Panel = {
       
     }
     
-    var levels = 2;
+    levels = 2;
     
     if (pathData.match(/^\//)) {
     
-      levels++;
+      levels += 1;
       
     }
     
     if (pathData.match(/\/$/)) {
     
-      levels++;
+      levels += 1;
       
     }
     
@@ -1318,30 +1428,33 @@ WatchPug.Panel = {
       
     }
     
-    WatchPug.Panel.grade['path'] = WatchPug.Panel.calculateGrade([WatchPug.Panel.status['path-length'], WatchPug.Panel.status['path-dynparam'], WatchPug.Panel.status['path-hyphen'], WatchPug.Panel.status['path-lowercase'], WatchPug.Panel.status['path-levels']]);
+    WatchPug.Panel.grade.path = WatchPug.Panel.calculateGrade([WatchPug.Panel.status['path-length'], WatchPug.Panel.status['path-dynparam'], WatchPug.Panel.status['path-hyphen'], WatchPug.Panel.status['path-lowercase'], WatchPug.Panel.status['path-levels']]);
     
-    WatchPug.Panel.grade['weighted'] = WatchPug.Panel.calculateWeightedGrade([[WatchPug.Panel.grade['title'][1], 3], [WatchPug.Panel.grade['description'][1], 2], [WatchPug.Panel.grade['robots'][1], 1], [WatchPug.Panel.grade['sitemap'][1], 1], [WatchPug.Panel.grade['headlines'][1], 2], [WatchPug.Panel.grade['content'][1], 2], [WatchPug.Panel.grade['host'][1], 2], [WatchPug.Panel.grade['path'][1], 1]]);
+    WatchPug.Panel.grade.weighted = WatchPug.Panel.calculateWeightedGrade([[WatchPug.Panel.grade.title[1], 3], [WatchPug.Panel.grade.description[1], 2], [WatchPug.Panel.grade.robots[1], 1], [WatchPug.Panel.grade.sitemap[1], 1], [WatchPug.Panel.grade.headlines[1], 2], [WatchPug.Panel.grade.content[1], 2], [WatchPug.Panel.grade.host[1], 2], [WatchPug.Panel.grade.path[1], 1]]);
     
   },
   
   generateInspectResultMarkup: function(id, grade, titleStrBundleKey, infoUrl, found, data) {
   
-    var i;
+    var i, notFound, key, html,
+        criteriaList = '';
+    
+    notFound = found ? '' : '<span class="error"> (' + WatchPug.StrBundle.getString('al.tt.NotFound') + ')</span>';
   
-    var notFound = found ? '' : '<span class="error"> (' + WatchPug.StrBundle.getString('al.tt.NotFound') + ')</span>';
-  
-    var criteriaList = '';
+    for (key in data) {
     
-    for (var key in data) {
-    
-      criteriaList = criteriaList +
-                     '<li class="' + data[key].status + '">' +
-                     WatchPug.StrBundle.getString(data[key].strBundleKey) +
-                     '</li>';
-    
+      if (data.hasOwnProperty(key)) {
+      
+        criteriaList = criteriaList +
+                       '<li class="' + data[key].status + '">' +
+                       WatchPug.StrBundle.getString(data[key].strBundleKey) +
+                       '</li>';
+      
+      }
+      
     }
   
-    var html =
+    html =
       '<article id="inspect-results-' + id + '">' + 
       ' <div class="grade ' + grade.toLowerCase() + '">' + 
         grade + 
@@ -1361,7 +1474,7 @@ WatchPug.Panel = {
   
   showInspectResult: function() {
   
-    if (WatchPug.Panel.grade['weighted']) {
+    if (WatchPug.Panel.grade.weighted) {
     
       $('#inspect-result').removeClass('hidden');
   
@@ -1369,13 +1482,13 @@ WatchPug.Panel = {
     
       $('#inspect-keyword').html(WatchPug.Panel.keywordsString);
       
-      $('#inspect-grade').html(WatchPug.Panel.grade['weighted'][0] + ' (' + WatchPug.Panel.grade['weighted'][1] + '/100)');
+      $('#inspect-grade').html(WatchPug.Panel.grade.weighted[0] + ' (' + WatchPug.Panel.grade.weighted[1] + '/100)');
       
       // update twitter area
       
-      $('#twitter-grade').html(WatchPug.Panel.grade['weighted'][0]);
+      $('#twitter-grade').html(WatchPug.Panel.grade.weighted[0]);
       
-      $('#tweet-this').attr('href', 'http://twitter.com/home?status=' + encodeURI('I got grade ' + WatchPug.Panel.grade['weighted'][0] + ' (' + WatchPug.Panel.grade['weighted'][1] + '/100) for optimizing my website with SenSEO Firefox extension http://goo.gl/d7dp'));
+      $('#tweet-this').attr('href', 'http://twitter.com/home?status=' + encodeURI('I got grade ' + WatchPug.Panel.grade.weighted[0] + ' (' + WatchPug.Panel.grade.weighted[1] + '/100) for optimizing my website with SenSEO Firefox extension http://goo.gl/d7dp'));
       
     } else {
     
@@ -1397,7 +1510,7 @@ WatchPug.Panel = {
   
     inspectResultsContainer.html(
   
-      WatchPug.Panel.generateInspectResultMarkup('title', WatchPug.Panel.grade['title'][0], 'al.tt.UseTitleTag', 'http://sensational-seo.com/on-page-criteria.html#title', WatchPug.Panel.found['title'], {
+      WatchPug.Panel.generateInspectResultMarkup('title-found', WatchPug.Panel.grade.title[0], 'al.tt.UseTitleTag', 'http://sensational-seo.com/on-page-criteria.html#title', WatchPug.Panel.found.title, {
       
         1: {
           status: WatchPug.Panel.status['title-onetime'],
@@ -1421,7 +1534,7 @@ WatchPug.Panel = {
 
       }) +
       
-      WatchPug.Panel.generateInspectResultMarkup('description', WatchPug.Panel.grade['description'][0], 'al.tt.UseMetaDescription', 'http://sensational-seo.com/on-page-criteria.html#metadescription', WatchPug.Panel.found['description'], {
+      WatchPug.Panel.generateInspectResultMarkup('description', WatchPug.Panel.grade.description[0], 'al.tt.UseMetaDescription', 'http://sensational-seo.com/on-page-criteria.html#metadescription', WatchPug.Panel.found.description, {
       
         1: {
           status: WatchPug.Panel.status['description-onetime'],
@@ -1445,25 +1558,25 @@ WatchPug.Panel = {
 
       }) +
       
-      WatchPug.Panel.generateInspectResultMarkup('robots', WatchPug.Panel.grade['robots'][0], 'al.tt.UseMetaRobots', 'http://sensational-seo.com/on-page-criteria.html#robots', WatchPug.Panel.found['robots'], {
+      WatchPug.Panel.generateInspectResultMarkup('robots', WatchPug.Panel.grade.robots[0], 'al.tt.UseMetaRobots', 'http://sensational-seo.com/on-page-criteria.html#robots', WatchPug.Panel.found.robots, {
       
         1: {
-          status: WatchPug.Panel.status['robots'],
+          status: WatchPug.Panel.status['robots-exists'],
           strBundleKey: 'al.st.MetaRobots'
         }
         
       }) +
          
-      WatchPug.Panel.generateInspectResultMarkup('sitemap', WatchPug.Panel.grade['sitemap'][0], 'al.tt.UseSitemap', 'http://sensational-seo.com/on-page-criteria.html#robots', WatchPug.Panel.found['sitemap'], {
+      WatchPug.Panel.generateInspectResultMarkup('sitemap', WatchPug.Panel.grade.sitemap[0], 'al.tt.UseSitemap', 'http://sensational-seo.com/on-page-criteria.html#robots', WatchPug.Panel.sitemap, {
       
         1: {
-          status: WatchPug.Panel.status['sitemap'],
+          status: WatchPug.Panel.status['sitemap-exists'],
           strBundleKey: 'al.st.Sitemap'
         }
          
       }) +
       
-      WatchPug.Panel.generateInspectResultMarkup('headlines', WatchPug.Panel.grade['headlines'][0], 'al.tt.HeadlineTags', 'http://sensational-seo.com/on-page-criteria.html#headline', WatchPug.Panel.found['headlines'], {
+      WatchPug.Panel.generateInspectResultMarkup('headlines', WatchPug.Panel.grade.headlines[0], 'al.tt.HeadlineTags', 'http://sensational-seo.com/on-page-criteria.html#headline', WatchPug.Panel.found.headlines, {
       
         1: {
           status: WatchPug.Panel.status['headlines-structure'],
@@ -1487,7 +1600,7 @@ WatchPug.Panel = {
 
       }) +
       
-      WatchPug.Panel.generateInspectResultMarkup('content', WatchPug.Panel.grade['content'][0], 'al.tt.PageContent', 'http://sensational-seo.com/on-page-criteria.html#pagecontent', WatchPug.Panel.found['content'], {
+      WatchPug.Panel.generateInspectResultMarkup('content', WatchPug.Panel.grade.content[0], 'al.tt.PageContent', 'http://sensational-seo.com/on-page-criteria.html#pagecontent', WatchPug.Panel.found.content, {
       
         1: {
           status: 'neutral',
@@ -1536,7 +1649,7 @@ WatchPug.Panel = {
 
       }) +
       
-      WatchPug.Panel.generateInspectResultMarkup('host', WatchPug.Panel.grade['host'][0], 'al.tt.Domain', 'http://sensational-seo.com/on-page-criteria.html#domain', WatchPug.Panel.found['host'], {
+      WatchPug.Panel.generateInspectResultMarkup('host', WatchPug.Panel.grade.host[0], 'al.tt.Domain', 'http://sensational-seo.com/on-page-criteria.html#domain', WatchPug.Panel.found.host, {
       
         1: {
           status: WatchPug.Panel.status['host-includes'],
@@ -1565,7 +1678,7 @@ WatchPug.Panel = {
 
       }) +
       
-      WatchPug.Panel.generateInspectResultMarkup('path', WatchPug.Panel.grade['path'][0], 'al.tt.Path', 'http://sensational-seo.com/on-page-criteria.html#path', WatchPug.Panel.found['path'], {
+      WatchPug.Panel.generateInspectResultMarkup('path', WatchPug.Panel.grade.path[0], 'al.tt.Path', 'http://sensational-seo.com/on-page-criteria.html#path', WatchPug.Panel.found.path, {
       
         1: {
           status: WatchPug.Panel.status['path-length'],

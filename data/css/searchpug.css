@@ -427,6 +427,11 @@ section#components-container > section {
   color: #990000;
 }
 
+#components-table td a {
+  display: inline-block;
+  margin-left: 4px;
+}
+
 section#settings-container form {
   margin: 15px;
   padding: 10px;
