@@ -17,7 +17,8 @@
       <!--<button class="blue-pill" id="printview-button"></button>-->
       <div class="fb-like" data-href="http://www.sensational-seo.com" data-send="false" data-layout="button_count" data-width="80" data-show-faces="false" data-action="recommend" data-font="arial"></div>
       <!--<button class="blue-pill" id="help-button">?</button>-->
-      <button class="blue-pill" id="bug-button"><img src="img/bug.png"></button>
+      <!--<button class="blue-pill" id="badges-button"><img src="img/badges.png"></button>-->
+      <a href="https://getsatisfaction.com/senseo" target="blank" class="blue-pill" id="bug-button"><img src="img/bug.png"></a>
       <button class="blue-pill" id="settings-button"><img src="img/settings.png"></button>
     </header>
     <section id="intro-container" class="hidden">
@@ -67,22 +68,25 @@
       </div>
     </section>
     <section id="inspect-result" class="hidden">
-      <span id="searchpug-grade"></span>: <strong id="inspect-grade"></strong>
-      <span id="marketing-container">
-        <img src="img/twitter-icon.png" class="icon">
-        <a href="http://twitter.com/home" target="blank" id="tweet-this">Tweet this result!</a>
-        <a href="https://addons.mozilla.org/en-US/firefox/addon/senseo/reviews/add" target="blank" id="write-review">Write a review</a>
-        <a href="https://flattr.com/thing/131532/SenSEO-Firefox-Extension" target="blank" id="flattr-button">
-          <img src="img/flattr-badge.png" alt="Click to flattr">
-        </a>
-      </span>
+      <span id="inspect-result-ongoing" class="hidden">Analyzing page... <img src="img/roller.gif"></span>
+      <div id="inspect-result-ready" class="hidden">
+        <span id="searchpug-grade"></span>: <strong id="inspect-grade"></strong>
+        <span id="marketing-container">
+          <img src="img/twitter-icon.png" class="icon">
+          <a href="http://twitter.com/home" target="blank" id="tweet-this">Tweet this result!</a>
+          <a href="https://addons.mozilla.org/en-US/firefox/addon/senseo/reviews/add" target="blank" id="write-review">Write a review</a>
+          <a href="https://flattr.com/thing/131532/SenSEO-Firefox-Extension" target="blank" id="flattr-button">
+            <img src="img/flattr-badge.png" alt="Click to flattr">
+          </a>
+        </span>
+      </div>
     </section>
     <section id="inspect-container" class="hidden">
       <section>
         <div id="inspect-related">
           Related keywords (<a href="http://semrush.com/?ref=127854755" target="blank">get more suggestions</a>): <span id="related-keywords"><img src="img/roller.gif"></span>
         </div>
-        <div id="inspect-results">
+        <div id="inspect-results" class="hidden">
         </div>
       </section>
     </section>
@@ -116,6 +120,29 @@
           </dl>
         </fieldset>
       </form>
+    </section>
+    <section id="badges-container" class="hidden">
+      <div class="dialog">
+        <h2>Your badges:</h2>
+        <ul>
+          <li id="badge-grade-a" class="grade-a"><span>Grade A</span></li>
+          <li id="badge-used-10" class="used-10"><span>10</span></li>
+          <li id="badge-plus-25" class="plus-25"><span>25</span></li>
+          <li id="badge-add-canonical" class="add-canonical"><span>Canonical</span></li>
+          <li id="badge-poweruser" class="poweruser"><span>Poweruser</span></li>
+          <li id="badge-plus-50" class="plus-50"><span>50</span></li>
+          <li id="badge-used-100" class="used-100"><span>100</span></li>
+          <li id="badge-twitter" class="twitter"><span>Twitter</span></li>
+          <li id="badge-add-sitemap" class="add-sitemap"><span>Sitemap</span></li>
+          <li id="badge-crawl-site" class="crawl-site"><span>Crawl</span></li>
+          <li id="badge-used-25" class="used-25"><span>25</span></li>
+          <li id="badge-add-robots" class="add-robots"><span>Robots</span></li>
+          <li id="badge-paypal" class="paypal"><span>Paypal</span></li>
+          <li id="badge-used-50" class="used-50"><span>50</span></li>
+          <li id="badge-add-microdata" class="add-microdata"><span>Microdata</span></li>
+          <li id="badge-pageload-time" class="pageload-time"><span>Faster</span></li>
+        </ul>
+      </div>
     </section>
     <script>(function(d, s, id) {
       var js, fjs = d.getElementsByTagName(s)[0];

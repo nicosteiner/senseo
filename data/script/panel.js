@@ -32,6 +32,7 @@ WatchPug.StrBundle = {
     'sc.MetaRobots': 'meta robots',
     'sc.RobotsTxt': 'robots.txt',
     'sc.SitemapXml': 'sitemap.xml',
+    
     'sc.LevelHeadline': 'level headline',
     'sc.Image': 'image',
     'sc.LinksWithoutTitle': 'Links without Title',
@@ -89,13 +90,15 @@ WatchPug.StrBundle = {
     'al.st.Sitemap': 'Offer a sitemap and submit it with Google Webmaster Tools.',
 
     'al.st.HeadlinesStructure': 'Use headings to structure your content.',
-    'al.st.HeadlinesOnetime': 'Use &lt;h1&gt; only one time.',
-    'al.st.HeadlinesInclude': '&lt;h1&gt; should include all keywords.',
-    'al.st.HeadlinesOther': 'Use &lt;h2&gt; and &lt;h3&gt; tags.',
+    'al.st.HeadlinesOnetime': 'Use <h1> only one time.',
+    'al.st.HeadlinesInclude': '<h1> should include all keywords.',
+    'al.st.HeadlinesOther': 'Use <h2> and <h3> tags.',
 
     'al.st.ContentUnique': 'Offer unique content on your page.',
     'al.st.ContentDuplicate': 'Prevent duplicate content.',
     'al.st.ContentAlt': 'Images should always have alternative texts.',
+    'al.st.ContentPictureQuality': 'Improve the quality of your pictures (resolution, pixel).',
+    'al.st.ContentForImages': 'Surround your images with suitable content like headlines or paragraphs.',
     'al.st.ContentStyle': 'Write your content in a clear and natural style.',
     'al.st.ContentKeywords': 'Mention your keywords a few times.',
     'al.st.ContentLinks': 'Keep the links to a reasonable number (fewer than 100).',
@@ -105,6 +108,7 @@ WatchPug.StrBundle = {
     'al.st.HostHyphen': 'Use hyphens instead of underscores to seperate words.',
     'al.st.Host2Years': 'Your domain should be older than 2 years.',
     'al.st.HostSelf': 'Selfhost your domain to improve authority.',
+    'al.st.HostRedirect': 'Redirect non-www domains to www domains or the other way round.',
 
     'al.st.PathLength': 'Try to keep the path short.',
     'al.st.PathDynparam': 'Don\'t use dynamic parameters.',
@@ -152,125 +156,388 @@ WatchPug.Panel = {
 
   requestKeyword: '',
   
+  processedDomainAge: false,
+  
+  processedRobotsFile: false,
+  
+  processedSitemapFile: false,
+  
+  processedValidationResult: false,
+  
+  forceAsyncDataIsReady: false,
+  
+  forceAsyncDataIsReady: false,
+  
+  inspectOngoing: true,
+  
   init: function() {
 
-    self.on('message', function(activeDocumentComponents) {
+    // init panel instantly for faster user experience
+
+    if ($('#intro-container').hasClass('hidden') &&
+        $('#inspect-container').hasClass('hidden') &&
+        $('#components-container').hasClass('hidden') &&
+        $('#settings-container').hasClass('hidden')) {
+      
+      // if all containers are hidden, panel is opened first time
     
-      // is it a data message?
+      WatchPug.Panel.initPanel();
       
-      if (activeDocumentComponents.readData === true) {
+      WatchPug.Panel.initInputsAndButtons();
       
-        // in the next version this code will be useful
-      
-        /*
-        activeDocumentComponents.callback.apply({
-        
-          dataValue: activeDocumentComponents.dataValue
-        
-        });
-        */
-      
-      } else {
+    }
     
-        if (activeDocumentComponents.requestUrl) {
-        
-          WatchPug.Panel.updateRelatedKeywords(activeDocumentComponents.response);
-        
-        } else if (activeDocumentComponents.head === 'sitemap.xml') {
+    // reset UI when panel is opened
+    
+    self.port.on('resetUI', function handleValidatePageEvent() {
 
-          WatchPug.Panel.activeDocumentComponents['sitemap-file'] = activeDocumentComponents;
-        
-        } else if (activeDocumentComponents.head === 'robots.txt') {
-        
-          WatchPug.Panel.activeDocumentComponents['robots-file'] = activeDocumentComponents;
-
-        } else {
-
-          // this should always be the first message when opening the panel
-        
-          WatchPug.Panel.activeDocumentComponents = activeDocumentComponents;
-          
-        }
-        
-        // got all data? => do keyword related actions
-        
-        if (WatchPug.Panel.activeDocumentComponents['sitemap-file'] && WatchPug.Panel.activeDocumentComponents['robots-file']) {
-        
-          WatchPug.Panel.getKeywordValue();
+      WatchPug.Panel.resetUI();
+    
+      // asynch data needs longer (is set to true by getResponseText port)
       
-          WatchPug.Panel.getKeywordMatches();
+      WatchPug.Panel.resetAsyncProcess();
       
-          WatchPug.Panel.getKeywordDensity();
-            
-          // community wants last tab to be active when panel is reopened
-          
-          // check for updating active tab
-          
-          if (!$('#intro-container').hasClass('hidden')) {
-          
-            // at the moment do nothing when intro tab is active
-          
-          } else if (!$('#inspect-container').hasClass('hidden')) {
-          
-            WatchPug.Panel.handleInspectButton();
-          
-          } else if (!$('#components-container').hasClass('hidden')) {
-          
-            WatchPug.Panel.handleComponentsButton();
-          
-          } else if (!$('#settings-container').hasClass('hidden')) {
-          
-            WatchPug.Panel.handleSettingsButton();
-          
-          } else {
+    });
+    
+    // asynchronously fetched markup data lands here
 
-            // if all containers are hidden, panel is opened first time
-          
-            WatchPug.Panel.initPanel();
-            
-            WatchPug.Panel.initInputsAndButtons();
+    self.port.on('getResponseText', function handleValidatePageEvent(data) {
       
-          }
-          
-        }
+      // manual switch for different responses
+      
+      if (data.key === 'domain-age') {
+      
+        WatchPug.Panel.processDomainAge(data);
+        
+        WatchPug.Panel.processedDomainAge = true;
+      
+      } else if (data.key === 'robots-file') {
+      
+        WatchPug.Panel.processRobotsFile(data);
+      
+        WatchPug.Panel.processedRobotsFile = true;
+      
+      } else if (data.key === 'sitemap-file') {
+
+        WatchPug.Panel.processSitemapFile(data);
+      
+        WatchPug.Panel.processedSitemapFile = true;
+      
+      } else if (data.key === 'validation-result') {
+
+        WatchPug.Panel.processValidationResult(data);
+      
+        WatchPug.Panel.processedValidationResult = true;
+      
+      } else if (data.key === 'related-keywords') {
+
+        WatchPug.Panel.processRelatedKeywords(data);
+      
+      }
+      
+      if (data.key !== 'related-keywords' && WatchPug.Panel.asyncDataIsReady()) {
+      
+        WatchPug.Panel.showInspectResultPre();
         
       }
+      
+    });
+  
+    self.on('message', function(activeDocumentComponents) {
+    
+      WatchPug.Panel.activeDocumentComponents = activeDocumentComponents;
+      
+      // init UI
+      
+      WatchPug.Panel.getKeywordValue();
+  
+      WatchPug.Panel.getKeywordMatches();
+  
+      WatchPug.Panel.getKeywordDensity();
+      
+      // community wants last tab to be active when panel is reopened
+      
+      // check for updating analyze data related active tab
+      
+      if (!$('#inspect-container').hasClass('hidden')) {
+      
+        WatchPug.Panel.handleInspectButton();
+      
+      } else if (!$('#components-container').hasClass('hidden')) {
+      
+        WatchPug.Panel.handleComponentsButton();
+      
+      }
+      
+      // after 3 seconds force async data readiness
+
+      window.setTimeout(function() {
+      
+        if (WatchPug.Panel.inspectOngoing) {
+      
+          console.log("force!");
+        
+          WatchPug.Panel.forceAsyncDataIsReady = true;
+          
+          WatchPug.Panel.showInspectResultPre();
+          
+        }
+      
+      }, 4000);
       
     });
     
   },
   
+  asyncDataIsReady: function(force) {
+
+    if (WatchPug.Panel.forceAsyncDataIsReady || (
+        WatchPug.Panel.processedDomainAge &&
+        WatchPug.Panel.processedRobotsFile &&
+        WatchPug.Panel.processedSitemapFile &&
+        WatchPug.Panel.processedValidationResult)) {
+      
+      return true;
+      
+    } else {
+    
+      return false;
+      
+    }
+    
+  },
+
+  showInspectResultPre: function() {
+  
+    // always show senseo grade
+    
+    WatchPug.Panel.analyzeForKeyword();
+  
+    WatchPug.Panel.showSenSEOGrade();
+  
+    if (WatchPug.Panel.inspectButtonIsWaiting) {
+    
+      WatchPug.Panel.inspectButtonIsWaiting = false;
+    
+      WatchPug.Panel.showInspectResult();
+
+    }
+    
+  },
+
+  resetUI: function() {
+  
+    self.postMessage({
+    
+      command: 'highlight-element',
+      
+      highlightInfo: 'remove-highlight-element none'
+      
+    });
+    
+    // show / hide specific containers
+    
+    $('#inspect-related').addClass('hidden');
+    
+    $('#inspect-results').addClass('hidden');
+
+    WatchPug.Panel.inspectResultOngoing();
+  
+  },
+  
+  inspectResultOngoing: function() {
+  
+    WatchPug.Panel.inspectOngoing = true;
+  
+    // show active loading indicator
+  
+    $('#inspect-result-ongoing').removeClass('hidden');
+    
+    $('#inspect-result-ready').addClass('hidden');
+  
+  },
+    
+  inspectResultReady: function() {
+  
+    WatchPug.Panel.inspectOngoing = false;
+  
+    // show inspect result
+  
+    $('#inspect-result-ongoing').addClass('hidden');
+  
+    $('#inspect-result-ready').removeClass('hidden');
+  
+  },
+    
+  resetAsyncProcess: function() {
+  
+    WatchPug.Panel.processedDomainAge = false;
+    WatchPug.Panel.processedRobotsFile = false;
+    WatchPug.Panel.processedSitemapFile = false;
+    WatchPug.Panel.processedValidationResult = false;
+    WatchPug.Panel.processedRelatedKeywords = false;
+    
+    WatchPug.Panel.forceAsyncDataIsReady = false;
+    
+  },
+
+  processRobotsFile: function(data) {
+  
+    var url = data.url,
+        status = data.status;
+  
+    if (status === 200) {
+  
+      WatchPug.Panel.activeDocumentComponents['robots-file']
+        .data = $('<div>').text('found').append($('<a>').attr({
+                  'href': url,
+                  'target': 'blank'
+                }).text('show').clone()).html();
+                
+      // update components table
+      
+      $('#robots-file').empty().append(WatchPug.Panel.activeDocumentComponents['robots-file'].data);
+
+    }
+  
+  },
+  
+  processSitemapFile: function(data) {
+  
+    var url = data.url,
+        status = data.status;
+  
+    if (status === 200) {
+  
+      WatchPug.Panel.activeDocumentComponents['sitemap-file']
+        .data = $('<div>').text('found').append($('<a>').attr({
+                  'href': url,
+                  'target': 'blank'
+                }).text('show').clone()).html();
+      
+      $('#sitemap-file').empty().append(WatchPug.Panel.activeDocumentComponents['sitemap-file'].data);
+
+    }
+  
+  },
+  
+  processDomainAge: function(data) {
+  
+    var url = data.url,
+        status = data.status,
+        responseText = data.text,
+        domainAge,
+        a, b, c, d;
+  
+    if (status === 200) {
+  
+      // jquery .clone().html() hack doesn't work for waybackmachine.org
+      
+      // parse manually
+      
+      a = responseText.indexOf('<p class="wbThis">');
+      
+      b = responseText.substring(a, responseText.length).indexOf('<a href="http://web.archive.org');
+      
+      c = a + b;
+      
+      d = responseText.substring(c + 1, responseText.length);
+      
+      domainAge = d.substring(d.indexOf('>') + 1, d.indexOf('</a>'));
+      
+      WatchPug.Panel.activeDocumentComponents['domain-age']
+        .data = $('<div>').text($.trim(domainAge) + ' ').append($('<a>').attr({
+                  'href': url,
+                  'target': 'blank'
+                }).text('show').clone()).html();
+      
+      $('#domain-age').empty().append(WatchPug.Panel.activeDocumentComponents['domain-age'].data);
+      
+    }
+    
+  },
+  
+  processValidationResult: function(data) {
+  
+    var url = data.url,
+        status = data.status,
+        responseText = data.text,
+        validatorW3orgDOM, validResult, invalidResult;
+  
+    if (status === 200) {
+  
+      validatorW3orgDOM = $('<div>')
+                        .append(responseText).clone();
+                              
+      // get validation result
+      
+      validResult = $(validatorW3orgDOM).find('table.header td.valid').text();
+    
+      invalidResult = $(validatorW3orgDOM).find('table.header td.invalid').text();
+      
+      // set new data value (result with link to W3C validator)
+      
+      if (validResult) {
+      
+        WatchPug.Panel.activeDocumentComponents['validation-result']
+          .data = $('<div>').text('valid: ' + $.trim(validResult)).append($('<a>').attr({
+                    'href': url,
+                    'target': 'blank'
+                  }).text('show').clone()).html();
+
+      }
+    
+      if (invalidResult) {
+      
+        WatchPug.Panel.activeDocumentComponents['validation-result']
+          .data = $('<div>').text('invalid: ' + $.trim(invalidResult)).append($('<a>').attr({
+                    'href': url,
+                    'target': 'blank'
+                  }).text('show').clone()).html();
+    
+      }
+      
+      $('#validation-result').empty().append(WatchPug.Panel.activeDocumentComponents['validation-result'].data);
+
+    }
+  
+  },
+  
   getRelatedKeywords: function() {
+  
+    var url;
   
     if (WatchPug.Panel.keywordsString !== '' && WatchPug.Panel.keywordsString !== WatchPug.Panel.requestKeyword) {
       
       WatchPug.Panel.requestKeyword = WatchPug.Panel.keywordsString;
       
+      url = 'http://us.api.semrush.com/?action=report&type=phrase_related&key=89a72d6e1c56ce52a7eaf077907304e8&display_limit=10&export=api&export_columns=Ph&phrase=' + encodeURI(WatchPug.Panel.keywordsString);
+
       // show loading indicator until response is ready
       
       $('#related-keywords').html = '<img src="img/roller.gif">';
       
-      self.postMessage({
+      // this goes to main.js and from there back to panel.js
       
-        command: 'request-url',
-        
-        url: 'http://us.api.semrush.com/?action=report&type=phrase_related&key=89a72d6e1c56ce52a7eaf077907304e8&display_limit=10&export=api&export_columns=Ph&phrase=' + encodeURI(WatchPug.Panel.keywordsString)
-        
-      });
-      
+      self.port.emit('getResponseText', 'related-keywords', url);
+    
     }
       
   },
 
-  updateRelatedKeywords: function(response) {
+  processRelatedKeywords: function(data) {
   
     var relatedKeywordsContainer = $('#related-keywords'),
-        relatedKeywordsArray = response.split('\n'),
+        status = data.status,
+        text = data.text,
+        relatedKeywordsArray,
         rHtml = '',
         relatedKeyword,
         i;
 
-    if (relatedKeywordsContainer) {
+    if (status === 200 && relatedKeywordsContainer) {
+    
+      relatedKeywordsArray = text.split('\n');
     
       for (i = 1; i < relatedKeywordsArray.length - 1; i += 1) {
       
@@ -278,7 +545,7 @@ WatchPug.Panel = {
     
         if (relatedKeyword) {
     
-          rHtml += '<em>' + relatedKeyword + '</em> ';
+          rHtml = rHtml + $('<div>').append($('<em>').text(relatedKeyword).clone()).html();
           
         }
 
@@ -311,7 +578,7 @@ WatchPug.Panel = {
     $('#components-button').html(WatchPug.StrBundle.getString('console.ShowComponents'));
     $('#printview-button').html(WatchPug.StrBundle.getString('console.Printview'));
 
-    $('#keyword-input').blur(function(e) {
+    $('#keyword-input').blur(function() {
       
       WatchPug.Panel.hideSpeechBubble();
     
@@ -357,9 +624,7 @@ WatchPug.Panel = {
   
     });
   
-    $('#bug-button').click(function(e) {
-        
-      e.preventDefault();
+    $('#bug-button').click(function() {
       
       WatchPug.Panel.handleBugButton();
   
@@ -379,19 +644,21 @@ WatchPug.Panel = {
     
     });
     
-    // init settings
+    // init settings later
     
-    WatchPug.Panel.readData('color-blind-friendly', WatchPug.Panel.initCBFCheckbox);
+    // WatchPug.Panel.readData('color-blind-friendly', WatchPug.Panel.initCBFCheckbox);
   
   },
   
+  // this is not working / propably an addon sdk bug
+  
+  // keep an eye on: https://bugzilla.mozilla.org/show_bug.cgi?id=723502
+
+  /*
+  
   initCBFCheckbox: function(params) {
   
-    // this is not working / propably an addon sdk bug
-    
-    // keep an eye on: https://bugzilla.mozilla.org/show_bug.cgi?id=723502
-  
-    // console.log(params.dataValue);
+    console.log(params.dataValue);
   
   },
   
@@ -425,6 +692,8 @@ WatchPug.Panel = {
   
   },
   
+  */
+  
   getKeywordValue: function() {
   
     WatchPug.Panel.keywordsString = $('#keyword-input').val();
@@ -441,10 +710,18 @@ WatchPug.Panel = {
       
       WatchPug.Panel.getRelatedKeywords();
       
-      WatchPug.Panel.analyzeForKeyword();
+      WatchPug.Panel.inspectButtonIsWaiting = true;
       
-      WatchPug.Panel.showInspectResult();
-  
+      // wait until async data is ready
+      
+      // if asyncDataIsReady is false, getResponseText message will show inspect result later
+      
+      if (WatchPug.Panel.asyncDataIsReady()) {
+      
+        WatchPug.Panel.showInspectResultPre();
+        
+      }
+      
     } else {
     
       $('#keyword-input').addClass('required');
@@ -460,6 +737,16 @@ WatchPug.Panel = {
   handleComponentsButton: function() {
   
     WatchPug.Panel.setActiveTab('components');
+    
+    if (WatchPug.Panel.keywordsString !== '') {
+  
+      if (WatchPug.Panel.asyncDataIsReady()) {
+      
+        WatchPug.Panel.showInspectResultPre();
+        
+      }
+      
+    }
     
     WatchPug.Panel.renderComponentsTable('components-table', WatchPug.Panel.activeDocumentComponents);
   
@@ -479,14 +766,6 @@ WatchPug.Panel = {
   
   handleBugButton: function() {
   
-    self.postMessage({
-    
-      command: 'open-tab',
-      
-      url: 'http://getsatisfaction.com/senseo'
-      
-    });
-  
   },
   
   handleSettingsButton: function() {
@@ -499,7 +778,9 @@ WatchPug.Panel = {
   
     WatchPug.Panel.setting['color-blind-friendly'] = isChecked;
 
-    WatchPug.Panel.storeData('color-blind-friendly', isChecked);
+    // later
+    
+    // WatchPug.Panel.storeData('color-blind-friendly', isChecked);
 
   },
   
@@ -507,6 +788,8 @@ WatchPug.Panel = {
   
     var i;
   
+    $('#inspect-result').removeClass('hidden');
+    
     for (i = 0; i < WatchPug.Panel.tabs.length; i += 1) {
     
       if (WatchPug.Panel.tabs[i] === tab) {
@@ -551,8 +834,7 @@ WatchPug.Panel = {
     
     var i,
         key,
-        componentsTableBody = $('#' + componentsTable + ' tbody'),
-        tableRowMarkup;
+        componentsTableBody = $('#' + componentsTable + ' tbody');
     
     // remove outdated table content
   
@@ -576,7 +858,7 @@ WatchPug.Panel = {
                              .append($('<th>')
                              .text(components[key].head))
                              .append($('<td>')
-                             .append(components[key].data)
+                             .append(WatchPug.Panel.formatOutput(components[key].data))
                              ));
           
         } else {
@@ -589,7 +871,7 @@ WatchPug.Panel = {
                                .append($('<th>')
                                .text(components[key].head[i]))
                                .append($('<td>')
-                               .append(components[key].data[i])
+                               .append(WatchPug.Panel.formatOutput(components[key].data[i]))
                                ));
             
           }
@@ -600,60 +882,6 @@ WatchPug.Panel = {
       
     }
     
-    if ($('#go-to-testing-tool')) {
-  
-      $('#go-to-testing-tool').click(function(e) {
-      
-        e.preventDefault();
-      
-        self.postMessage({
-        
-          command: 'open-tab',
-          
-          url: e.target.href
-          
-        });
-        
-      });
-    
-    }
-    
-    if ($('#show-robots')) {
-  
-      $('#show-robots').click(function(e) {
-      
-        e.preventDefault();
-      
-        self.postMessage({
-        
-          command: 'open-tab',
-          
-          url: e.target.href
-          
-        });
-        
-      });
-      
-    }
-  
-    if ($('#show-sitemap')) {
-  
-      $('#show-sitemap').click(function(e) {
-      
-        self.postMessage({
-        
-          command: 'open-tab',
-          
-          url: e.target.href
-          
-        });
-        
-        e.preventDefault();
-      
-      });
-      
-    }
-  
     WatchPug.Panel.createHighlightEvents(componentsTable);
   
   },
@@ -683,7 +911,7 @@ WatchPug.Panel = {
     e.preventDefault();
     
     // second class contains pointer to data object
-        
+    
     self.postMessage({
     
       command: 'highlight-element',
@@ -747,8 +975,7 @@ WatchPug.Panel = {
 
   getKeywordDensity: function() {
 
-    var bodyData = WatchPug.Panel.activeDocumentComponents['body-text'].data,
-        keywordDensity;
+    var keywordDensity;
   
     if (WatchPug.Panel.activeDocumentComponents['keyword-matches']) {
   
@@ -768,7 +995,7 @@ WatchPug.Panel = {
 
   formatOutput: function(text) {
   
-    var i, rx;
+    var i, rx, replaceString, markupIndex, textExtract, textMarkup, formattedOutput;
   
     if (text && WatchPug.Panel.keywords.length) {
     
@@ -780,7 +1007,22 @@ WatchPug.Panel = {
           
           if (text && text.replace && text.match(rx)) {
           
-            text = text.replace(rx, '<span class="match">' + WatchPug.Panel.keywords[i] + '</span>');
+            replaceString = $('<div>')
+                            .append($('<span>')
+                            .attr('class', 'match')
+                            .text(WatchPug.Panel.keywords[i]).clone()).html();
+
+            // extract only text and no markup
+            
+            markupIndex = text.indexOf('<');
+            
+            textExtract = markupIndex >= 0 ? text.substr(0, markupIndex) : text;
+
+            textMarkup = markupIndex >= 0 ? text.substr(markupIndex, text.length - markupIndex) : '';
+            
+            formattedOutput = textExtract.replace(rx, replaceString);
+            
+            text = formattedOutput + textMarkup;
             
           }
           
@@ -792,7 +1034,10 @@ WatchPug.Panel = {
     
     if (text && text === 'n/a') {
     
-      text = '<span class="info">' + text + '</span>';
+      text = $('<div>')
+             .append($('<span>')
+             .attr('class', 'info')
+             .text(text).clone()).html();
     
     }
     
@@ -1013,6 +1258,7 @@ WatchPug.Panel = {
         h1Data, h2Data, h3Data, h4Data, h5Data, h6Data,
         altImagesGrade,
         hostData,
+        domainAge,
         pathData,
         levels;
   
@@ -1142,7 +1388,7 @@ WatchPug.Panel = {
     
     robotsFile = WatchPug.Panel.activeDocumentComponents['robots-file'];
     
-    if ((robotsData && robotsData.data !== '') || (robotsFile && robotsFile.data !== 'n/a')) {
+    if ((robotsData && robotsData.data !== '') || (robotsFile && robotsFile.data.indexOf('>n/a<') < 0)) {
     
       WatchPug.Panel.status['robots-exists'] = 'pass';
       
@@ -1158,7 +1404,7 @@ WatchPug.Panel = {
     
     sitemapFile = WatchPug.Panel.activeDocumentComponents['sitemap-file'];
     
-    if (sitemapFile && sitemapFile.data !== 'n/a') {
+    if (sitemapFile && sitemapFile.data.indexOf('>n/a<') < 0) {
     
       WatchPug.Panel.status['sitemap-exists'] = 'pass';
       
@@ -1314,11 +1560,33 @@ WatchPug.Panel = {
       
     }
     
+    if (WatchPug.Panel.activeDocumentComponents['validation-result'].data.toLowerCase().indexOf('passed') >= 0) {
+    
+      // result starts with valid
+    
+      WatchPug.Panel.status['content-validation'] = 'pass';
+      
+    } else if (WatchPug.Panel.activeDocumentComponents['validation-result'].data.toLowerCase().indexOf('0 errors') >= 0) {
+    
+      // result contains no errors but is invalid
+    
+      WatchPug.Panel.status['content-validation'] = 'warning';
+      
+    } else {
+    
+      // result contains errors and is invalid
+    
+      WatchPug.Panel.status['content-validation'] = 'fail';
+      
+    }
+    
     WatchPug.Panel.grade.content = WatchPug.Panel.calculateGrade([WatchPug.Panel.status['content-alt'], WatchPug.Panel.status['content-keywords'], WatchPug.Panel.status['content-links'], WatchPug.Panel.status['content-load-time'], WatchPug.Panel.status['content-microdata']]);
     
     WatchPug.Panel.found.host = WatchPug.Panel.activeDocumentComponents['location-hostname'].data ? true : false;
     
     hostData = WatchPug.Panel.activeDocumentComponents['location-hostname'].data;
+    
+    domainAge = parseInt((new Date()).getFullYear(), 10) - parseInt(WatchPug.Panel.activeDocumentComponents['domain-age'].data.split(' ')[2], 10);
     
     if (hostData && WatchPug.Panel.includesAllKeywords(hostData, keywords)) {
     
@@ -1354,7 +1622,21 @@ WatchPug.Panel = {
       
     }
     
-    WatchPug.Panel.grade.host = WatchPug.Panel.calculateGrade([WatchPug.Panel.status['host-includes'], WatchPug.Panel.status['host-idn'], WatchPug.Panel.status['host-hyphen']]);
+    if (domainAge >= 2) {
+    
+      WatchPug.Panel.status['host-age'] = 'pass';
+      
+    } else if (domainAge >= 1) {
+    
+      WatchPug.Panel.status['host-age'] = 'warning';
+      
+    } else {
+    
+      WatchPug.Panel.status['host-age'] = 'fail';
+      
+    }
+    
+    WatchPug.Panel.grade.host = WatchPug.Panel.calculateGrade([WatchPug.Panel.status['host-includes'], WatchPug.Panel.status['host-idn'], WatchPug.Panel.status['host-hyphen'], WatchPug.Panel.status['host-age']]);
     
     WatchPug.Panel.found.path = WatchPug.Panel.activeDocumentComponents['path-name'].data ? true : false;
     
@@ -1436,48 +1718,56 @@ WatchPug.Panel = {
   
   generateInspectResultMarkup: function(id, grade, titleStrBundleKey, infoUrl, found, data) {
   
-    var i, notFound, key, html,
+    var notFound, key, html,
         criteriaList = '';
     
-    notFound = found ? '' : '<span class="error"> (' + WatchPug.StrBundle.getString('al.tt.NotFound') + ')</span>';
-  
+    notFound = found ? '' : $('<div>')
+                            .append($('<span>')
+                            .attr('class', 'error')
+                            .text(' (' + WatchPug.StrBundle.getString('al.tt.NotFound') + ')').clone()).html();
+    
+    
     for (key in data) {
     
       if (data.hasOwnProperty(key)) {
       
-        criteriaList = criteriaList +
-                       '<li class="' + data[key].status + '">' +
-                       WatchPug.StrBundle.getString(data[key].strBundleKey) +
-                       '</li>';
+        criteriaList = criteriaList + $('<div>')
+                                      .append($('<li>')
+                                      .attr('class', data[key].status)
+                                      .text(WatchPug.StrBundle.getString(data[key].strBundleKey)).clone()).html();
       
       }
       
     }
   
-    html =
-      '<article id="inspect-results-' + id + '">' + 
-      ' <div class="grade ' + grade.toLowerCase() + '">' + 
-        grade + 
-      ' </div>' + 
-      ' <div class="details">' + 
-      '   <a href="' + infoUrl + '" target="blank">' + WatchPug.StrBundle.getString(titleStrBundleKey) + ' [' + WatchPug.StrBundle.getString('al.tt.MoreInfo') + ']</a>' +
-        notFound +
-      '   <ul>' + 
-        criteriaList +
-      '   </ul>' + 
-      ' </div>' + 
-      '</article>';
-      
+    html = $('<div>')
+           .append($('<article>')
+           .attr('id', 'inspect-results-' + id)
+             .append($('<div>')
+             .attr('class', 'grade ' + grade.toLowerCase())
+             .text(grade))
+             .append($('<div>')
+             .attr('class', 'details')
+               .append($('<a>')
+               .attr({
+                 'href': infoUrl,
+                 'target': 'blank'
+               })
+               .append(WatchPug.StrBundle.getString(titleStrBundleKey) + ' [' + WatchPug.StrBundle.getString('al.tt.MoreInfo') + ']')
+               .append(notFound))
+               .append($('<ul>')
+               .append(criteriaList))).clone()).html();
+           
     return html;
   
   },
   
-  showInspectResult: function() {
-  
+  showSenSEOGrade: function() {
+
     if (WatchPug.Panel.grade.weighted) {
     
-      $('#inspect-result').removeClass('hidden');
-  
+      WatchPug.Panel.inspectResultReady();
+    
       $('#searchpug-grade').html(WatchPug.StrBundle.getString('al.tt.WatchPugGrade'));
     
       $('#inspect-keyword').html(WatchPug.Panel.keywordsString);
@@ -1489,14 +1779,22 @@ WatchPug.Panel = {
       $('#twitter-grade').html(WatchPug.Panel.grade.weighted[0]);
       
       $('#tweet-this').attr('href', 'http://twitter.com/home?status=' + encodeURI('I got grade ' + WatchPug.Panel.grade.weighted[0] + ' (' + WatchPug.Panel.grade.weighted[1] + '/100) for optimizing my website with SenSEO Firefox extension http://goo.gl/d7dp'));
-      
+  
     } else {
     
       $('#inspect-result').addClass('hidden');
     
     }
+    
+  },
   
+  showInspectResult: function() {
+  
+    $('#inspect-related').removeClass('hidden');
+      
     var inspectResultsContainer = $('#inspect-results');
+  
+    inspectResultsContainer.removeClass('hidden');
   
     if (WatchPug.Panel.setting['color-blind-friendly']) {
     
@@ -1567,13 +1865,13 @@ WatchPug.Panel = {
         
       }) +
          
-      WatchPug.Panel.generateInspectResultMarkup('sitemap', WatchPug.Panel.grade.sitemap[0], 'al.tt.UseSitemap', 'http://sensational-seo.com/on-page-criteria.html#robots', WatchPug.Panel.sitemap, {
+      WatchPug.Panel.generateInspectResultMarkup('sitemap', WatchPug.Panel.grade.sitemap[0], 'al.tt.UseSitemap', 'http://sensational-seo.com/on-page-criteria.html#robots', WatchPug.Panel.found.sitemap, {
       
         1: {
           status: WatchPug.Panel.status['sitemap-exists'],
           strBundleKey: 'al.st.Sitemap'
         }
-         
+        
       }) +
       
       WatchPug.Panel.generateInspectResultMarkup('headlines', WatchPug.Panel.grade.headlines[0], 'al.tt.HeadlineTags', 'http://sensational-seo.com/on-page-criteria.html#headline', WatchPug.Panel.found.headlines, {
@@ -1621,28 +1919,38 @@ WatchPug.Panel = {
           status: WatchPug.Panel.status['content-alt'],
           strBundleKey: 'al.st.ContentAlt'
         },
-         
+        
         5: {
+          status: 'neutral',
+          strBundleKey: 'al.st.ContentPictureQuality'
+        },
+        
+        6: {
+          status: 'neutral',
+          strBundleKey: 'al.st.ContentForImages'
+        },
+        
+        7: {
           status: WatchPug.Panel.status['content-keywords'],
           strBundleKey: 'al.st.ContentKeywords'
         },
          
-        6: {
+        8: {
           status: WatchPug.Panel.status['content-links'],
           strBundleKey: 'al.st.ContentLinks'
         },
          
-        7: {
-          status: 'neutral',
+        9: {
+          status: WatchPug.Panel.status['content-validation'],
           strBundleKey: 'al.st.CodeSemanticValid'
         },
          
-        8: {
+        10: {
           status: WatchPug.Panel.status['content-load-time'],
           strBundleKey: 'al.st.FastPageLoad'
         },
          
-        9: {
+        11: {
           status: WatchPug.Panel.status['content-microdata'],
           strBundleKey: 'al.st.Microdata'
         }
@@ -1667,13 +1975,18 @@ WatchPug.Panel = {
         },
          
         4: {
-          status: 'neutral',
+          status: WatchPug.Panel.status['host-age'],
           strBundleKey: 'al.st.Host2Years'
         },
          
         5: {
           status: 'neutral',
           strBundleKey: 'al.st.HostSelf'
+        },
+        
+        6: {
+          status: 'neutral',
+          strBundleKey: 'al.st.HostRedirect'
         }
 
       }) +
@@ -1707,14 +2020,34 @@ WatchPug.Panel = {
 
       }) +
       
+      $('<div>')
+      .append($('<div>')
+      .attr('class', 'legend')
+        .append($('<span>')
+        .attr('class', 'legend pass')
+        .text(WatchPug.StrBundle.getString('al.lg.Pass')))
+        .append($('<span>')
+        .attr('class', 'legend warning')
+        .text(WatchPug.StrBundle.getString('al.lg.Warning')))
+        .append($('<span>')
+        .attr('class', 'legend fail')
+        .text(WatchPug.StrBundle.getString('al.lg.Fail')))
+        .append($('<span>')
+        .attr('class', 'legend neutral')
+        .text(WatchPug.StrBundle.getString('al.lg.NotChecked'))).clone()).html());
+        
+        /*
+        
+        
+      
       '<div class="legend">' +
       '  <span class="legend pass">' + WatchPug.StrBundle.getString('al.lg.Pass') + '</span>' +
       '  <span class="legend warning">' + WatchPug.StrBundle.getString('al.lg.Warning') + '</span>' +
       '  <span class="legend fail">' + WatchPug.StrBundle.getString('al.lg.Fail') + '</span>' +
       '  <span class="legend neutral">' + WatchPug.StrBundle.getString('al.lg.NotChecked') + '</span>' +
       '</div>'
-      
-    );
+      */
+   
     
   }
   
@@ -1746,6 +2079,7 @@ WatchPug.Panel = {
         normalizedUrl = domain + url;
         
       }
+      
     
     } else {
     

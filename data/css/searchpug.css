@@ -83,14 +83,19 @@ body > header button#help-button {
   float: right;
 }
 
+body > header a#bug-button {
+  float: right;
+  padding: 1px 1px 0 1px;
+}
+
 body > header button#settings-button,
-body > header button#bug-button {
+body > header button#badges-button {
   float: right;
   padding: 0;
 }
 
 body > header button#settings-button img,
-body > header button#bug-button img {
+body > header button#badges-button img {
   margin: -1px;
 }
 
@@ -254,7 +259,7 @@ section#components-container > section {
   background-color: #e6e6e6;
   display: inline-block;
   padding: 0 2px;
-  margin-bottom: 4px;
+  margin: 0 4px 4px 0;
   font-style: normal;
 }
 
@@ -463,4 +468,142 @@ section#settings-container form dl dt {
 section#settings-container form dl dd {
   display: block;
   height: 35px;
+}
+
+section#badges-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.5);
+}
+
+section#badges-container .dialog {
+  z-index: 100;
+  margin: 50px 25px;
+  padding: 20px 0 20px 20px;
+  background-color: #fff;
+  border: 1px #aaa solid;
+  border-radius: 10px;
+  box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.2);
+  background: -moz-linear-gradient(0% 0% 270deg, #ffffff, #e1e1e1);
+}
+
+section#badges-container .dialog h2 {
+  color: #405993;
+  font-style: italic;
+  font-size: 22px;
+}
+
+section#badges-container .dialog li {
+  display: inline-block;
+  width: 47px;
+  height: 47px;
+  margin: 15px 10px 0 0;
+  border-radius: 26px;
+  text-align: center;
+}
+
+section#badges-container .dialog li span {
+  display: inline-block;
+  font-size: 10px;
+  color: #555;
+  padding-top: 52px;
+}
+
+section#badges-container .dialog li,
+section#badges-container .dialog li.badge-off {
+  border: 2px #ddd solid;
+  background: #eee url(../img/badges/star-off.png) 0 -1px no-repeat;
+}
+
+section#badges-container .dialog li.grade-a {
+  background-image: url(../img/badges/lightbulb.png);
+  background-color: #ffbde4;
+  border-color: #f5f57f;
+}
+
+section#badges-container .dialog li.used-10 {
+  background-image: url(../img/badges/arrow-up.png);
+  background-color: #4639f7;
+  border-color: #7ccc0c;
+}
+
+section#badges-container .dialog li.used-25 {
+  background-image: url(../img/badges/arrow-up.png);
+  background-color: #4639f7;
+  border-color: #7ccc0c;
+}
+
+section#badges-container .dialog li.used-50 {
+  background-image: url(../img/badges/arrow-up.png);
+  background-color: #4639f7;
+  border-color: #7ccc0c;
+}
+
+section#badges-container .dialog li.used-100 {
+  background-image: url(../img/badges/arrow-up.png);
+  background-color: #4639f7;
+  border-color: #7ccc0c;
+}
+
+section#badges-container .dialog li.poweruser {
+  background-image: url(../img/badges/lightbulb.png);
+  background-color: #ffbde4;
+  border-color: #f5f57f;
+}
+
+section#badges-container .dialog li.twitter {
+  background-image: url(../img/badges/twitter.png);
+  background-color: #f5f57f;
+  border-color: #ddd;
+}
+
+section#badges-container .dialog li.paypal {
+  background-image: url(../img/badges/paypal.png);
+  background-color: #a9a9b8;
+  border-color: #4639f7;
+}
+
+section#badges-container .dialog li.plus-25 {
+  background-image: url(../img/badges/pie-chart.png);
+}
+
+section#badges-container .dialog li.plus-50 {
+  background-image: url(../img/badges/pie-chart.png);
+}
+
+section#badges-container .dialog li.crawl-site {
+  background-image: url(../img/badges/search.png);
+  background-color: #a9a9b8;
+  border-color: #4639f7;
+}
+
+section#badges-container .dialog li.add-sitemap {
+  background-image: url(../img/badges/add.png);
+  background-color: #4639f7;
+  border-color: #7ccc0c;
+}
+
+section#badges-container .dialog li.add-robots {
+  background-image: url(../img/badges/add.png);
+  background-color: #4639f7;
+  border-color: #7ccc0c;
+}
+
+section#badges-container .dialog li.add-canonical {
+  background-image: url(../img/badges/add.png);
+  background-color: #4639f7;
+  border-color: #7ccc0c;
+}
+
+section#badges-container .dialog li.add-microdata {
+  background-image: url(../img/badges/add.png);
+  background-color: #4639f7;
+  border-color: #7ccc0c;
+}
+
+section#badges-container .dialog li.pageload-time {
+  background-image: url(../img/badges/clock.png);
 }
