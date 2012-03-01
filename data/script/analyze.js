@@ -628,7 +628,11 @@ WatchPug.Analyze = {
 
     if (targetDataKey === 'remove-highlight-element') {
     
-      WatchPug.Analyze.$highlightElement.css('display', 'none');
+      if (WatchPug.Analyze.$highlightElement) {
+    
+        WatchPug.Analyze.$highlightElement.css('display', 'none');
+        
+      }
 
     }
     
