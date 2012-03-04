@@ -100,6 +100,7 @@ WatchPug.StrBundle = {
     'al.st.ContentPictureQuality': 'Improve the quality of your pictures (resolution, pixel).',
     'al.st.ContentForImages': 'Surround your images with suitable content like headlines or paragraphs.',
     'al.st.ContentStyle': 'Write your content in a clear and natural style.',
+    'al.st.ContentSocialMedia': 'Add social media sharing buttons to your site.',
     'al.st.ContentKeywords': 'Mention your keywords a few times.',
     'al.st.ContentLinks': 'Keep the links to a reasonable number (fewer than 100).',
 
@@ -163,8 +164,6 @@ WatchPug.Panel = {
   processedSitemapFile: false,
   
   processedValidationResult: false,
-  
-  forceAsyncDataIsReady: false,
   
   forceAsyncDataIsReady: false,
   
@@ -275,8 +274,6 @@ WatchPug.Panel = {
       
         if (WatchPug.Panel.inspectOngoing) {
       
-          console.log("force!");
-        
           WatchPug.Panel.forceAsyncDataIsReady = true;
           
           WatchPug.Panel.showInspectResultPre();
@@ -289,7 +286,7 @@ WatchPug.Panel = {
     
   },
   
-  asyncDataIsReady: function(force) {
+  asyncDataIsReady: function() {
 
     if (WatchPug.Panel.forceAsyncDataIsReady || (
         WatchPug.Panel.processedDomainAge &&
@@ -446,7 +443,7 @@ WatchPug.Panel = {
       domainAge = d.substring(d.indexOf('>') + 1, d.indexOf('</a>'));
       
       WatchPug.Panel.activeDocumentComponents['domain-age']
-        .data = $('<div>').text($.trim(domainAge) + ' ').append($('<a>').attr({
+        .data = $('<div>').text($.trim(domainAge)).append($('<a>').attr({
                   'href': url,
                   'target': 'blank'
                 }).text('show').clone()).html();
@@ -891,7 +888,11 @@ WatchPug.Panel = {
     var highlightHeadline = $('#' + componentsTable + ' tbody .highlight-headline'),
         highlightImage = $('#' + componentsTable + ' tbody .highlight-image'),
         highlightMicrodata = $('#' + componentsTable + ' tbody .highlight-microdata'),
-        allHighlightElements = highlightHeadline.add(highlightImage).add(highlightMicrodata),
+        highlightButton = $('#' + componentsTable + ' tbody .highlight-button'),
+        allHighlightElements = highlightHeadline
+                               .add(highlightImage)
+                               .add(highlightMicrodata)
+                               .add(highlightButton),
         i;
   
     if (allHighlightElements.length) {
@@ -1256,6 +1257,7 @@ WatchPug.Panel = {
         robotsData, robotsFile,
         sitemapFile,
         h1Data, h2Data, h3Data, h4Data, h5Data, h6Data,
+        pageLoadTime,
         altImagesGrade,
         hostData,
         domainAge,
@@ -1504,6 +1506,24 @@ WatchPug.Panel = {
       
     }
     
+    if (WatchPug.Panel.activeDocumentComponents['facebook-like-button'].data !== 'n/a' && WatchPug.Panel.activeDocumentComponents['plus-one-button'].data !== 'n/a' && WatchPug.Panel.activeDocumentComponents['twitter-button'].data !== 'n/a') {
+    
+      WatchPug.Panel.status['content-social-media'] = 'pass';
+      
+    } else {
+    
+      if (WatchPug.Panel.activeDocumentComponents['facebook-like-button'].data !== 'n/a' || WatchPug.Panel.activeDocumentComponents['plus-one-button'].data !== 'n/a' || WatchPug.Panel.activeDocumentComponents['twitter-button'].data !== 'n/a') {
+    
+        WatchPug.Panel.status['content-social-media'] = 'warning';
+      
+      } else {
+      
+        WatchPug.Panel.status['content-social-media'] = 'fail';
+        
+      }
+    
+    }
+    
     if (WatchPug.Panel.activeDocumentComponents['keyword-matches'].data >= 2 && WatchPug.Panel.activeDocumentComponents['keyword-matches'].data <= 50) {
     
       WatchPug.Panel.status['content-keywords'] = 'pass';
@@ -1535,12 +1555,14 @@ WatchPug.Panel = {
       WatchPug.Panel.status['content-links'] = 'fail';
       
     }
+
+    pageLoadTime = parseInt(WatchPug.Panel.activeDocumentComponents['page-load-time'].data.split(' ')[0], 10);
     
-    if (WatchPug.Panel.activeDocumentComponents['page-load-time'].data < 2000) {
+    if (pageLoadTime < 2000) {
     
       WatchPug.Panel.status['content-load-time'] = 'pass';
       
-    } else if (WatchPug.Panel.activeDocumentComponents['page-load-time'].data < 3000) {
+    } else if (pageLoadTime < 3000) {
     
       WatchPug.Panel.status['content-load-time'] = 'warning';
       
@@ -1580,7 +1602,7 @@ WatchPug.Panel = {
       
     }
     
-    WatchPug.Panel.grade.content = WatchPug.Panel.calculateGrade([WatchPug.Panel.status['content-alt'], WatchPug.Panel.status['content-keywords'], WatchPug.Panel.status['content-links'], WatchPug.Panel.status['content-load-time'], WatchPug.Panel.status['content-microdata']]);
+    WatchPug.Panel.grade.content = WatchPug.Panel.calculateGrade([WatchPug.Panel.status['content-alt'], WatchPug.Panel.status['content-social-media'], WatchPug.Panel.status['content-keywords'], WatchPug.Panel.status['content-links'], WatchPug.Panel.status['content-load-time'], WatchPug.Panel.status['content-microdata']]);
     
     WatchPug.Panel.found.host = WatchPug.Panel.activeDocumentComponents['location-hostname'].data ? true : false;
     
@@ -1931,26 +1953,31 @@ WatchPug.Panel = {
         },
         
         7: {
+          status: WatchPug.Panel.status['content-social-media'],
+          strBundleKey: 'al.st.ContentSocialMedia'
+        },
+         
+        8: {
           status: WatchPug.Panel.status['content-keywords'],
           strBundleKey: 'al.st.ContentKeywords'
         },
          
-        8: {
+        9: {
           status: WatchPug.Panel.status['content-links'],
           strBundleKey: 'al.st.ContentLinks'
         },
          
-        9: {
+        10: {
           status: WatchPug.Panel.status['content-validation'],
           strBundleKey: 'al.st.CodeSemanticValid'
         },
          
-        10: {
+        11: {
           status: WatchPug.Panel.status['content-load-time'],
           strBundleKey: 'al.st.FastPageLoad'
         },
          
-        11: {
+        12: {
           status: WatchPug.Panel.status['content-microdata'],
           strBundleKey: 'al.st.Microdata'
         }

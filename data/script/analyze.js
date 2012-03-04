@@ -111,7 +111,7 @@ WatchPug.Analyze = {
       
       head: 'page load time (ms)',
       
-      data: pageLoadTime
+      data: pageLoadTime + '<a href="http://gtmetrix.com/?url=' + encodeURI(WatchPug.Analyze.data['location-protocol'].data + '//' + WatchPug.Analyze.data['location-hostname'].data) + '" target="blank">analyze performance</a>'
       
     };
   
@@ -203,7 +203,7 @@ WatchPug.Analyze = {
         
         head: 'microdata',
         
-        data: 'found (<a id="go-to-testing-tool" target="blank" href="http://www.google.com/webmasters/tools/richsnippets?url=' + encodeURI(WatchPug.Analyze.data['location-href'].data) + '">preview</a>)'
+        data: 'found' + '<a id="go-to-testing-tool" target="blank" href="http://www.google.com/webmasters/tools/richsnippets?url=' + encodeURI(WatchPug.Analyze.data['location-href'].data) + '">preview</a>'
         
       };
       
@@ -601,6 +601,150 @@ WatchPug.Analyze = {
 
   },
 
+  getFacebookLikeButton: function() {
+  
+    var likeButton1 = $('.fb-like'),
+        likeButton2 = $('[href^="http://www.facebook.com"]'),
+        button, highlightButton;
+    
+    button = likeButton1.length ? likeButton1[0] : likeButton2[0];
+    
+    if (button) {
+    
+      if ($(button).width() && $(button).height() && $(button).css('display') !== 'none' && $(button).css('visibility') !== 'hidden') {
+      
+        highlightButton = $('<div>').text('found').append($('<a>').attr({
+                            'href': '#',
+                            'class': 'highlight-button facebook'
+                          }).text('highlight').clone()).html();
+                                
+      } else {
+      
+        highlightButton = $('<div>').text('found').append($('<span>').attr({
+                            'class': 'info'
+                          }).text(' (hidden)').clone()).html();
+                                 
+      }
+
+      WatchPug.Analyze.data['facebook-like-button'] = {
+        
+        head: 'Facebook like button',
+        
+        data: highlightButton,
+        
+        element: button
+        
+      };
+    
+    } else {
+
+      WatchPug.Analyze.data['facebook-like-button'] = {
+        
+        head: 'Facebook like button',
+        
+        data: 'n/a'
+        
+      };
+    
+    }
+    
+  },
+  
+  getGooglePlusButton: function() {
+  
+    var button = $('#___plusone_0'),
+        highlightButton;
+    
+    if (button.length) {
+    
+      if ($(button).width() && $(button).height() && $(button).css('display') !== 'none' && $(button).css('visibility') !== 'hidden') {
+      
+        highlightButton = $('<div>').text('found').append($('<a>').attr({
+                            'href': '#',
+                            'class': 'highlight-button plus-one'
+                          }).text('highlight').clone()).html();
+                                
+      } else {
+      
+        highlightButton = $('<div>').text('found').append($('<span>').attr({
+                            'class': 'info'
+                          }).text(' (hidden)').clone()).html();
+                                 
+      }
+
+      WatchPug.Analyze.data['plus-one-button'] = {
+        
+        head: 'Google +1 button',
+        
+        data: highlightButton,
+        
+        element: button
+        
+      };
+    
+    } else {
+
+      WatchPug.Analyze.data['plus-one-button'] = {
+        
+        head: 'Google +1 button',
+        
+        data: 'n/a'
+        
+      };
+    
+    }
+  
+  },
+  
+  getTweetButton: function() {
+  
+    var twitterButton1 = $('[class^="twitter-"]'),
+        twitterButton2 = $('[href^="http://twitter.com"]'),
+        button, highlightButton;
+        
+    button = twitterButton1.length ? twitterButton1[0] : twitterButton2[0];
+    
+    if (button) {
+    
+      if ($(button).width() && $(button).height() && $(button).css('display') !== 'none' && $(button).css('visibility') !== 'hidden') {
+      
+        highlightButton = $('<div>').text('found').append($('<a>').attr({
+                            'href': '#',
+                            'class': 'highlight-button twitter'
+                          }).text('highlight').clone()).html();
+                                
+      } else {
+      
+        highlightButton = $('<div>').text('found').append($('<span>').attr({
+                            'class': 'info'
+                          }).text(' (hidden)').clone()).html();
+                                 
+      }
+
+      WatchPug.Analyze.data['twitter-button'] = {
+        
+        head: 'Twitter button',
+        
+        data: highlightButton,
+        
+        element: button
+        
+      };
+    
+    } else {
+
+      WatchPug.Analyze.data['twitter-button'] = {
+        
+        head: 'Twitter button',
+        
+        data: 'n/a'
+        
+      };
+    
+    }
+    
+  },
+
   sendData: function(data) {
 
     // send data back to addon (and from there to panel.js)
@@ -624,13 +768,20 @@ WatchPug.Analyze = {
         targetDataValue = targetData[1],
         level,
         index,
+        type,
         targetElement;
 
     if (targetDataKey === 'remove-highlight-element') {
     
-      if (WatchPug.Analyze.$highlightElement) {
+      if (WatchPug.Analyze.highlightDOMElement) {
     
-        WatchPug.Analyze.$highlightElement.css('display', 'none');
+        WatchPug.Analyze.highlightDOMElement.css('display', 'none');
+        
+      }
+
+      if (WatchPug.Analyze.highlightBubbleElement) {
+    
+        WatchPug.Analyze.highlightBubbleElement.css('display', 'none');
         
       }
 
@@ -658,7 +809,7 @@ WatchPug.Analyze = {
       
       targetElement = WatchPug.Analyze.data['img-alt'].element[index];
       
-      WatchPug.Analyze.highlightTargetElement(targetElement, 'img');
+      WatchPug.Analyze.highlightTargetElement(targetElement, 'image');
       
     }
     
@@ -672,6 +823,42 @@ WatchPug.Analyze = {
       
       WatchPug.Analyze.highlightTargetElement(targetElement, 'microdata');
       
+    }
+    
+    if (targetDataKey === 'highlight-button') {
+    
+      type = targetDataValue;
+      
+      if (type === 'facebook') {
+
+        // try to localize target element
+        
+        targetElement = WatchPug.Analyze.data['facebook-like-button'].element;
+        
+        WatchPug.Analyze.highlightTargetElement(targetElement, 'Facebook');
+
+      }
+
+      if (type === 'plus-one') {
+
+        // try to localize target element
+        
+        targetElement = WatchPug.Analyze.data['plus-one-button'].element;
+        
+        WatchPug.Analyze.highlightTargetElement(targetElement, 'Google +1');
+
+      }
+
+      if (type === 'twitter') {
+
+        // try to localize target element
+        
+        targetElement = WatchPug.Analyze.data['twitter-button'].element;
+        
+        WatchPug.Analyze.highlightTargetElement(targetElement, 'Twitter');
+
+      }
+
     }
     
   },
@@ -695,36 +882,50 @@ WatchPug.Analyze = {
     
     if (targetElementWidth && targetElementHeight) {
     
-      if (!WatchPug.Analyze.$highlightElement) {
+      if (!WatchPug.Analyze.highlightDOMElement) {
       
-        WatchPug.Analyze.$highlightElement = $('<div></div>')
-                                            .css({
-                                              'position': 'absolute',
-                                              'z-index': '9999',
-                                              'border': '1px red solid',
-                                              'background-color': 'rgba(255, 255, 0, 0.5)',
-                                              '-moz-box-sizing': 'border-box',
-                                              'padding': '3px 5px',
-                                              'text-align': 'right',
-                                              'color': 'red',
-                                              'font-family': 'Arial, Verdana, sans serif',
-                                              'font-size': '18px',
-                                              'font-weight': 'bold'
-                                            });
-                                            
-        $('body').append(WatchPug.Analyze.$highlightElement);
+        $('body').append($('<div>')
+                 .attr('id', 'senseo-highlight-container'));
+        
+        WatchPug.Analyze.highlightDOMElement = $('#senseo-highlight-container');
         
       }
       
-      WatchPug.Analyze.$highlightElement.html(content);
+      WatchPug.Analyze.highlightDOMElement.css({
+                                              'display': 'block',
+                                              'left': targetElementOffset.left,
+                                              'top': targetElementOffset.top,
+                                              'width': targetElementWidth,
+                                              'height': targetElementHeight
+                                            });
+                                            
+      if (!WatchPug.Analyze.highlightBubbleElement) {
       
-      WatchPug.Analyze.$highlightElement.css({
-                                          'left': targetElementOffset.left,
-                                          'top': targetElementOffset.top,
-                                          'width': targetElementWidth,
-                                          'height': targetElementHeight
-                                        });
-                                        
+        $('body').append($('<div>')
+                 .attr('id', 'senseo-highlight-bubble')
+                 .append($('<p>')));
+        
+        WatchPug.Analyze.highlightBubbleElement = $('#senseo-highlight-bubble');
+        
+        if (CSSRule.KEYFRAMES_RULE) { // W3C
+          document.styleSheets[0].insertRule('@keyframes bgpulse { 0% { background-color: rgba(200, 200, 200, 0.5); } 100% { background-color: rgba(200, 200, 200, 0); } }', 0);
+        }
+        document.styleSheets[0].insertRule('#senseo-highlight-container {animation-name: bgpulse; animation-duration: 1s; animation-iteration-count: infinite; animation-direction: alternate; animation-timing-function: ease-in-out;}', 0);
+        document.styleSheets[0].insertRule('#senseo-highlight-container {position: absolute; z-index: 9998; border: 1px red dashed; background-color: rgba(255, 50, 50, 0.3); box-shadow: 0 0 4px #000; -moz-box-sizing: border-box; padding: 3px 5px; text-align: right; color: red; font-family: Arial, Verdana, sans serif; font-size: 18px; font-weight: bold}', 0);
+        document.styleSheets[0].insertRule('#senseo-highlight-bubble {position: absolute; z-index: 9999; display: inline-block; width: 80px; padding: 2px; background: -moz-linear-gradient(top, #888 0%,#444 100%); position: absolute; border-radius: 3px; border: 1px #333 solid;}', 0);
+        document.styleSheets[0].insertRule('#senseo-highlight-bubble p {font-size: 11px; color: #eef; text-align: center; margin: 0; padding: 0; line-hieght: 1em;}', 0);
+        document.styleSheets[0].insertRule('#senseo-highlight-bubble:after {position: absolute; top: -5px; left: 40px; content: ""; display: block; border-left: 5px solid transparent; border-right: 5px solid transparent; border-bottom: 5px solid #333;}', 0);
+        
+      }
+
+      $(WatchPug.Analyze.highlightBubbleElement).find('p').html(content);
+
+      $(WatchPug.Analyze.highlightBubbleElement).css({
+                                                   'display': 'block',
+                                                   'left': targetElementOffset.left + Math.round(targetElementWidth / 2) - 43,
+                                                   'top': targetElementOffset.top + targetElementHeight + 4
+                                                 });
+
       // show highlighted area
       
       scrollTop = targetElementOffset.top - 50 < 0 ? 0 : targetElementOffset.top - 50;
@@ -746,8 +947,6 @@ WatchPug.Analyze = {
     WatchPug.Analyze.getMetaDescriptionLength();
     
     WatchPug.Analyze.getMetaKeywords();
-    
-    WatchPug.Analyze.getPageLoadTime();
     
     WatchPug.Analyze.getMetaRobots();
     
@@ -781,6 +980,8 @@ WatchPug.Analyze = {
     
     WatchPug.Analyze.getURLParams();
 
+    WatchPug.Analyze.getPageLoadTime();
+    
     WatchPug.Analyze.getDomainAge();
   
     WatchPug.Analyze.getMicrodata();
@@ -790,6 +991,12 @@ WatchPug.Analyze = {
     WatchPug.Analyze.getRobotsFileContent();
     
     WatchPug.Analyze.getSitemapContent();
+    
+    WatchPug.Analyze.getFacebookLikeButton();
+    
+    WatchPug.Analyze.getGooglePlusButton();
+    
+    WatchPug.Analyze.getTweetButton();
     
     WatchPug.Analyze.getBodyData();
     

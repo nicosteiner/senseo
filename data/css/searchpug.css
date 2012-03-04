@@ -29,8 +29,8 @@ body .speechBubble:after {
   position: absolute;
   top: -10px;
   left: 20px;
-  content:"";
-  display:block;
+  content: "";
+  display: block;
   border-left: 10px solid transparent;
   border-right: 10px solid transparent;
   border-bottom: 10px solid #ffffb8;
