@@ -744,6 +744,14 @@ WatchPug.Panel = {
       }
       
     }
+
+    // only if senseo grade bar is completely hidden, show busy indicator
+  
+    if ($('#inspect-result-ongoing').hasClass('hidden') && $('#inspect-result-ready').hasClass('hidden')) {
+  
+      WatchPug.Panel.inspectResultOngoing();
+    
+    }
     
     WatchPug.Panel.renderComponentsTable('components-table', WatchPug.Panel.activeDocumentComponents);
   

@@ -603,13 +603,10 @@ WatchPug.Analyze = {
 
   getFacebookLikeButton: function() {
   
-    var likeButton1 = $('.fb-like'),
-        likeButton2 = $('[href^="http://www.facebook.com"]'),
-        button, highlightButton;
+    var button = $('iframe[src^="http://www.facebook.com/"]'),
+        highlightButton;
     
-    button = likeButton1.length ? likeButton1[0] : likeButton2[0];
-    
-    if (button) {
+    if (button.length) {
     
       if ($(button).width() && $(button).height() && $(button).css('display') !== 'none' && $(button).css('visibility') !== 'hidden') {
       
@@ -652,7 +649,7 @@ WatchPug.Analyze = {
   
   getGooglePlusButton: function() {
   
-    var button = $('#___plusone_0'),
+    var button = $('iframe[src^="https://plusone.google.com/"]'),
         highlightButton;
     
     if (button.length) {
@@ -698,13 +695,10 @@ WatchPug.Analyze = {
   
   getTweetButton: function() {
   
-    var twitterButton1 = $('[class^="twitter-"]'),
-        twitterButton2 = $('[href^="http://twitter.com"]'),
-        button, highlightButton;
-        
-    button = twitterButton1.length ? twitterButton1[0] : twitterButton2[0];
-    
-    if (button) {
+    var button = $('iframe[src^="http://platform.twitter.com/"]'),
+        highlightButton;
+
+    if (button.length) {
     
       if ($(button).width() && $(button).height() && $(button).css('display') !== 'none' && $(button).css('visibility') !== 'hidden') {
       
@@ -889,6 +883,16 @@ WatchPug.Analyze = {
         
         WatchPug.Analyze.highlightDOMElement = $('#senseo-highlight-container');
         
+        // does not work
+        /*
+        if (CSSRule.KEYFRAMES_RULE) {
+          document.styleSheets[0].insertRule('@keyframes bgpulse { 0% { background-color: rgba(200, 200, 200, 0.5); } 100% { background-color: rgba(200, 200, 200, 0); } }', 0);
+        }
+        document.styleSheets[0].insertRule('#senseo-highlight-container {animation-name: bgpulse; animation-duration: 1s; animation-iteration-count: infinite; animation-direction: alternate; animation-timing-function: ease-in-out;}', 0);
+        */
+        document.styleSheets[0].insertRule('#senseo-highlight-container {-moz-transition-property: left, top, width, height; -moz-transition-duration: 0.15s; -moz-transition-timing-function: ease-out;}', 0);
+        document.styleSheets[0].insertRule('#senseo-highlight-container {position: absolute; z-index: 9998; border: 1px red dashed; background-color: rgba(255, 50, 50, 0.3); box-shadow: 0 0 4px #000; -moz-box-sizing: border-box; padding: 3px 5px; text-align: right; color: red; font-family: Arial, Verdana, sans serif; font-size: 18px; font-weight: bold}', 0);
+        
       }
       
       WatchPug.Analyze.highlightDOMElement.css({
@@ -907,11 +911,7 @@ WatchPug.Analyze = {
         
         WatchPug.Analyze.highlightBubbleElement = $('#senseo-highlight-bubble');
         
-        if (CSSRule.KEYFRAMES_RULE) { // W3C
-          document.styleSheets[0].insertRule('@keyframes bgpulse { 0% { background-color: rgba(200, 200, 200, 0.5); } 100% { background-color: rgba(200, 200, 200, 0); } }', 0);
-        }
-        document.styleSheets[0].insertRule('#senseo-highlight-container {animation-name: bgpulse; animation-duration: 1s; animation-iteration-count: infinite; animation-direction: alternate; animation-timing-function: ease-in-out;}', 0);
-        document.styleSheets[0].insertRule('#senseo-highlight-container {position: absolute; z-index: 9998; border: 1px red dashed; background-color: rgba(255, 50, 50, 0.3); box-shadow: 0 0 4px #000; -moz-box-sizing: border-box; padding: 3px 5px; text-align: right; color: red; font-family: Arial, Verdana, sans serif; font-size: 18px; font-weight: bold}', 0);
+        document.styleSheets[0].insertRule('#senseo-highlight-bubble {-moz-transition-property: left, top; -moz-transition-duration: 0.15s; -moz-transition-timing-function: ease-out;}', 0);
         document.styleSheets[0].insertRule('#senseo-highlight-bubble {position: absolute; z-index: 9999; display: inline-block; width: 80px; padding: 2px; background: -moz-linear-gradient(top, #888 0%,#444 100%); position: absolute; border-radius: 3px; border: 1px #333 solid;}', 0);
         document.styleSheets[0].insertRule('#senseo-highlight-bubble p {font-size: 11px; color: #eef; text-align: center; margin: 0; padding: 0; line-hieght: 1em;}', 0);
         document.styleSheets[0].insertRule('#senseo-highlight-bubble:after {position: absolute; top: -5px; left: 40px; content: ""; display: block; border-left: 5px solid transparent; border-right: 5px solid transparent; border-bottom: 5px solid #333;}', 0);
