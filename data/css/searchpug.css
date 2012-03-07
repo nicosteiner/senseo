@@ -397,29 +397,52 @@ section#components-container > section {
 
 #components-table {
   border-collapse: collapse;
+  background-color: #fff;
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.5);
   table-layout: fixed;
-  width: 570px;
+  width: 565px;
   margin: 5px;
+}
+
+#components-table tr:nth-child(2n+1) {
+  background-color: #f3f3f3;
+}
+
+#components-table tr:hover {
+  background-color: #ddf;
+  cursor: default;
+}
+
+#components-table tr.clicked {
+  background-image: -moz-linear-gradient(top, #c5d8fa, #90a9d3);
+  box-shadow: inset 1px 1px 1px rgba(0, 0, 0, 0.5);
 }
 
 #components-table th,
 #components-table td {
   padding: 2px;
-  border: 1px #333 solid;
   font-size: 10px;
-  overflow-x: scroll;
+  overflow-x: hidden;
+  border: 1px #aaa solid;
+}
+
+#components-table tr.clicked th,
+#components-table tr.clicked td {
+}
+
+#components-table th {
+  border-right: 0 none;
+}
+
+#components-table td {
+  border-left: 0 none;
 }
 
 #components-table th {
   width: 200px;
   font-weight: bold;
   text-align: left;
-  background-color: #eee;
   width: 200px;
-}
-
-#components-table td {
-  background-color: #fff;
 }
 
 #components-table td span.match {

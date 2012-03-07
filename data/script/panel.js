@@ -69,12 +69,12 @@ WatchPug.StrBundle = {
     'al.tt.MoreInfo': 'more info',
     'al.tt.Highlight': 'highlight',
 
-    'al.st.TitleOnetime': 'Use this tag only one time.',
+    'al.st.TitleOnetime': 'Use this tag exactly one time.',
     'al.st.TitleIncludes': 'Title should include all keywords.',
     'al.st.TitleLength': 'Length should not be greater than 65 characters.',
     'al.st.TitleWords': 'Title should not contain more than 15 words.',
 
-    'al.st.DescriptionOnetime': 'Use this tag only one time.',
+    'al.st.DescriptionOnetime': 'Use this tag exactly one time.',
     'al.st.DescriptionIncludes': 'Meta description should include all keywords.',
     'al.st.DescriptionLength': 'Length should not be greater than 150 characters.',
     'al.st.DescriptionWords': 'Meta description should not contain more than 30 words.',
@@ -168,6 +168,8 @@ WatchPug.Panel = {
   forceAsyncDataIsReady: false,
   
   inspectOngoing: true,
+  
+  highlightedDataRow: null,
   
   init: function() {
 
@@ -588,6 +590,20 @@ WatchPug.Panel = {
       WatchPug.Panel.getKeywordDensity();
         
     });
+    
+    $('#keyword-input').keypress(function(e) {
+      
+      // if user presses enter, inspect document
+      
+      if (e.keyCode === 13) {
+      
+        e.target.blur();
+      
+        WatchPug.Panel.handleInspectButton();
+      
+      }
+      
+    });
   
     $('#inspect-button').click(function(e) {
         
@@ -835,11 +851,26 @@ WatchPug.Panel = {
   
   },
   
+  highlightDataRow: function(e) {
+  
+    if (WatchPug.Panel.highlightedDataRow) {
+    
+      $(WatchPug.Panel.highlightedDataRow).removeClass('clicked');
+      
+    }
+  
+    $(this).addClass('clicked');
+    
+    WatchPug.Panel.highlightedDataRow = this;
+  
+  },
+  
   renderComponentsTable: function(componentsTable, components) {
     
     var i,
         key,
-        componentsTableBody = $('#' + componentsTable + ' tbody');
+        componentsTableBody = $('#' + componentsTable + ' tbody'),
+        dataRow;
     
     // remove outdated table content
   
@@ -859,12 +890,15 @@ WatchPug.Panel = {
         
           // one dataset
           
-          componentsTableBody.append($('<tr>')
-                             .append($('<th>')
-                             .text(components[key].head))
-                             .append($('<td>')
-                             .append(WatchPug.Panel.formatOutput(components[key].data))
-                             ));
+          dataRow = $('<div>').append($('<tr>')
+                              .append($('<th>')
+                              .text(components[key].head))
+                              .append($('<td>')
+                              .append(WatchPug.Panel.formatOutput(components[key].data))).clone()).html();
+          
+          componentsTableBody.append(dataRow);
+          
+          //$(dataRow).click(WatchPug.Panel.highlightDataRow);
           
         } else {
         
@@ -872,13 +906,23 @@ WatchPug.Panel = {
           
           for (i = 0; i < components[key].head.length; i += 1) {
 
+            dataRow = $('<div>').append($('<tr>')
+                                .append($('<th>')
+                                .text(components[key].head[i]))
+                                .append($('<td>')
+                                .append(WatchPug.Panel.formatOutput(components[key].data[i]))).clone()).html();
+            
+            componentsTableBody.append(dataRow);
+            
+            //$(dataRow).click(WatchPug.Panel.highlightDataRow);
+/*          
             componentsTableBody.append($('<tr>')
                                .append($('<th>')
                                .text(components[key].head[i]))
                                .append($('<td>')
                                .append(WatchPug.Panel.formatOutput(components[key].data[i]))
                                ));
-            
+           */ 
           }
 
         }
@@ -887,7 +931,15 @@ WatchPug.Panel = {
       
     }
     
+    WatchPug.Panel.createDataRowEvents(componentsTableBody);
+    
     WatchPug.Panel.createHighlightEvents(componentsTable);
+  
+  },
+  
+  createDataRowEvents: function(componentsTableBody) {
+  
+    $(componentsTableBody).find('tr').click(WatchPug.Panel.highlightDataRow);
   
   },
   
@@ -1280,21 +1332,21 @@ WatchPug.Panel = {
     
     WatchPug.Panel.found.title = titleData === 'n/a' ? false : true;
     
-    if (titleCount && titleCount !== 1) {
-    
-      WatchPug.Panel.status['title-onetime'] = 'fail';
-      
-    } else {
+    if (WatchPug.Panel.found.title && titleCount && titleCount === 1) {
     
       WatchPug.Panel.status['title-onetime'] = 'pass';
       
+    } else {
+    
+      WatchPug.Panel.status['title-onetime'] = 'fail';
+      
     }
     
-    if (titleData && WatchPug.Panel.includesAllKeywords(titleData, keywords)) {
+    if (WatchPug.Panel.found.title && titleData && WatchPug.Panel.includesAllKeywords(titleData, keywords)) {
     
       WatchPug.Panel.status['title-includes'] = 'pass';
       
-    } else if (titleData && WatchPug.Panel.includesSomeKeywords(titleData, keywords)) {
+    } else if (WatchPug.Panel.found.title && titleData && WatchPug.Panel.includesSomeKeywords(titleData, keywords)) {
     
       WatchPug.Panel.status['title-includes'] = 'warning';
       
@@ -1304,11 +1356,11 @@ WatchPug.Panel = {
       
     }
     
-    if (titleData && titleData.length <= 65) {
+    if (WatchPug.Panel.found.title && titleData && titleData.length <= 65) {
     
       WatchPug.Panel.status['title-length'] = 'pass';
       
-    } else if (titleData && titleData.length <= 75) {
+    } else if (WatchPug.Panel.found.title && titleData && titleData.length <= 75) {
     
       WatchPug.Panel.status['title-length'] = 'warning';
       
@@ -1318,11 +1370,11 @@ WatchPug.Panel = {
       
     }
     
-    if (titleData && titleData.split(" ").length <= 15) {
+    if (WatchPug.Panel.found.title && titleData && titleData.split(" ").length <= 15) {
     
       WatchPug.Panel.status['title-words'] = 'pass';
       
-    } else if (titleData && titleData.split(" ").length <= 18) {
+    } else if (WatchPug.Panel.found.title && titleData && titleData.split(" ").length <= 18) {
     
       WatchPug.Panel.status['title-words'] = 'warning';
       
@@ -1334,13 +1386,11 @@ WatchPug.Panel = {
     
     WatchPug.Panel.grade.title = WatchPug.Panel.calculateGrade([WatchPug.Panel.status['title-onetime'], WatchPug.Panel.status['title-includes'], WatchPug.Panel.status['title-length'], WatchPug.Panel.status['title-words']]);
     
-    metaDescription = WatchPug.Panel.activeDocumentComponents['meta-description'];
-    
     descriptionData = WatchPug.Panel.activeDocumentComponents['meta-description'].data;
     
     WatchPug.Panel.found.description = descriptionData === 'n/a' ? false : true;
     
-    if (metaDescription.count === 1) {
+    if (WatchPug.Panel.found.description && WatchPug.Panel.activeDocumentComponents['meta-description'].count === 1) {
     
       WatchPug.Panel.status['description-onetime'] = 'pass';
       
@@ -1350,11 +1400,11 @@ WatchPug.Panel = {
       
     }
     
-    if (metaDescription && WatchPug.Panel.includesAllKeywords(descriptionData, keywords)) {
+    if (WatchPug.Panel.found.description && WatchPug.Panel.includesAllKeywords(descriptionData, keywords)) {
     
       WatchPug.Panel.status['description-includes'] = 'pass';
       
-    } else if (descriptionData && WatchPug.Panel.includesSomeKeywords(descriptionData, keywords)) {
+    } else if (WatchPug.Panel.found.description && descriptionData && WatchPug.Panel.includesSomeKeywords(descriptionData, keywords)) {
     
       WatchPug.Panel.status['description-includes'] = 'warning';
       
@@ -1364,11 +1414,11 @@ WatchPug.Panel = {
       
     }
     
-    if (descriptionData && descriptionData.length <= 150) {
+    if (WatchPug.Panel.found.description && descriptionData && descriptionData.length <= 150) {
     
       WatchPug.Panel.status['description-length'] = 'pass';
       
-    } else if (descriptionData && descriptionData.length <= 170) {
+    } else if (WatchPug.Panel.found.description && descriptionData && descriptionData.length <= 170) {
     
       WatchPug.Panel.status['description-length'] = 'warning';
       
@@ -1378,11 +1428,11 @@ WatchPug.Panel = {
       
     }
     
-    if (descriptionData && descriptionData.split(" ").length <= 30) {
+    if (WatchPug.Panel.found.description && descriptionData && descriptionData.split(" ").length <= 30) {
     
       WatchPug.Panel.status['description-words'] = 'pass';
       
-    } else if (descriptionData && descriptionData.split(" ").length <= 35) {
+    } else if (WatchPug.Panel.found.description && descriptionData && descriptionData.split(" ").length <= 35) {
     
       WatchPug.Panel.status['description-words'] = 'warning';
       

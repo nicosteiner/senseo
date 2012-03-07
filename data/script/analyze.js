@@ -144,7 +144,7 @@ WatchPug.Analyze = {
       
         // try to find out if headline is visible
       
-        if ($(headlines[i]).width() && $(headlines[i]).height() && $(headlines[i]).css('display') !== 'none' && $(headlines[i]).css('visibility') !== 'hidden') {
+        if ($(headlines[i]).is(':visible')) {
         
           highlightHeadlineHTML = $('<div>').text(headlines[i].textContent).append($('<a>').attr({
                                     'href': '#',
@@ -241,7 +241,7 @@ WatchPug.Analyze = {
       
         // try to find out if microdata is visible
       
-        if ($(microdata[i]).width() && $(microdata[i]).height() && $(microdata[i]).css('display') !== 'none' && $(microdata[i]).css('visibility') !== 'hidden') {
+        if ($(microdata[i]).is(':visible')) {
         
           highlightMicrodataHTML = $('<div>').text(itemprops).append($('<a>').attr({
                                      'href': '#',
@@ -287,6 +287,8 @@ WatchPug.Analyze = {
     var allImages = $('body img'),
         i,
         imgAlt,
+        imgSrc,
+        imgFileName,
         imgAltMissing,
         highlightImageHTML;
     
@@ -304,11 +306,17 @@ WatchPug.Analyze = {
 
     for (i = 0; i < allImages.length; i += 1) {
     
+      imgSrc = allImages[i].src.split('/');
+      
+      imgFileName = imgSrc[imgSrc.length - 1];
+      
+      imgFileName = imgFileName.length > 30 ? imgFileName.substring(0, 27) + '...' : imgFileName;
+    
       imgAlt = allImages[i].alt && allImages[i].alt !== '' ? allImages[i].alt : 'n/a';
     
       imgAltMissing = allImages[i].alt && allImages[i].alt !== '' ? false : true;
     
-      if ($(allImages[i]).width() && $(allImages[i]).height() && $(allImages[i]).css('display') !== 'none' && $(allImages[i]).css('visibility') !== 'hidden') {
+      if ($(allImages[i]).is(':visible')) {
       
         highlightImageHTML = $('<div>').text(imgAlt).append($('<a>').attr({
                                'href': '#',
@@ -323,7 +331,7 @@ WatchPug.Analyze = {
 
       }
       
-      WatchPug.Analyze.data['img-alt'].head.push(allImages[i].src);
+      WatchPug.Analyze.data['img-alt'].head.push(imgFileName);
       
       WatchPug.Analyze.data['img-alt'].missing.push(imgAltMissing);
       
@@ -603,7 +611,7 @@ WatchPug.Analyze = {
 
   getFacebookLikeButton: function() {
   
-    var button = $('iframe[src^="http://www.facebook.com/"]'),
+    var button = $('iframe[src*="//www.facebook.com/"]'),
         highlightButton;
     
     if (button.length) {
@@ -649,7 +657,7 @@ WatchPug.Analyze = {
   
   getGooglePlusButton: function() {
   
-    var button = $('iframe[src^="https://plusone.google.com/"]'),
+    var button = $('iframe[src*="//plusone.google.com/"]'),
         highlightButton;
     
     if (button.length) {
@@ -695,7 +703,7 @@ WatchPug.Analyze = {
   
   getTweetButton: function() {
   
-    var button = $('iframe[src^="http://platform.twitter.com/"]'),
+    var button = $('iframe[src*="//platform.twitter.com/"]'),
         highlightButton;
 
     if (button.length) {
@@ -862,6 +870,7 @@ WatchPug.Analyze = {
     var targetElementOffset,
         targetElementWidth,
         targetElementHeight,
+        offsetDiff,
         scrollTop;
         
     // get offset / dimension of target element
@@ -873,7 +882,7 @@ WatchPug.Analyze = {
     targetElementHeight = $(targetElement).height();
 
     // if there is no highlight element, create one
-    
+
     if (targetElementWidth && targetElementHeight) {
     
       if (!WatchPug.Analyze.highlightDOMElement) {
@@ -928,7 +937,9 @@ WatchPug.Analyze = {
 
       // show highlighted area
       
-      scrollTop = targetElementOffset.top - 50 < 0 ? 0 : targetElementOffset.top - 50;
+      offsetDiff = $(window).height() > 450 ? 400 : $(window).height() / 2;
+      
+      scrollTop = targetElementOffset.top - offsetDiff < 0 ? 0 : targetElementOffset.top - offsetDiff;
       
       $('html, body').animate({scrollTop: scrollTop}, 300);
     
