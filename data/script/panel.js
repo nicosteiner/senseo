@@ -171,6 +171,10 @@ WatchPug.Panel = {
   
   highlightedDataRow: null,
   
+  savedGrade: null,
+  
+  savedStatus: null,
+  
   init: function() {
 
     // init panel instantly for faster user experience
@@ -657,6 +661,12 @@ WatchPug.Panel = {
     
     });
     
+    $('#save-result').click(function() {
+    
+      WatchPug.Panel.handleSaveResult();
+    
+    });
+    
     // init settings later
     
     // WatchPug.Panel.readData('color-blind-friendly', WatchPug.Panel.initCBFCheckbox);
@@ -805,6 +815,20 @@ WatchPug.Panel = {
 
   },
   
+  handleSaveResult: function() {
+  
+    // save result
+    
+    WatchPug.Panel.savedGrade = WatchPug.Panel.grade;
+  
+    WatchPug.Panel.savedStatus = WatchPug.Panel.status;
+    
+    // try animation
+    
+    $('#inspect-results article').addClass('compare');
+
+  },
+  
   setActiveTab: function(tab) {
   
     var i;
@@ -851,7 +875,7 @@ WatchPug.Panel = {
   
   },
   
-  highlightDataRow: function(e) {
+  highlightDataRow: function() {
   
     if (WatchPug.Panel.highlightedDataRow) {
     
@@ -1313,16 +1337,18 @@ WatchPug.Panel = {
   
     var keywords,
         titleData, titleCount,
-        metaDescription, descriptionData,
+        descriptionData,
         robotsData, robotsFile,
         sitemapFile,
         h1Data, h2Data, h3Data, h4Data, h5Data, h6Data,
         pageLoadTime,
         altImagesGrade,
         hostData,
+        domainKeywords,
         domainAge,
         pathData,
-        levels;
+        levels,
+        i;
   
     keywords = WatchPug.Panel.keywords;
 
@@ -1668,11 +1694,25 @@ WatchPug.Panel = {
     
     domainAge = parseInt((new Date()).getFullYear(), 10) - parseInt(WatchPug.Panel.activeDocumentComponents['domain-age'].data.split(' ')[2], 10);
     
-    if (hostData && WatchPug.Panel.includesAllKeywords(hostData, keywords)) {
+    domainKeywords = keywords;
+    
+    for (i = 0; i < domainKeywords.length; i += 1) {
+    
+      // TODO: localize & replacement
+    
+      domainKeywords[i] = domainKeywords[i].replace(/ä/g, 'ae')
+                                           .replace(/ö/g, 'oe')
+                                           .replace(/ü/g, 'ue')
+                                           .replace(/ß/g, 'ss')
+                                           .replace(/&/g, 'und');
+    
+    }
+    
+    if (hostData && WatchPug.Panel.includesAllKeywords(hostData, domainKeywords)) {
     
       WatchPug.Panel.status['host-includes'] = 'pass';
       
-    } else if (hostData && WatchPug.Panel.includesSomeKeywords(hostData, keywords)) {
+    } else if (hostData && WatchPug.Panel.includesSomeKeywords(hostData, domainKeywords)) {
     
       WatchPug.Panel.status['host-includes'] = 'warning';
       
@@ -1888,255 +1928,247 @@ WatchPug.Panel = {
   
     inspectResultsContainer.html(
   
-      WatchPug.Panel.generateInspectResultMarkup('title-found', WatchPug.Panel.grade.title[0], 'al.tt.UseTitleTag', 'http://sensational-seo.com/on-page-criteria.html#title', WatchPug.Panel.found.title, {
+      WatchPug.Panel.generateInspectResultsContainerMarkup() + $('<div>').append($('<div>')
+                                                              .attr('class', 'legend')
+                                                            .append($('<span>')
+                                                              .attr('class', 'legend pass')
+                                                              .text(WatchPug.StrBundle.getString('al.lg.Pass')))
+                                                            .append($('<span>')
+                                                              .attr('class', 'legend warning')
+                                                              .text(WatchPug.StrBundle.getString('al.lg.Warning')))
+                                                            .append($('<span>')
+                                                              .attr('class', 'legend fail')
+                                                              .text(WatchPug.StrBundle.getString('al.lg.Fail')))
+                                                            .append($('<span>')
+                                                              .attr('class', 'legend neutral')
+                                                              .text(WatchPug.StrBundle.getString('al.lg.NotChecked'))).clone()).html()
+                                                              
+                                );
       
-        1: {
-          status: WatchPug.Panel.status['title-onetime'],
-          strBundleKey: 'al.st.TitleOnetime'
-        },
-         
-        2: {
-          status: WatchPug.Panel.status['title-includes'],
-          strBundleKey: 'al.st.TitleIncludes'
-        },
-         
-        3: {
-          status: WatchPug.Panel.status['title-length'],
-          strBundleKey: 'al.st.TitleLength'
-        },
-         
-        4: {
-          status: WatchPug.Panel.status['title-words'],
-          strBundleKey: 'al.st.TitleWords'
-        }
-
-      }) +
-      
-      WatchPug.Panel.generateInspectResultMarkup('description', WatchPug.Panel.grade.description[0], 'al.tt.UseMetaDescription', 'http://sensational-seo.com/on-page-criteria.html#metadescription', WatchPug.Panel.found.description, {
-      
-        1: {
-          status: WatchPug.Panel.status['description-onetime'],
-          strBundleKey: 'al.st.DescriptionOnetime'
-        },
-         
-        2: {
-          status: WatchPug.Panel.status['description-includes'],
-          strBundleKey: 'al.st.DescriptionIncludes'
-        },
-         
-        3: {
-          status: WatchPug.Panel.status['description-length'],
-          strBundleKey: 'al.st.DescriptionLength'
-        },
-         
-        4: {
-          status: WatchPug.Panel.status['description-words'],
-          strBundleKey: 'al.st.DescriptionWords'
-        }
-
-      }) +
-      
-      WatchPug.Panel.generateInspectResultMarkup('robots', WatchPug.Panel.grade.robots[0], 'al.tt.UseMetaRobots', 'http://sensational-seo.com/on-page-criteria.html#robots', WatchPug.Panel.found.robots, {
-      
-        1: {
-          status: WatchPug.Panel.status['robots-exists'],
-          strBundleKey: 'al.st.MetaRobots'
-        }
-        
-      }) +
-         
-      WatchPug.Panel.generateInspectResultMarkup('sitemap', WatchPug.Panel.grade.sitemap[0], 'al.tt.UseSitemap', 'http://sensational-seo.com/on-page-criteria.html#robots', WatchPug.Panel.found.sitemap, {
-      
-        1: {
-          status: WatchPug.Panel.status['sitemap-exists'],
-          strBundleKey: 'al.st.Sitemap'
-        }
-        
-      }) +
-      
-      WatchPug.Panel.generateInspectResultMarkup('headlines', WatchPug.Panel.grade.headlines[0], 'al.tt.HeadlineTags', 'http://sensational-seo.com/on-page-criteria.html#headline', WatchPug.Panel.found.headlines, {
-      
-        1: {
-          status: WatchPug.Panel.status['headlines-structure'],
-          strBundleKey: 'al.st.HeadlinesStructure'
-        },
-         
-        2: {
-          status: WatchPug.Panel.status['headlines-onetime'],
-          strBundleKey: 'al.st.HeadlinesOnetime'
-        },
-         
-        3: {
-          status: WatchPug.Panel.status['headlines-includes'],
-          strBundleKey: 'al.st.HeadlinesInclude'
-        },
-         
-        4: {
-          status: WatchPug.Panel.status['headlines-other'],
-          strBundleKey: 'al.st.HeadlinesOther'
-        }
-
-      }) +
-      
-      WatchPug.Panel.generateInspectResultMarkup('content', WatchPug.Panel.grade.content[0], 'al.tt.PageContent', 'http://sensational-seo.com/on-page-criteria.html#pagecontent', WatchPug.Panel.found.content, {
-      
-        1: {
-          status: 'neutral',
-          strBundleKey: 'al.st.ContentUnique'
-        },
-         
-        2: {
-          status: 'neutral',
-          strBundleKey: 'al.st.ContentDuplicate'
-        },
-         
-        3: {
-          status: 'neutral',
-          strBundleKey: 'al.st.ContentStyle'
-        },
-         
-        4: {
-          status: WatchPug.Panel.status['content-alt'],
-          strBundleKey: 'al.st.ContentAlt'
-        },
-        
-        5: {
-          status: 'neutral',
-          strBundleKey: 'al.st.ContentPictureQuality'
-        },
-        
-        6: {
-          status: 'neutral',
-          strBundleKey: 'al.st.ContentForImages'
-        },
-        
-        7: {
-          status: WatchPug.Panel.status['content-social-media'],
-          strBundleKey: 'al.st.ContentSocialMedia'
-        },
-         
-        8: {
-          status: WatchPug.Panel.status['content-keywords'],
-          strBundleKey: 'al.st.ContentKeywords'
-        },
-         
-        9: {
-          status: WatchPug.Panel.status['content-links'],
-          strBundleKey: 'al.st.ContentLinks'
-        },
-         
-        10: {
-          status: WatchPug.Panel.status['content-validation'],
-          strBundleKey: 'al.st.CodeSemanticValid'
-        },
-         
-        11: {
-          status: WatchPug.Panel.status['content-load-time'],
-          strBundleKey: 'al.st.FastPageLoad'
-        },
-         
-        12: {
-          status: WatchPug.Panel.status['content-microdata'],
-          strBundleKey: 'al.st.Microdata'
-        }
-
-      }) +
-      
-      WatchPug.Panel.generateInspectResultMarkup('host', WatchPug.Panel.grade.host[0], 'al.tt.Domain', 'http://sensational-seo.com/on-page-criteria.html#domain', WatchPug.Panel.found.host, {
-      
-        1: {
-          status: WatchPug.Panel.status['host-includes'],
-          strBundleKey: 'al.st.HostIncludes'
-        },
-         
-        2: {
-          status: WatchPug.Panel.status['host-idn'],
-          strBundleKey: 'al.st.HostIdn'
-        },
-         
-        3: {
-          status: WatchPug.Panel.status['host-hyphen'],
-          strBundleKey: 'al.st.HostHyphen'
-        },
-         
-        4: {
-          status: WatchPug.Panel.status['host-age'],
-          strBundleKey: 'al.st.Host2Years'
-        },
-         
-        5: {
-          status: 'neutral',
-          strBundleKey: 'al.st.HostSelf'
-        },
-        
-        6: {
-          status: 'neutral',
-          strBundleKey: 'al.st.HostRedirect'
-        }
-
-      }) +
-      
-      WatchPug.Panel.generateInspectResultMarkup('path', WatchPug.Panel.grade.path[0], 'al.tt.Path', 'http://sensational-seo.com/on-page-criteria.html#path', WatchPug.Panel.found.path, {
-      
-        1: {
-          status: WatchPug.Panel.status['path-length'],
-          strBundleKey: 'al.st.PathLength'
-        },
-         
-        2: {
-          status: WatchPug.Panel.status['path-dynparam'],
-          strBundleKey: 'al.st.PathDynparam'
-        },
-         
-        3: {
-          status: WatchPug.Panel.status['path-hyphen'],
-          strBundleKey: 'al.st.PathHyphen'
-        },
-         
-        4: {
-          status: WatchPug.Panel.status['path-lowercase'],
-          strBundleKey: 'al.st.PathLowercase'
-        },
-         
-        5: {
-          status: WatchPug.Panel.status['path-levels'],
-          strBundleKey: 'al.st.PathLevels'
-        }
-
-      }) +
-      
-      $('<div>')
-      .append($('<div>')
-      .attr('class', 'legend')
-        .append($('<span>')
-        .attr('class', 'legend pass')
-        .text(WatchPug.StrBundle.getString('al.lg.Pass')))
-        .append($('<span>')
-        .attr('class', 'legend warning')
-        .text(WatchPug.StrBundle.getString('al.lg.Warning')))
-        .append($('<span>')
-        .attr('class', 'legend fail')
-        .text(WatchPug.StrBundle.getString('al.lg.Fail')))
-        .append($('<span>')
-        .attr('class', 'legend neutral')
-        .text(WatchPug.StrBundle.getString('al.lg.NotChecked'))).clone()).html());
-        
-        /*
-        
-        
-      
-      '<div class="legend">' +
-      '  <span class="legend pass">' + WatchPug.StrBundle.getString('al.lg.Pass') + '</span>' +
-      '  <span class="legend warning">' + WatchPug.StrBundle.getString('al.lg.Warning') + '</span>' +
-      '  <span class="legend fail">' + WatchPug.StrBundle.getString('al.lg.Fail') + '</span>' +
-      '  <span class="legend neutral">' + WatchPug.StrBundle.getString('al.lg.NotChecked') + '</span>' +
-      '</div>'
-      */
-   
-    
-  }
+  },
   
-  // this is new parser stuff
+  generateInspectResultsContainerMarkup: function() {
+  
+    return WatchPug.Panel.generateInspectResultMarkup('title-found', WatchPug.Panel.grade.title[0], 'al.tt.UseTitleTag', 'http://sensational-seo.com/on-page-criteria.html#title', WatchPug.Panel.found.title, {
+    
+      1: {
+        status: WatchPug.Panel.status['title-onetime'],
+        strBundleKey: 'al.st.TitleOnetime'
+      },
+       
+      2: {
+        status: WatchPug.Panel.status['title-includes'],
+        strBundleKey: 'al.st.TitleIncludes'
+      },
+       
+      3: {
+        status: WatchPug.Panel.status['title-length'],
+        strBundleKey: 'al.st.TitleLength'
+      },
+       
+      4: {
+        status: WatchPug.Panel.status['title-words'],
+        strBundleKey: 'al.st.TitleWords'
+      }
+
+    }) +
+    
+    WatchPug.Panel.generateInspectResultMarkup('description', WatchPug.Panel.grade.description[0], 'al.tt.UseMetaDescription', 'http://sensational-seo.com/on-page-criteria.html#metadescription', WatchPug.Panel.found.description, {
+    
+      1: {
+        status: WatchPug.Panel.status['description-onetime'],
+        strBundleKey: 'al.st.DescriptionOnetime'
+      },
+       
+      2: {
+        status: WatchPug.Panel.status['description-includes'],
+        strBundleKey: 'al.st.DescriptionIncludes'
+      },
+       
+      3: {
+        status: WatchPug.Panel.status['description-length'],
+        strBundleKey: 'al.st.DescriptionLength'
+      },
+       
+      4: {
+        status: WatchPug.Panel.status['description-words'],
+        strBundleKey: 'al.st.DescriptionWords'
+      }
+
+    }) +
+    
+    WatchPug.Panel.generateInspectResultMarkup('robots', WatchPug.Panel.grade.robots[0], 'al.tt.UseMetaRobots', 'http://sensational-seo.com/on-page-criteria.html#robots', WatchPug.Panel.found.robots, {
+    
+      1: {
+        status: WatchPug.Panel.status['robots-exists'],
+        strBundleKey: 'al.st.MetaRobots'
+      }
+      
+    }) +
+       
+    WatchPug.Panel.generateInspectResultMarkup('sitemap', WatchPug.Panel.grade.sitemap[0], 'al.tt.UseSitemap', 'http://sensational-seo.com/on-page-criteria.html#robots', WatchPug.Panel.found.sitemap, {
+    
+      1: {
+        status: WatchPug.Panel.status['sitemap-exists'],
+        strBundleKey: 'al.st.Sitemap'
+      }
+      
+    }) +
+    
+    WatchPug.Panel.generateInspectResultMarkup('headlines', WatchPug.Panel.grade.headlines[0], 'al.tt.HeadlineTags', 'http://sensational-seo.com/on-page-criteria.html#headline', WatchPug.Panel.found.headlines, {
+    
+      1: {
+        status: WatchPug.Panel.status['headlines-structure'],
+        strBundleKey: 'al.st.HeadlinesStructure'
+      },
+       
+      2: {
+        status: WatchPug.Panel.status['headlines-onetime'],
+        strBundleKey: 'al.st.HeadlinesOnetime'
+      },
+       
+      3: {
+        status: WatchPug.Panel.status['headlines-includes'],
+        strBundleKey: 'al.st.HeadlinesInclude'
+      },
+       
+      4: {
+        status: WatchPug.Panel.status['headlines-other'],
+        strBundleKey: 'al.st.HeadlinesOther'
+      }
+
+    }) +
+    
+    WatchPug.Panel.generateInspectResultMarkup('content', WatchPug.Panel.grade.content[0], 'al.tt.PageContent', 'http://sensational-seo.com/on-page-criteria.html#pagecontent', WatchPug.Panel.found.content, {
+    
+      1: {
+        status: 'neutral',
+        strBundleKey: 'al.st.ContentUnique'
+      },
+       
+      2: {
+        status: 'neutral',
+        strBundleKey: 'al.st.ContentDuplicate'
+      },
+       
+      3: {
+        status: 'neutral',
+        strBundleKey: 'al.st.ContentStyle'
+      },
+       
+      4: {
+        status: WatchPug.Panel.status['content-alt'],
+        strBundleKey: 'al.st.ContentAlt'
+      },
+      
+      5: {
+        status: 'neutral',
+        strBundleKey: 'al.st.ContentPictureQuality'
+      },
+      
+      6: {
+        status: 'neutral',
+        strBundleKey: 'al.st.ContentForImages'
+      },
+      
+      7: {
+        status: WatchPug.Panel.status['content-social-media'],
+        strBundleKey: 'al.st.ContentSocialMedia'
+      },
+       
+      8: {
+        status: WatchPug.Panel.status['content-keywords'],
+        strBundleKey: 'al.st.ContentKeywords'
+      },
+       
+      9: {
+        status: WatchPug.Panel.status['content-links'],
+        strBundleKey: 'al.st.ContentLinks'
+      },
+       
+      10: {
+        status: WatchPug.Panel.status['content-validation'],
+        strBundleKey: 'al.st.CodeSemanticValid'
+      },
+       
+      11: {
+        status: WatchPug.Panel.status['content-load-time'],
+        strBundleKey: 'al.st.FastPageLoad'
+      },
+       
+      12: {
+        status: WatchPug.Panel.status['content-microdata'],
+        strBundleKey: 'al.st.Microdata'
+      }
+
+    }) +
+    
+    WatchPug.Panel.generateInspectResultMarkup('host', WatchPug.Panel.grade.host[0], 'al.tt.Domain', 'http://sensational-seo.com/on-page-criteria.html#domain', WatchPug.Panel.found.host, {
+    
+      1: {
+        status: WatchPug.Panel.status['host-includes'],
+        strBundleKey: 'al.st.HostIncludes'
+      },
+       
+      2: {
+        status: WatchPug.Panel.status['host-idn'],
+        strBundleKey: 'al.st.HostIdn'
+      },
+       
+      3: {
+        status: WatchPug.Panel.status['host-hyphen'],
+        strBundleKey: 'al.st.HostHyphen'
+      },
+       
+      4: {
+        status: WatchPug.Panel.status['host-age'],
+        strBundleKey: 'al.st.Host2Years'
+      },
+       
+      5: {
+        status: 'neutral',
+        strBundleKey: 'al.st.HostSelf'
+      },
+      
+      6: {
+        status: 'neutral',
+        strBundleKey: 'al.st.HostRedirect'
+      }
+
+    }) +
+    
+    WatchPug.Panel.generateInspectResultMarkup('path', WatchPug.Panel.grade.path[0], 'al.tt.Path', 'http://sensational-seo.com/on-page-criteria.html#path', WatchPug.Panel.found.path, {
+    
+      1: {
+        status: WatchPug.Panel.status['path-length'],
+        strBundleKey: 'al.st.PathLength'
+      },
+       
+      2: {
+        status: WatchPug.Panel.status['path-dynparam'],
+        strBundleKey: 'al.st.PathDynparam'
+      },
+       
+      3: {
+        status: WatchPug.Panel.status['path-hyphen'],
+        strBundleKey: 'al.st.PathHyphen'
+      },
+       
+      4: {
+        status: WatchPug.Panel.status['path-lowercase'],
+        strBundleKey: 'al.st.PathLowercase'
+      },
+       
+      5: {
+        status: WatchPug.Panel.status['path-levels'],
+        strBundleKey: 'al.st.PathLevels'
+      }
+
+    });
+
+  }
+    
+// this is new parser stuff
   
   /*
   getDomain: function() {

@@ -867,7 +867,8 @@ WatchPug.Analyze = {
   
   highlightTargetElement: function(targetElement, content) {
     
-    var targetElementOffset,
+    var hightlightStylesheet,
+        targetElementOffset,
         targetElementWidth,
         targetElementHeight,
         offsetDiff,
@@ -892,6 +893,13 @@ WatchPug.Analyze = {
         
         WatchPug.Analyze.highlightDOMElement = $('#senseo-highlight-container');
         
+        // create own stylesheet for highlight element styles
+        // from: https://developer.mozilla.org/en/DOM/CSSStyleSheet/insertRule
+        
+        document.getElementsByTagName('head')[0].appendChild(document.createElement('style'));
+
+        hightlightStylesheet = document.styleSheets[document.styleSheets.length - 1];
+        
         // does not work
         /*
         if (CSSRule.KEYFRAMES_RULE) {
@@ -899,8 +907,8 @@ WatchPug.Analyze = {
         }
         document.styleSheets[0].insertRule('#senseo-highlight-container {animation-name: bgpulse; animation-duration: 1s; animation-iteration-count: infinite; animation-direction: alternate; animation-timing-function: ease-in-out;}', 0);
         */
-        document.styleSheets[0].insertRule('#senseo-highlight-container {-moz-transition-property: left, top, width, height; -moz-transition-duration: 0.15s; -moz-transition-timing-function: ease-out;}', 0);
-        document.styleSheets[0].insertRule('#senseo-highlight-container {position: absolute; z-index: 9998; border: 1px red dashed; background-color: rgba(255, 50, 50, 0.3); box-shadow: 0 0 4px #000; -moz-box-sizing: border-box; padding: 3px 5px; text-align: right; color: red; font-family: Arial, Verdana, sans serif; font-size: 18px; font-weight: bold}', 0);
+        hightlightStylesheet.insertRule('#senseo-highlight-container {-moz-transition-property: left, top, width, height; -moz-transition-duration: 0.15s; -moz-transition-timing-function: ease-out;}', 0);
+        hightlightStylesheet.insertRule('#senseo-highlight-container {position: absolute; z-index: 9998; border: 1px red dashed; background-color: rgba(255, 50, 50, 0.3); box-shadow: 0 0 4px #000; -moz-box-sizing: border-box; padding: 3px 5px; text-align: right; color: red; font-family: Arial, Verdana, sans serif; font-size: 18px; font-weight: bold}', 0);
         
       }
       
@@ -920,10 +928,10 @@ WatchPug.Analyze = {
         
         WatchPug.Analyze.highlightBubbleElement = $('#senseo-highlight-bubble');
         
-        document.styleSheets[0].insertRule('#senseo-highlight-bubble {-moz-transition-property: left, top; -moz-transition-duration: 0.15s; -moz-transition-timing-function: ease-out;}', 0);
-        document.styleSheets[0].insertRule('#senseo-highlight-bubble {position: absolute; z-index: 9999; display: inline-block; width: 80px; padding: 2px; background: -moz-linear-gradient(top, #888 0%,#444 100%); position: absolute; border-radius: 3px; border: 1px #333 solid;}', 0);
-        document.styleSheets[0].insertRule('#senseo-highlight-bubble p {font-size: 11px; color: #eef; text-align: center; margin: 0; padding: 0; line-hieght: 1em;}', 0);
-        document.styleSheets[0].insertRule('#senseo-highlight-bubble:after {position: absolute; top: -5px; left: 40px; content: ""; display: block; border-left: 5px solid transparent; border-right: 5px solid transparent; border-bottom: 5px solid #333;}', 0);
+        hightlightStylesheet.insertRule('#senseo-highlight-bubble {-moz-transition-property: left, top; -moz-transition-duration: 0.15s; -moz-transition-timing-function: ease-out;}', 0);
+        hightlightStylesheet.insertRule('#senseo-highlight-bubble {position: absolute; z-index: 9999; display: inline-block; width: 80px; padding: 2px; background: -moz-linear-gradient(top, #888 0%,#444 100%); position: absolute; border-radius: 3px; border: 1px #333 solid;}', 0);
+        hightlightStylesheet.insertRule('#senseo-highlight-bubble p {font-size: 11px; color: #eef; text-align: center; margin: 0; padding: 0; line-hieght: 1em;}', 0);
+        hightlightStylesheet.insertRule('#senseo-highlight-bubble:after {position: absolute; top: -5px; left: 40px; content: ""; display: block; border-left: 5px solid transparent; border-right: 5px solid transparent; border-bottom: 5px solid #333;}', 0);
         
       }
 

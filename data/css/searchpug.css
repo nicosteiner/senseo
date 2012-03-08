@@ -227,12 +227,16 @@ section#inspect-result #marketing-container {
 
 section#inspect-result #marketing-container img.icon {
   float: left;
+  margin-right: 5px;
+}
+
+#save-result:hover {
+  cursor: pointer;
 }
 
 section#inspect-result #marketing-container #tweet-this,
 section#inspect-result #marketing-container #write-review {
   display: inline-block;
-  margin-left: 5px;
   color: #405993;
 }
 
@@ -277,16 +281,28 @@ section#components-container > section {
 
 #inspect-results article {
   position: relative;
+  float: right;
+  width: 556px;
   margin: 8px;
   border-radius: 10px;
   border: 1px #ccc solid;
   box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.15);
   background-color: #fff;
+  /* animation when results are compared */
+  -moz-transition-property: width;
+  -moz-transition-duration: 0.6s;
+  -moz-transition-timing-function: ease-out;
+}
+
+#inspect-results article.compare {
+  width: 520px;
 }
 
 #inspect-results article .details {
   padding: 8px 12px;
   margin-left: 25px;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 #inspect-results article .details ul {
@@ -415,7 +431,6 @@ section#components-container > section {
 
 #components-table tr.clicked {
   background-image: -moz-linear-gradient(top, #c5d8fa, #90a9d3);
-  box-shadow: inset 1px 1px 1px rgba(0, 0, 0, 0.5);
 }
 
 #components-table th,
