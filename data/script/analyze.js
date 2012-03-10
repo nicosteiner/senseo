@@ -34,13 +34,15 @@ WatchPug.Analyze = {
   
   getMetaDescription: function() {
 
-    var metaDescription = $('head meta[name = "description"]');
+    var metaDescription = $('head meta').filter(function() {
+      return /description/i.test(this.name);
+    });
     
     WatchPug.Analyze.data['meta-description'] = {
       
       head: 'description meta tag',
       
-      count: $('head meta[name = "description"]').length,
+      count: metaDescription.length,
       
       data: metaDescription && metaDescription.attr('content') ? metaDescription.attr('content') : 'n/a'
       
@@ -111,7 +113,7 @@ WatchPug.Analyze = {
       
       head: 'page load time (ms)',
       
-      data: pageLoadTime + '<a href="http://gtmetrix.com/?url=' + encodeURI(WatchPug.Analyze.data['location-protocol'].data + '//' + WatchPug.Analyze.data['location-hostname'].data) + '" target="blank">analyze performance</a>'
+      data: pageLoadTime + '<a href="http://gtmetrix.com/?url=' + encodeURIComponent(WatchPug.Analyze.data['location-protocol'].data + '//' + WatchPug.Analyze.data['location-hostname'].data) + '" target="blank">analyze performance</a>'
       
     };
   
@@ -203,7 +205,7 @@ WatchPug.Analyze = {
         
         head: 'microdata',
         
-        data: 'found' + '<a id="go-to-testing-tool" target="blank" href="http://www.google.com/webmasters/tools/richsnippets?url=' + encodeURI(WatchPug.Analyze.data['location-href'].data) + '">preview</a>'
+        data: 'found' + '<a id="go-to-testing-tool" target="blank" href="http://www.google.com/webmasters/tools/richsnippets?url=' + encodeURIComponent(WatchPug.Analyze.data['location-href'].data) + '">preview</a>'
         
       };
       
@@ -539,7 +541,7 @@ WatchPug.Analyze = {
 
   getValidationResult: function() {
   
-    var url = 'http://validator.w3.org/check?uri=' + encodeURI(WatchPug.Analyze.data['location-protocol'].data + '//' + WatchPug.Analyze.data['location-hostname'].data + '/&charset=(detect+automatically)&doctype=Inline&group=0');
+    var url = 'http://validator.w3.org/check?uri=' + encodeURIComponent(WatchPug.Analyze.data['location-protocol'].data + '//' + WatchPug.Analyze.data['location-hostname'].data + '/') + '&charset=(detect+automatically)&doctype=Inline&group=0';
     
     WatchPug.Analyze.data['validation-result'] = {
       
@@ -557,7 +559,7 @@ WatchPug.Analyze = {
   
   getDomainAge: function() {
   
-    var url = 'http://wayback.archive.org/web/*/' + encodeURI(WatchPug.Analyze.data['location-hostname'].data);
+    var url = 'http://wayback.archive.org/web/*/' + encodeURIComponent(WatchPug.Analyze.data['location-hostname'].data);
     
     WatchPug.Analyze.data['domain-age'] = {
       

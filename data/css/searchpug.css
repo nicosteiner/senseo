@@ -490,22 +490,30 @@ section#settings-container form legend {
   font-size: 22px;
 }
 
+section#settings-container form p.info {
+  padding: 5px;
+  margin-top: 15px;
+  border: 1px #f55 solid;
+  background-color: #fee;
+  border-radius: 3px;
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
+}
+
 section#settings-container form dl {
   margin-top: 15px;
 }
 
 section#settings-container form dl dt {
   float: left;
-  text-align: right;
+  text-align: left;
   margin-right: 10px;
-  padding-top: 3px;
   width: 180px;
-  height: 32px;
+  height: 30px;
 }
 
 section#settings-container form dl dd {
   display: block;
-  height: 35px;
+  height: 30px;
 }
 
 section#badges-container {

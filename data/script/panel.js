@@ -248,6 +248,14 @@ WatchPug.Panel = {
       
     });
   
+    // preferences land here
+
+    self.port.on('getSettings', function handleSettingsData(data) {
+      
+      WatchPug.Panel.setting = data;
+      
+    });
+  
     self.on('message', function(activeDocumentComponents) {
     
       WatchPug.Panel.activeDocumentComponents = activeDocumentComponents;
@@ -514,7 +522,7 @@ WatchPug.Panel = {
       
       WatchPug.Panel.requestKeyword = WatchPug.Panel.keywordsString;
       
-      url = 'http://us.api.semrush.com/?action=report&type=phrase_related&key=89a72d6e1c56ce52a7eaf077907304e8&display_limit=10&export=api&export_columns=Ph&phrase=' + encodeURI(WatchPug.Panel.keywordsString);
+      url = 'http://us.api.semrush.com/?action=report&type=phrase_related&key=89a72d6e1c56ce52a7eaf077907304e8&display_limit=10&export=api&export_columns=Ph&phrase=' + encodeURIComponent(WatchPug.Panel.keywordsString);
 
       // show loading indicator until response is ready
       
@@ -655,22 +663,12 @@ WatchPug.Panel = {
   
     });
     
-    $('#settings-colorblind').change(function(e) {
-    
-      WatchPug.Panel.handleColorBlindSettings(e.target.checked);
-    
-    });
-    
     $('#save-result').click(function() {
     
       WatchPug.Panel.handleSaveResult();
     
     });
     
-    // init settings later
-    
-    // WatchPug.Panel.readData('color-blind-friendly', WatchPug.Panel.initCBFCheckbox);
-  
   },
   
   // this is not working / propably an addon sdk bug
@@ -678,12 +676,6 @@ WatchPug.Panel = {
   // keep an eye on: https://bugzilla.mozilla.org/show_bug.cgi?id=723502
 
   /*
-  
-  initCBFCheckbox: function(params) {
-  
-    console.log(params.dataValue);
-  
-  },
   
   readData: function(dataKey, callback) {
   
@@ -803,16 +795,10 @@ WatchPug.Panel = {
   
     WatchPug.Panel.setActiveTab('settings');
   
-  },
+    $('#settings-toolbar-icon').html(String(WatchPug.Panel.setting['toolbar-icon']));
   
-  handleColorBlindSettings: function(isChecked) {
+    $('#settings-color-blind').html(String(WatchPug.Panel.setting['color-blind']));
   
-    WatchPug.Panel.setting['color-blind-friendly'] = isChecked;
-
-    // later
-    
-    // WatchPug.Panel.storeData('color-blind-friendly', isChecked);
-
   },
   
   handleSaveResult: function() {
@@ -1898,7 +1884,7 @@ WatchPug.Panel = {
       
       $('#twitter-grade').html(WatchPug.Panel.grade.weighted[0]);
       
-      $('#tweet-this').attr('href', 'http://twitter.com/home?status=' + encodeURI('I got grade ' + WatchPug.Panel.grade.weighted[0] + ' (' + WatchPug.Panel.grade.weighted[1] + '/100) for optimizing my website with SenSEO Firefox extension http://goo.gl/d7dp'));
+      $('#tweet-this').attr('href', 'http://twitter.com/home?status=' + encodeURIComponent('I got grade ' + WatchPug.Panel.grade.weighted[0] + ' (' + WatchPug.Panel.grade.weighted[1] + '/100) for optimizing my website with SenSEO Firefox extension http://goo.gl/d7dp'));
   
     } else {
     
@@ -1916,7 +1902,7 @@ WatchPug.Panel = {
   
     inspectResultsContainer.removeClass('hidden');
   
-    if (WatchPug.Panel.setting['color-blind-friendly']) {
+    if (WatchPug.Panel.setting['color-blind']) {
     
       inspectResultsContainer.addClass('color-blind-friendly');
     

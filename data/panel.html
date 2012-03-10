@@ -72,8 +72,11 @@
       <div id="inspect-result-ready" class="hidden">
         <span id="searchpug-grade"></span>: <strong id="inspect-grade"></strong>
         <span id="marketing-container">
+          <!-- implement later -->
+          <!--
           <img src="img/floppy-disk.png" id="save-result" class="icon">
           <img src="img/lightbulb-inactive.png" id="compare-result" class="icon">
+          -->
           <img src="img/twitter-icon.png" class="icon">
           <a href="http://twitter.com/home" target="blank" id="tweet-this">Tweet this result!</a>
           <a href="https://addons.mozilla.org/en-US/firefox/addon/senseo/reviews/add" target="blank" id="write-review">Write a review</a>
@@ -103,26 +106,24 @@
       <form>
         <fieldset>
           <legend>Settings</legend>
+          <p class="info">
+            You can find SenSEO preferences (settings) in the Add-ons Manager available in Firefox menu. Below you see readonly the current settings.
+          </p>
           <dl>
             <dt>
-              Language:
+              Do not show toolbar icon:
             </dt>
-            <dd>
-             <select id="settings-language">
-              <option name="english">english</option>
-              <option name="german" disabled="disabled">german (coming soon)</option>
-             </select>
-            </dd>
+            <dd id="settings-toolbar-icon"></dd>
             <dt>
               Color-blind friendly version:
             </dt>
-            <dd>
-              <input type="checkbox" id="settings-colorblind">
-            </dd>
+            <dd id="settings-color-blind"></dd>
           </dl>
         </fieldset>
       </form>
     </section>
+    <!-- implement later -->
+    <!--
     <section id="badges-container" class="hidden">
       <div class="dialog">
         <h2>Your badges:</h2>
@@ -146,6 +147,7 @@
         </ul>
       </div>
     </section>
+    -->
     <script>(function(d, s, id) {
       var js, fjs = d.getElementsByTagName(s)[0];
       if (d.getElementById(id)) { return; }
