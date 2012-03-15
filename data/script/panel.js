@@ -151,7 +151,7 @@ WatchPug.Panel = {
   
   callback: [],
   
-  tabs: ['intro', 'inspect', 'components', 'settings'],
+  tabs: ['intro', 'inspect', 'components', 'crawl', 'settings'],
   
   keywordsString: '',
   
@@ -471,7 +471,8 @@ WatchPug.Panel = {
   processSitemapFile: function(data) {
   
     var url = data.url,
-        status = data.status;
+        status = data.status,
+        text = data.text;
   
     if (status === 200) {
   
@@ -483,8 +484,40 @@ WatchPug.Panel = {
       
       $('#sitemap-file').empty().append(WatchPug.Panel.activeDocumentComponents['sitemap-file'].data);
 
-    }
+      WatchPug.Panel.activeDocumentComponents['sitemap-file'].pages = [];
+      
+      $(text).find('loc').each(function() {
+      
+        WatchPug.Panel.activeDocumentComponents['sitemap-file'].pages.push($(this).text());
+        
+      });
+      
+      // trigger crawl tab actions
+      
+      $('#crawl-sitemap-found').html('<span class="found">found</span>');
+    
+      $('#crawl-instructions').removeClass('hidden');
+    
+      $('#crawl-instructions .found').removeClass('hidden');
+    
+      $('#crawl-instructions .not-found').addClass('hidden');
+    
+      $('#crawl-container .crawl-sitemap-pages').html = WatchPug.Panel.activeDocumentComponents['sitemap-file'].pages.length;
+      
+    } else {
   
+      // trigger crawl tab actions
+      
+      $('#crawl-sitemap-found').html('<span class="not-found">n/a</span>');
+      
+      $('#crawl-instructions').removeClass('hidden');
+    
+      $('#crawl-instructions .found').addClass('hidden');
+    
+      $('#crawl-instructions .not-found').removeClass('hidden');
+    
+    }
+    
   },
   
   processDocumentHeaders: function(data) {
@@ -723,6 +756,14 @@ WatchPug.Panel = {
   
     });
   
+    $('#crawl-now-button').click(function(e) {
+        
+      e.preventDefault();
+      
+      WatchPug.Panel.handleCrawlNowButton();
+  
+    });
+  
     $('#printview-button').click(function(e) {
         
       e.preventDefault();
@@ -879,9 +920,17 @@ WatchPug.Panel = {
     
   },
   
-  handlePrintviewButton: function() {
+  handleCrawlNowButton: function() {
   
+    if (WatchPug.Panel.activeDocumentComponents['sitemap-file'].pages) {
     
+      self.port.emit('crawlPages', WatchPug.Panel.activeDocumentComponents['sitemap-file'].pages);
+    
+    }
+  
+  },
+  
+  handlePrintviewButton: function() {
   
   },
   

@@ -265,6 +265,34 @@ section#components-container > section {
   height: 302px;
 }
 
+section#crawl-container > section {
+  padding: 10px 8px 8px 8px;
+  line-height: 1.2em;
+  font-size: 11px;
+}
+
+section#crawl-container span.found {
+  font-style: italic;
+  color: #009900;
+}
+
+section#crawl-container span.not-found {
+  font-style: italic;
+  color: #990000;
+}
+
+section#crawl-container #crawl-instructions {
+  padding: 8px 0;
+}
+
+section#crawl-container #crawl-instructions form {
+  padding: 5px 0;
+}
+
+section#crawl-container #crawl-instructions form button {
+  font-size: 10px;
+}
+
 #inspect-related {
   padding: 10px 8px 8px 8px;
   line-height: 1.2em;

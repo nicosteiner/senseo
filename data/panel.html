@@ -105,14 +105,18 @@
     <section id="crawl-container" class="hidden">
       <section>
         sitemap.xml <span id="crawl-sitemap-found"><img src="img/roller.gif"></span>
-        <p id="crawl-instructions"></p>
-        <div id="crawl-status">
-          <div class="info">25/355 pages crawled...</div>
-          <div class="done"></div>
+        <div id="crawl-instructions" class="hidden">
+          <p class="not-found" class="hidden">
+            To use SenSEO crawling feature, your site has to provide a Sitemap. Learn more about Sitemaps at <a href="http://en.wikipedia.org/wiki/Sitemaps" target="blank">Wikipedia</a>
+            or at <a href="http://www.sitemaps.org/" target="blank">sitemaps.org</a>. To create a Sitemap online, you can use <a href="http://www.xml-sitemaps.com/" target="blank">Free Online Sitemap Generator</a>.
+          </p>
+          <p class="found" class="hidden">
+            Your site provides a Sitemap with <strong><span class="crawl-sitemap-pages"></span> pages</strong>. Crawling these pages will take about <strong><span class="crawl-time">1 second per page</strong>. Crawling results will be shown in a seperate Firefox tab.
+            <form>
+              <button class="blue-pill" id="crawl-now-button">Crawl pages now (opens new tab)</button>
+            </form>
+          </p>
         </div>
-        <table id="crawl-table">
-          <tbody></tbody>
-        </table>
       </section>
     </section>
     <section id="settings-container" class="hidden">
