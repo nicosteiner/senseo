@@ -13,7 +13,7 @@ WatchPug.StrBundle = {
 
     'console.Keywords': 'Keywords',
     'console.InspectSeoCriteria': 'Inspect SEO Criteria',
-    'console.CrawlAllPages': 'Crawl all Pages',
+    'console.Crawl': 'Crawl',
     'console.ShowComponents': 'Components',
     'console.Printview': 'Printview',
 
@@ -96,6 +96,7 @@ WatchPug.StrBundle = {
 
     'al.st.ContentUnique': 'Offer unique content on your page.',
     'al.st.ContentDuplicate': 'Prevent duplicate content.',
+    'al.st.LastModifiedHeader': 'Make sure your web server supports the If-Modified-Since HTTP header.',
     'al.st.ContentAlt': 'Images should always have alternative texts.',
     'al.st.ContentPictureQuality': 'Improve the quality of your pictures (resolution, pixel).',
     'al.st.ContentForImages': 'Surround your images with suitable content like headlines or paragraphs.',
@@ -120,6 +121,7 @@ WatchPug.StrBundle = {
     'al.st.CodeSemanticValid': 'Make sure your code is semantic and valid.',
     'al.st.FastPageLoad': 'Optimize page load time of your site (faster than two seconds).',
     'al.st.Microdata': 'Use microdata to mark up reviews, addresses etc.',
+    'al.st.CrossBrowser': 'Make sure that your page looks the same in all browsers.',
 
     'al.lg.Pass': 'pass',
     'al.lg.Warning': 'warning',
@@ -156,6 +158,8 @@ WatchPug.Panel = {
   keywords: '',
 
   requestKeyword: '',
+  
+  processedDocumentHeaders: false,
   
   processedDomainAge: false,
   
@@ -209,8 +213,14 @@ WatchPug.Panel = {
     self.port.on('getResponseText', function handleValidatePageEvent(data) {
       
       // manual switch for different responses
+
+      if (data.key === 'document-headers') {
       
-      if (data.key === 'domain-age') {
+        WatchPug.Panel.processDocumentHeaders(data);
+        
+        WatchPug.Panel.processedDocumentHeaders = true;
+      
+      } else if (data.key === 'domain-age') {
       
         WatchPug.Panel.processDomainAge(data);
         
@@ -303,6 +313,7 @@ WatchPug.Panel = {
   asyncDataIsReady: function() {
 
     if (WatchPug.Panel.forceAsyncDataIsReady || (
+        WatchPug.Panel.processedDocumentHeaders &&
         WatchPug.Panel.processedDomainAge &&
         WatchPug.Panel.processedRobotsFile &&
         WatchPug.Panel.processedSitemapFile &&
@@ -346,6 +357,8 @@ WatchPug.Panel = {
       
     });
     
+    WatchPug.Panel.hideSpeechBubble();
+    
     // show / hide specific containers
     
     $('#inspect-related').addClass('hidden');
@@ -382,6 +395,7 @@ WatchPug.Panel = {
     
   resetAsyncProcess: function() {
   
+    WatchPug.Panel.processedDocumentHeaders = false;
     WatchPug.Panel.processedDomainAge = false;
     WatchPug.Panel.processedRobotsFile = false;
     WatchPug.Panel.processedSitemapFile = false;
@@ -395,7 +409,12 @@ WatchPug.Panel = {
   processRobotsFile: function(data) {
   
     var url = data.url,
-        status = data.status;
+        status = data.status,
+        robotsData,
+        robotsDataKey, robotsDataValue,
+        robotsDataMap = [],
+        sitemapLocation,
+        i;
   
     if (status === 200) {
   
@@ -411,6 +430,42 @@ WatchPug.Panel = {
 
     }
   
+    robotsData = data.text.split('\n');
+    
+    for (i = 0; i < robotsData.length; i += 1) {
+    
+      robotsDataKey = $.trim(robotsData[i].substring(0, robotsData[i].indexOf(':')).toLowerCase());
+    
+      robotsDataValue = $.trim(robotsData[i].substring(robotsData[i].indexOf(':') + 1, robotsData[i].length));
+    
+      if (robotsDataKey !== '' && robotsDataKey[0] !== '#' && robotsDataValue !== '') {
+    
+        robotsDataMap[robotsDataKey] = robotsDataValue;
+      
+      }
+      
+    }
+  
+    if (robotsDataMap.sitemap && robotsDataMap.sitemap !== '') {
+    
+      WatchPug.Panel.activeDocumentComponents['robots-sitemap-location'].data = robotsDataMap.sitemap;
+                
+      sitemapLocation = WatchPug.Panel.activeDocumentComponents['robots-sitemap-location'].data;
+    
+      // update components table
+      
+      $('#robots-sitemap-location').empty().append(sitemapLocation);
+    
+    } else {
+    
+      sitemapLocation = WatchPug.Panel.activeDocumentComponents['location-protocol'].data + '//' + WatchPug.Panel.activeDocumentComponents['location-hostname'].data + '/sitemap.xml';
+    
+    }
+  
+    // check sitemap now
+  
+    self.port.emit('getResponseText', 'sitemap-file', sitemapLocation);
+    
   },
   
   processSitemapFile: function(data) {
@@ -430,6 +485,32 @@ WatchPug.Panel = {
 
     }
   
+  },
+  
+  processDocumentHeaders: function(data) {
+  
+    var headers = data.headers;
+    
+    // update components table
+    
+    if (headers['Content-Type']) {
+    
+      WatchPug.Panel.activeDocumentComponents['content-type'].data = headers['Content-Type'];
+    
+      $('#content-type').empty().append(headers['Content-Type']);
+    
+    }
+    
+    // update components table
+    
+    if (headers['Last-Modified']) {
+
+      WatchPug.Panel.activeDocumentComponents['last-modified'].data = headers['Last-Modified'];
+    
+      $('#last-modified').empty().append(headers['Last-Modified']);
+    
+    }
+    
   },
   
   processDomainAge: function(data) {
@@ -587,6 +668,7 @@ WatchPug.Panel = {
   
     $('#inspect-button').html(WatchPug.StrBundle.getString('console.InspectSeoCriteria'));
     $('#components-button').html(WatchPug.StrBundle.getString('console.ShowComponents'));
+    $('#crawl-button').html(WatchPug.StrBundle.getString('console.Crawl'));
     $('#printview-button').html(WatchPug.StrBundle.getString('console.Printview'));
 
     $('#keyword-input').blur(function() {
@@ -633,6 +715,14 @@ WatchPug.Panel = {
   
     });
   
+    $('#crawl-button').click(function(e) {
+        
+      e.preventDefault();
+      
+      WatchPug.Panel.handleCrawlButton();
+  
+    });
+  
     $('#printview-button').click(function(e) {
         
       e.preventDefault();
@@ -666,6 +756,12 @@ WatchPug.Panel = {
     $('#save-result').click(function() {
     
       WatchPug.Panel.handleSaveResult();
+    
+    });
+    
+    $('#compare-result').click(function() {
+    
+      WatchPug.Panel.handleCompareResult();
     
     });
     
@@ -775,6 +871,14 @@ WatchPug.Panel = {
   
   },
   
+  handleCrawlButton: function() {
+  
+    WatchPug.Panel.setActiveTab('crawl');
+    
+    // check for sitemap
+    
+  },
+  
   handlePrintviewButton: function() {
   
     
@@ -803,21 +907,96 @@ WatchPug.Panel = {
   
   handleSaveResult: function() {
   
+    var bubbleLeft, bubbleTop;
+  
     // save result
     
     WatchPug.Panel.savedGrade = WatchPug.Panel.grade;
   
     WatchPug.Panel.savedStatus = WatchPug.Panel.status;
     
-    // try animation
+    // what next?
     
-    $('#inspect-results article').addClass('compare');
+    bubbleLeft = $('#save-result').offset().left - 24;
 
+    bubbleTop = $('#save-result').offset().top + 24;
+
+    WatchPug.Panel.showSpeechBubble({top: bubbleTop, left: bubbleLeft}, 
+                                    '<ul><li><span class="bold">1.</span> Save result. (done)</li>' +
+                                    '<li><span class="bold">2.</span> Go to a second page.</li>' +
+                                    '<li><span class="bold">3.</span> Click <img src="img/lightbulb-active.png"> icon to compare results.</li>' +
+                                    '<li><a href="#">close</a> <a href="#">don\'t show again</a></ul>');
+                                                        
+    // remember which URL has been saved
+    
+    WatchPug.Panel.savedURL = WatchPug.Panel.activeDocumentComponents['location-hostname'].data + WatchPug.Panel.activeDocumentComponents['path-name'].data + WatchPug.Panel.activeDocumentComponents['url-params'].data;
+
+  },
+  
+  handleCompareResult: function() {
+  
+    var compareURL = WatchPug.Panel.activeDocumentComponents['location-hostname'].data + WatchPug.Panel.activeDocumentComponents['path-name'].data + WatchPug.Panel.activeDocumentComponents['url-params'].data,
+                     bubbleLeft, bubbleTop;
+
+    if (WatchPug.Panel.savedURL === compareURL) {
+
+      // same URL? => show hint
+      
+      bubbleLeft = $('#compare-result').offset().left - 24;
+
+      bubbleTop = $('#compare-result').offset().top + 24;
+
+      WatchPug.Panel.showSpeechBubble({top: bubbleTop, left: bubbleLeft},
+                                      '<ul><li>You can\'t compare same pages.</li>' +
+                                      '<li><span class="bold">1.</span> Go to a second page.</li>' +
+                                      '<li><span class="bold">2.</span> Click <img src="img/lightbulb-active.png"> again.</li>' +
+                                      '<li><a href="#">close</a></ul>');
+  
+    } else {
+  
+      if (WatchPug.Panel.savedGrade && WatchPug.Panel.savedStatus) {
+    
+        // get comparison html
+        
+        $('#inspect-results .saved-mode-true').html(
+    
+            '<img id="close-comparison" class="visible" src="img/cancel.png">' + 
+    
+            WatchPug.Panel.generateInspectResultsContainerMarkup(WatchPug.Panel.savedGrade, WatchPug.Panel.savedStatus)
+          
+        );
+        
+        // do animation
+        
+        $('#inspect-results .saved-mode-false').addClass('compare');
+        
+        $('#close-comparison').click(function(e) {
+            
+          e.preventDefault();
+          
+          WatchPug.Panel.handleCloseComparison();
+          
+        });
+      
+      }
+      
+    }
+
+  },
+  
+  handleCloseComparison: function() {
+  
+    $('#close-comparison').removeClass('visible');
+    
+    $('#inspect-results .saved-mode-false').removeClass('compare');
+  
   },
   
   setActiveTab: function(tab) {
   
     var i;
+  
+    WatchPug.Panel.hideSpeechBubble();
   
     $('#inspect-result').removeClass('hidden');
     
@@ -843,11 +1022,11 @@ WatchPug.Panel = {
   
   },
   
-  showSpeechBubble: function(offset, text) {
+  showSpeechBubble: function(offset, markup) {
   
     var speechBubble = $('#speech-bubble');
     
-    speechBubble.find('p').html(text);
+    speechBubble.find('p').html(markup);
     
     speechBubble.removeClass('hidden');
   
@@ -1551,6 +1730,15 @@ WatchPug.Panel = {
 
     WatchPug.Panel.found.content = WatchPug.Panel.activeDocumentComponents['body-text'] && WatchPug.Panel.activeDocumentComponents['body-text'] !== '' ? true : false;
     
+    if (WatchPug.Panel.activeDocumentComponents['last-modified'].data.indexOf('>n/a<') < 0) {
+    
+      WatchPug.Panel.status['content-last-modified'] = 'pass';
+      
+    } else {
+    
+      WatchPug.Panel.status['content-last-modified'] = 'fail';
+    
+    }
     
     if (WatchPug.Panel.activeDocumentComponents['img-without-alt'].data === 0) {
     
@@ -1672,7 +1860,7 @@ WatchPug.Panel = {
       
     }
     
-    WatchPug.Panel.grade.content = WatchPug.Panel.calculateGrade([WatchPug.Panel.status['content-alt'], WatchPug.Panel.status['content-social-media'], WatchPug.Panel.status['content-keywords'], WatchPug.Panel.status['content-links'], WatchPug.Panel.status['content-load-time'], WatchPug.Panel.status['content-microdata']]);
+    WatchPug.Panel.grade.content = WatchPug.Panel.calculateGrade([WatchPug.Panel.status['content-last-modified'], WatchPug.Panel.status['content-alt'], WatchPug.Panel.status['content-social-media'], WatchPug.Panel.status['content-keywords'], WatchPug.Panel.status['content-links'], WatchPug.Panel.status['content-load-time'], WatchPug.Panel.status['content-validation'], WatchPug.Panel.status['content-microdata']]);
     
     WatchPug.Panel.found.host = WatchPug.Panel.activeDocumentComponents['location-hostname'].data ? true : false;
     
@@ -1822,7 +2010,7 @@ WatchPug.Panel = {
     
   },
   
-  generateInspectResultMarkup: function(id, grade, titleStrBundleKey, infoUrl, found, data) {
+  generateInspectResultMarkup: function(id, grade, titleStrBundleKey, infoUrl, found, data, savedMode) {
   
     var notFound, key, html,
         criteriaList = '';
@@ -1837,10 +2025,22 @@ WatchPug.Panel = {
     
       if (data.hasOwnProperty(key)) {
       
-        criteriaList = criteriaList + $('<div>')
-                                      .append($('<li>')
-                                      .attr('class', data[key].status)
-                                      .text(WatchPug.StrBundle.getString(data[key].strBundleKey)).clone()).html();
+        if (savedMode) {
+      
+          // no text for compare result
+      
+          criteriaList = criteriaList + $('<div>')
+                                        .append($('<li>')
+                                        .attr('class', data[key].status).clone()).html();
+          
+        } else {
+      
+          criteriaList = criteriaList + $('<div>')
+                                        .append($('<li>')
+                                        .attr('class', data[key].status)
+                                        .text(WatchPug.StrBundle.getString(data[key].strBundleKey)).clone()).html();
+          
+        }
       
       }
       
@@ -1859,7 +2059,7 @@ WatchPug.Panel = {
                  'href': infoUrl,
                  'target': 'blank'
                })
-               .append(WatchPug.StrBundle.getString(titleStrBundleKey) + ' [' + WatchPug.StrBundle.getString('al.tt.MoreInfo') + ']')
+               .append(savedMode ? '<img src="img/floppy-disk.png">' : WatchPug.StrBundle.getString(titleStrBundleKey) + ' [' + WatchPug.StrBundle.getString('al.tt.MoreInfo') + ']')
                .append(notFound))
                .append($('<ul>')
                .append(criteriaList))).clone()).html();
@@ -1912,120 +2112,124 @@ WatchPug.Panel = {
     
     }
   
-    inspectResultsContainer.html(
+    inspectResultsContainer.find('.saved-mode-false').html(
   
-      WatchPug.Panel.generateInspectResultsContainerMarkup() + $('<div>').append($('<div>')
-                                                              .attr('class', 'legend')
-                                                            .append($('<span>')
-                                                              .attr('class', 'legend pass')
-                                                              .text(WatchPug.StrBundle.getString('al.lg.Pass')))
-                                                            .append($('<span>')
-                                                              .attr('class', 'legend warning')
-                                                              .text(WatchPug.StrBundle.getString('al.lg.Warning')))
-                                                            .append($('<span>')
-                                                              .attr('class', 'legend fail')
-                                                              .text(WatchPug.StrBundle.getString('al.lg.Fail')))
-                                                            .append($('<span>')
-                                                              .attr('class', 'legend neutral')
-                                                              .text(WatchPug.StrBundle.getString('al.lg.NotChecked'))).clone()).html()
+        WatchPug.Panel.generateInspectResultsContainerMarkup() + $('<div>').append($('<div>')
+                                                                .attr('class', 'legend')
+                                                              .append($('<span>')
+                                                                .attr('class', 'legend pass')
+                                                                .text(WatchPug.StrBundle.getString('al.lg.Pass')))
+                                                              .append($('<span>')
+                                                                .attr('class', 'legend warning')
+                                                                .text(WatchPug.StrBundle.getString('al.lg.Warning')))
+                                                              .append($('<span>')
+                                                                .attr('class', 'legend fail')
+                                                                .text(WatchPug.StrBundle.getString('al.lg.Fail')))
+                                                              .append($('<span>')
+                                                                .attr('class', 'legend neutral')
+                                                                .text(WatchPug.StrBundle.getString('al.lg.NotChecked'))).clone()).html()
                                                               
-                                );
+                              );
       
   },
   
-  generateInspectResultsContainerMarkup: function() {
+  generateInspectResultsContainerMarkup: function(savedGrade, savedStatus) {
   
-    return WatchPug.Panel.generateInspectResultMarkup('title-found', WatchPug.Panel.grade.title[0], 'al.tt.UseTitleTag', 'http://sensational-seo.com/on-page-criteria.html#title', WatchPug.Panel.found.title, {
+    var grade = savedGrade || WatchPug.Panel.grade,
+        status = savedStatus || WatchPug.Panel.status,
+        savedMode = savedGrade && savedStatus ? true : false;
+  
+    return WatchPug.Panel.generateInspectResultMarkup('title-found', grade.title[0], 'al.tt.UseTitleTag', 'http://sensational-seo.com/on-page-criteria.html#title', WatchPug.Panel.found.title, {
     
       1: {
-        status: WatchPug.Panel.status['title-onetime'],
+        status: status['title-onetime'],
         strBundleKey: 'al.st.TitleOnetime'
       },
        
       2: {
-        status: WatchPug.Panel.status['title-includes'],
+        status: status['title-includes'],
         strBundleKey: 'al.st.TitleIncludes'
       },
        
       3: {
-        status: WatchPug.Panel.status['title-length'],
+        status: status['title-length'],
         strBundleKey: 'al.st.TitleLength'
       },
        
       4: {
-        status: WatchPug.Panel.status['title-words'],
+        status: status['title-words'],
         strBundleKey: 'al.st.TitleWords'
       }
 
-    }) +
+    }, savedMode) +
     
-    WatchPug.Panel.generateInspectResultMarkup('description', WatchPug.Panel.grade.description[0], 'al.tt.UseMetaDescription', 'http://sensational-seo.com/on-page-criteria.html#metadescription', WatchPug.Panel.found.description, {
+    WatchPug.Panel.generateInspectResultMarkup('description', grade.description[0], 'al.tt.UseMetaDescription', 'http://sensational-seo.com/on-page-criteria.html#metadescription', WatchPug.Panel.found.description, {
     
       1: {
-        status: WatchPug.Panel.status['description-onetime'],
+        status: status['description-onetime'],
         strBundleKey: 'al.st.DescriptionOnetime'
       },
        
       2: {
-        status: WatchPug.Panel.status['description-includes'],
+        status: status['description-includes'],
         strBundleKey: 'al.st.DescriptionIncludes'
       },
        
       3: {
-        status: WatchPug.Panel.status['description-length'],
+        status: status['description-length'],
         strBundleKey: 'al.st.DescriptionLength'
       },
        
       4: {
-        status: WatchPug.Panel.status['description-words'],
+        status: status['description-words'],
         strBundleKey: 'al.st.DescriptionWords'
       }
 
-    }) +
+    }, savedMode) +
     
-    WatchPug.Panel.generateInspectResultMarkup('robots', WatchPug.Panel.grade.robots[0], 'al.tt.UseMetaRobots', 'http://sensational-seo.com/on-page-criteria.html#robots', WatchPug.Panel.found.robots, {
+    WatchPug.Panel.generateInspectResultMarkup('robots', grade.robots[0], 'al.tt.UseMetaRobots', 'http://sensational-seo.com/on-page-criteria.html#robots', WatchPug.Panel.found.robots, {
     
       1: {
-        status: WatchPug.Panel.status['robots-exists'],
+        status: status['robots-exists'],
         strBundleKey: 'al.st.MetaRobots'
       }
       
-    }) +
+    }, savedMode) +
        
-    WatchPug.Panel.generateInspectResultMarkup('sitemap', WatchPug.Panel.grade.sitemap[0], 'al.tt.UseSitemap', 'http://sensational-seo.com/on-page-criteria.html#robots', WatchPug.Panel.found.sitemap, {
+    WatchPug.Panel.generateInspectResultMarkup('sitemap', grade.sitemap[0], 'al.tt.UseSitemap', 'http://sensational-seo.com/on-page-criteria.html#robots', WatchPug.Panel.found.sitemap, {
     
       1: {
-        status: WatchPug.Panel.status['sitemap-exists'],
+        status: status['sitemap-exists'],
         strBundleKey: 'al.st.Sitemap'
       }
       
-    }) +
+    }, savedMode) +
     
-    WatchPug.Panel.generateInspectResultMarkup('headlines', WatchPug.Panel.grade.headlines[0], 'al.tt.HeadlineTags', 'http://sensational-seo.com/on-page-criteria.html#headline', WatchPug.Panel.found.headlines, {
+    WatchPug.Panel.generateInspectResultMarkup('headlines', grade.headlines[0], 'al.tt.HeadlineTags', 'http://sensational-seo.com/on-page-criteria.html#headline', WatchPug.Panel.found.headlines, {
     
       1: {
-        status: WatchPug.Panel.status['headlines-structure'],
+        status: status['headlines-structure'],
         strBundleKey: 'al.st.HeadlinesStructure'
       },
        
       2: {
-        status: WatchPug.Panel.status['headlines-onetime'],
+        status: status['headlines-onetime'],
         strBundleKey: 'al.st.HeadlinesOnetime'
       },
        
       3: {
-        status: WatchPug.Panel.status['headlines-includes'],
+        status: status['headlines-includes'],
         strBundleKey: 'al.st.HeadlinesInclude'
       },
        
       4: {
-        status: WatchPug.Panel.status['headlines-other'],
+        status: status['headlines-other'],
         strBundleKey: 'al.st.HeadlinesOther'
       }
 
-    }) +
+    }, savedMode) +
     
-    WatchPug.Panel.generateInspectResultMarkup('content', WatchPug.Panel.grade.content[0], 'al.tt.PageContent', 'http://sensational-seo.com/on-page-criteria.html#pagecontent', WatchPug.Panel.found.content, {
+    WatchPug.Panel.generateInspectResultMarkup('content', grade.content[0], 'al.tt.PageContent', 'http://sensational-seo.com/on-page-criteria.html#pagecontent', WatchPug.Panel.found.content, {
     
       1: {
         status: 'neutral',
@@ -2036,78 +2240,88 @@ WatchPug.Panel = {
         status: 'neutral',
         strBundleKey: 'al.st.ContentDuplicate'
       },
-       
+      
       3: {
+        status: status['content-last-modified'],
+        strBundleKey: 'al.st.LastModifiedHeader'
+      },
+       
+      4: {
         status: 'neutral',
         strBundleKey: 'al.st.ContentStyle'
       },
        
-      4: {
-        status: WatchPug.Panel.status['content-alt'],
-        strBundleKey: 'al.st.ContentAlt'
-      },
-      
       5: {
-        status: 'neutral',
-        strBundleKey: 'al.st.ContentPictureQuality'
+        status: status['content-alt'],
+        strBundleKey: 'al.st.ContentAlt'
       },
       
       6: {
         status: 'neutral',
-        strBundleKey: 'al.st.ContentForImages'
+        strBundleKey: 'al.st.ContentPictureQuality'
       },
       
       7: {
-        status: WatchPug.Panel.status['content-social-media'],
+        status: 'neutral',
+        strBundleKey: 'al.st.ContentForImages'
+      },
+      
+      8: {
+        status: status['content-social-media'],
         strBundleKey: 'al.st.ContentSocialMedia'
       },
        
-      8: {
-        status: WatchPug.Panel.status['content-keywords'],
+      9: {
+        status: status['content-keywords'],
         strBundleKey: 'al.st.ContentKeywords'
       },
        
-      9: {
-        status: WatchPug.Panel.status['content-links'],
+      10: {
+        status: status['content-links'],
         strBundleKey: 'al.st.ContentLinks'
       },
        
-      10: {
-        status: WatchPug.Panel.status['content-validation'],
+      11: {
+        status: status['content-validation'],
         strBundleKey: 'al.st.CodeSemanticValid'
       },
        
-      11: {
-        status: WatchPug.Panel.status['content-load-time'],
+      12: {
+        status: status['content-load-time'],
         strBundleKey: 'al.st.FastPageLoad'
       },
        
-      12: {
-        status: WatchPug.Panel.status['content-microdata'],
+      13: {
+        status: status['content-microdata'],
         strBundleKey: 'al.st.Microdata'
+      },
+       
+      14: {
+        status: 'neutral',
+        strBundleKey: 'al.st.CrossBrowser'
       }
 
-    }) +
+    }, savedMode) +
     
-    WatchPug.Panel.generateInspectResultMarkup('host', WatchPug.Panel.grade.host[0], 'al.tt.Domain', 'http://sensational-seo.com/on-page-criteria.html#domain', WatchPug.Panel.found.host, {
+    WatchPug.Panel.generateInspectResultMarkup('host', grade.host[0], 'al.tt.Domain', 'http://sensational-seo.com/on-page-criteria.html#domain', WatchPug.Panel.found.host, {
     
       1: {
-        status: WatchPug.Panel.status['host-includes'],
+        status: status['host-includes'],
         strBundleKey: 'al.st.HostIncludes'
       },
        
       2: {
-        status: WatchPug.Panel.status['host-idn'],
+        status: status['host-idn'],
         strBundleKey: 'al.st.HostIdn'
       },
        
       3: {
-        status: WatchPug.Panel.status['host-hyphen'],
+        status: status['host-hyphen'],
         strBundleKey: 'al.st.HostHyphen'
       },
        
       4: {
-        status: WatchPug.Panel.status['host-age'],
+        status: status['host-age'],
         strBundleKey: 'al.st.Host2Years'
       },
        
@@ -2121,98 +2335,38 @@ WatchPug.Panel = {
         strBundleKey: 'al.st.HostRedirect'
       }
 
-    }) +
+    }, savedMode) +
     
-    WatchPug.Panel.generateInspectResultMarkup('path', WatchPug.Panel.grade.path[0], 'al.tt.Path', 'http://sensational-seo.com/on-page-criteria.html#path', WatchPug.Panel.found.path, {
+    WatchPug.Panel.generateInspectResultMarkup('path', grade.path[0], 'al.tt.Path', 'http://sensational-seo.com/on-page-criteria.html#path', WatchPug.Panel.found.path, {
     
       1: {
-        status: WatchPug.Panel.status['path-length'],
+        status: status['path-length'],
         strBundleKey: 'al.st.PathLength'
       },
        
       2: {
-        status: WatchPug.Panel.status['path-dynparam'],
+        status: status['path-dynparam'],
         strBundleKey: 'al.st.PathDynparam'
       },
        
       3: {
-        status: WatchPug.Panel.status['path-hyphen'],
+        status: status['path-hyphen'],
         strBundleKey: 'al.st.PathHyphen'
       },
        
       4: {
-        status: WatchPug.Panel.status['path-lowercase'],
+        status: status['path-lowercase'],
         strBundleKey: 'al.st.PathLowercase'
       },
        
       5: {
-        status: WatchPug.Panel.status['path-levels'],
+        status: status['path-levels'],
         strBundleKey: 'al.st.PathLevels'
       }
 
-    });
+    }, savedMode);
 
   }
-    
-// this is new parser stuff
-  
-  /*
-  getDomain: function() {
-  
-    var url = window.location.href;
-
-    var url_parts = WatchPug.Analyze.data['location-hostname'].split('/');
-
-    var domain_name = url_parts[0] + '//' + url_parts[2];
-
-    return domain_name; 
-  
-  },
-  
-  normalizeUrl: function(url, domain, documentLocationHref) {
-  
-    var normalizedUrl;
-    
-    if (url.substring(0, 1) == '/') {
-
-      if (!url.match(/Jumpto/) && !url.match(/deref/)) {
-    
-        // normalizedUrl starts with /
-      
-        normalizedUrl = domain + url;
-        
-      }
-      
-    
-    } else {
-    
-      if (url.substring(0, 5) != 'http:' && url.substring(0, 6) != 'https:' && url.substring(0, 7) != 'chrome:' && url.substring(0, 4) != 'ftp:' && url.substring(0, 5) != 'mail:') {
-      
-        // normalizedUrl is relative without /
-      
-        normalizedUrl = documentLocationHref.substring(0, documentLocationHref.lastIndexOf('/')) + '/' + url;
-      
-      } else {
-      
-        // url has same domain
-        
-        if (url.slice(0, domain.length) == domain) {
-        
-          normalizedUrl = url;
-        
-        }
-      
-      }
-    
-    }
-    
-    // normalizedUrl can be undefined
-    // in this case, canonical tag is not useful
-    
-    return normalizedUrl;
-  
-  }
-  */
   
 };
 

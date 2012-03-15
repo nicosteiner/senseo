@@ -34,8 +34,12 @@ WatchPug.Analyze = {
   
   getMetaDescription: function() {
 
+    // check for cases insensitive <meta name="description">
+  
     var metaDescription = $('head meta').filter(function() {
-      return /description/i.test(this.name);
+      
+      return (/description/i.test(this.name));
+      
     });
     
     WatchPug.Analyze.data['meta-description'] = {
@@ -64,6 +68,8 @@ WatchPug.Analyze = {
   
   getMetaKeywords: function() {
 
+    // TODO: check for cases insensitive <meta name="keywords">
+  
     var metaKeywords = $('head meta[name = "keywords"]');
     
     WatchPug.Analyze.data['meta-keywords'] = {
@@ -78,6 +84,8 @@ WatchPug.Analyze = {
   
   getMetaRobots: function() {
 
+    // TODO: check for cases insensitive <meta name="robots">
+  
     var metaRobots = $('head meta[name = "robots"]');
     
     WatchPug.Analyze.data['meta-robots'] = {
@@ -92,6 +100,8 @@ WatchPug.Analyze = {
 
   getLinkCanonical: function() {
 
+    // TODO: check for cases insensitive <link rel="canonical">
+  
     var linkCanonical = $('head link[rel = "canonical"]');
     
     WatchPug.Analyze.data['link-canonical'] = {
@@ -539,6 +549,32 @@ WatchPug.Analyze = {
     
   },
 
+  getDocumentHeaders: function() {
+
+    var url = WatchPug.Analyze.data['location-protocol'].data + '//' + WatchPug.Analyze.data['location-hostname'].data + WatchPug.Analyze.data['path-name'].data + WatchPug.Analyze.data['url-params'].data;
+    
+    WatchPug.Analyze.data['last-modified'] = {
+      
+      head: 'response-header (Last-Modified)',
+      
+      data: '<span id="last-modified"><span class="info">n/a</span></span>'
+      
+    };
+    
+    WatchPug.Analyze.data['content-type'] = {
+      
+      head: 'response-header (Content-Type)',
+      
+      data: '<span id="content-type"><span class="info">n/a</span></span>'
+      
+    };
+    
+    // this goes to main.js and from there to panel.js
+    
+    self.port.emit('getResponseText', 'document-headers', url);
+  
+  },
+  
   getValidationResult: function() {
   
     var url = 'http://validator.w3.org/check?uri=' + encodeURIComponent(WatchPug.Analyze.data['location-protocol'].data + '//' + WatchPug.Analyze.data['location-hostname'].data + '/') + '&charset=(detect+automatically)&doctype=Inline&group=0';
@@ -587,6 +623,14 @@ WatchPug.Analyze = {
       
     };
     
+    WatchPug.Analyze.data['robots-sitemap-location'] = {
+    
+      head: 'sitemap location in robots.txt',
+      
+      data: '<span id="robots-sitemap-location"><span class="info">n/a</span></span>'
+      
+    };
+    
     // this goes to main.js and from there to panel.js
     
     self.port.emit('getResponseText', 'robots-file', url);
@@ -595,8 +639,6 @@ WatchPug.Analyze = {
   
   getSitemapContent: function() {
   
-    var url = WatchPug.Analyze.data['location-protocol'].data + '//' + WatchPug.Analyze.data['location-hostname'].data + '/sitemap.xml';
-    
     WatchPug.Analyze.data['sitemap-file'] = {
       
       head: 'sitemap.xml',
@@ -607,7 +649,9 @@ WatchPug.Analyze = {
     
     // this goes to main.js and from there to panel.js
     
-    self.port.emit('getResponseText', 'sitemap-file', url);
+    // sitemap.xml is checked from panel.js, when robots.txt text data is avaiable (sitemap location could be specefied there)
+    
+    // ...
 
   },
 
@@ -931,7 +975,7 @@ WatchPug.Analyze = {
         WatchPug.Analyze.highlightBubbleElement = $('#senseo-highlight-bubble');
         
         hightlightStylesheet.insertRule('#senseo-highlight-bubble {-moz-transition-property: left, top; -moz-transition-duration: 0.15s; -moz-transition-timing-function: ease-out;}', 0);
-        hightlightStylesheet.insertRule('#senseo-highlight-bubble {position: absolute; z-index: 9999; display: inline-block; width: 80px; padding: 2px; background: -moz-linear-gradient(top, #888 0%,#444 100%); position: absolute; border-radius: 3px; border: 1px #333 solid;}', 0);
+        hightlightStylesheet.insertRule('#senseo-highlight-bubble {position: absolute; z-index: 9999; display: inline-block; font-family: Verdana, Arial; width: 80px; padding: 2px; background: -moz-linear-gradient(top, #888 0%,#444 100%); position: absolute; border-radius: 3px; border: 1px #333 solid;}', 0);
         hightlightStylesheet.insertRule('#senseo-highlight-bubble p {font-size: 11px; color: #eef; text-align: center; margin: 0; padding: 0; line-hieght: 1em;}', 0);
         hightlightStylesheet.insertRule('#senseo-highlight-bubble:after {position: absolute; top: -5px; left: 40px; content: ""; display: block; border-left: 5px solid transparent; border-right: 5px solid transparent; border-bottom: 5px solid #333;}', 0);
         
@@ -1000,6 +1044,8 @@ WatchPug.Analyze = {
     WatchPug.Analyze.getPathName();
     
     WatchPug.Analyze.getURLParams();
+
+    WatchPug.Analyze.getDocumentHeaders();
 
     WatchPug.Analyze.getPageLoadTime();
     

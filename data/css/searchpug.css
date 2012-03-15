@@ -12,6 +12,7 @@ body .hidden {
 }
 
 body .speechBubble {
+  z-index: 1000;
   padding: 5px;
   background: #ffffb8;
   position: absolute;
@@ -20,9 +21,17 @@ body .speechBubble {
   border: 1px #ccc solid;
 }
 
-body .speechBubble p{
+body .speechBubble p {
   font-size: 11px;
   text-align: left;
+}
+
+body .speechBubble .bold {
+  font-weight: bold;
+}
+
+body .speechBubble li {
+  height: 16px;
 }
 
 body .speechBubble:after {
@@ -234,6 +243,10 @@ section#inspect-result #marketing-container img.icon {
   cursor: pointer;
 }
 
+#compare-result:hover {
+  cursor: pointer;
+}
+
 section#inspect-result #marketing-container #tweet-this,
 section#inspect-result #marketing-container #write-review {
   display: inline-block;
@@ -279,23 +292,65 @@ section#components-container > section {
   color: #002efc;
 }
 
-#inspect-results article {
+#inspect-results {
   position: relative;
-  float: right;
-  width: 556px;
-  margin: 8px;
-  border-radius: 10px;
-  border: 1px #ccc solid;
-  box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.15);
-  background-color: #fff;
+}
+
+#inspect-results .container {
+  position: absolute;
+  right: 0;
+  width: 575px;
   /* animation when results are compared */
   -moz-transition-property: width;
   -moz-transition-duration: 0.6s;
   -moz-transition-timing-function: ease-out;
 }
 
-#inspect-results article.compare {
+#inspect-results .container.saved-mode-false {
+  z-index: 10;
+}
+
+#inspect-results .container.saved-mode-false.compare {
   width: 520px;
+}
+
+#inspect-results .container.saved-mode-true {
+  z-index: 5;
+}
+
+#inspect-results .container.saved-mode-true img#close-comparison {
+  position: absolute;
+  z-index: 10;
+  top: 5px;
+  left: 5px;
+  /* animation when comparison is active */
+  -moz-transition-property: opacity;
+  -moz-transition-duration: 0.5s;
+  -moz-transition-timing-function: ease-out;
+  opacity: 0;
+}
+
+#inspect-results .container.saved-mode-true img#close-comparison:hover {
+  cursor: pointer;
+}
+
+#inspect-results .container.saved-mode-true img#close-comparison.visible {
+  opacity: 1;
+}
+
+#inspect-results .container.saved-mode-true article img {
+  width: 14px;
+  height: 14px;
+  margin: 0 0 -4px -2px;
+}
+
+#inspect-results article {
+  position: relative;
+  margin: 8px;
+  border-radius: 10px;
+  border: 1px #ccc solid;
+  box-shadow: 2px 2px 3px rgba(0, 0, 0, 0.15);
+  background-color: #fff;
 }
 
 #inspect-results article .details {
@@ -313,6 +368,7 @@ section#components-container > section {
   padding: 3px 0 3px 14px;
   background-repeat: no-repeat;
   background-position: 0 4px;
+  height: 12px;
 }
 
 #inspect-results article .details a {
