@@ -1,20 +1,28 @@
-var WatchPug = WatchPug || {};
+var SenSEO = SenSEO || {};
 
-WatchPug.CrawlPage = {
+SenSEO.CrawlPage = {
+
+  crawledPages: 0,
+  
+  allPagesSum: 0,
 
   init: function() {
 
     self.port.on('injectPages', function (data) {
 
-      WatchPug.CrawlPage.preparePagesTable();
+      SenSEO.CrawlPage.preparePagesTable();
     
-      WatchPug.CrawlPage.crawlPages(data.pages);
+      SenSEO.CrawlPage.allPagesSum = data.pages.length;
+    
+      SenSEO.CrawlPage.crawlPages(data.pages);
       
     });
   
     self.port.on('getPageMarkup', function (data) {
 
-      WatchPug.CrawlPage.analyzePageMarkup(data);
+      SenSEO.CrawlPage.crawledPages += 1;
+    
+      SenSEO.CrawlPage.analyzePageMarkup(data);
     
     });
   
@@ -24,15 +32,11 @@ WatchPug.CrawlPage = {
 
     var i;
 
-    self.port.emit('getPageMarkup', pages[0]);
-    
-    /*
     for (i = 0; i < pages.length; i++) {
     
-      document.getElementById('crawler-container').innerHTML += pages[i] + '<br>';
+      self.port.emit('getPageMarkup', pages[i]);
     
     }
-    */
   
   },
   
@@ -41,41 +45,39 @@ WatchPug.CrawlPage = {
     var url = data.url,
         status = data.status,
         text = data.text,
-        pageMarkupDOM;
+        headMarkupDOM,
+        headStart, headEnd, headMarkup,
+        title, description, keywords, author;
     
     if (status === 200) {
     
       if (url !== '' && text !== '') {
       
-        // parse HTML
-        
-        // use iframe method!
-        
-        // https://developer.mozilla.org/en/Code_snippets/HTML_to_DOM
-                                
-        /*
-        title = $(pageMarkupDOM).find('head title').text();
+        headStart = text.indexOf('<head>');
       
-        description = $(pageMarkupDOM).find('head meta').filter(function() {
+        headEnd = text.indexOf('</head>') + 7;
+      
+        headMarkup = text.substring(headStart, headEnd);
+      
+        //console.log(headMarkup);
+      
+        // workaround for getting HTMLtoDOM parser work
+      
+        headMarkup = headMarkup.replace(/http\-equiv/g, 'httpequiv');
+      
+        headMarkupDOM = HTMLtoDOM(headMarkup);
         
-          return (/description/i.test(this.name));
+        title = $(headMarkupDOM).find('title').text();
         
-        });
+        description = $(headMarkupDOM).find('meta[name="description"]').attr('content');
 
-        keywords = $(pageMarkupDOM).find('head meta').filter(function() {
-        
-          return (/author/i.test(this.name));
-        
-        });
+        keywords = $(headMarkupDOM).find('meta[name="keywords"]').attr('content');
 
-        author = $(pageMarkupDOM).find('head meta').filter(function() {
+        author = $(headMarkupDOM).find('meta[name="author"]').attr('content');
+
         
-          return (/author/i.test(this.name));
-        
-        });
-        
-        WatchPug.CrawlPage.addPagesTableRow(url, title, description, keywords, author);
-        */
+        SenSEO.CrawlPage.addPagesTableRow(url, title, description, keywords, author);
+
       }
 
     }
@@ -84,11 +86,13 @@ WatchPug.CrawlPage = {
   
   preparePagesTable: function() {
     
-    WatchPug.CrawlPage.pagesTableBody = $('#crawl-table tbody');
+    SenSEO.CrawlPage.crawlerStatus = $('#crawler-status');
+    
+    SenSEO.CrawlPage.pagesTableBody = $('#crawler-table tbody');
     
     // remove outdated table content
   
-    WatchPug.CrawlPage.pagesTableBody.empty();
+    SenSEO.CrawlPage.pagesTableBody.empty();
   
   },
   
@@ -96,22 +100,42 @@ WatchPug.CrawlPage = {
 
     var dataRow;
   
+    title = title || 'n/a';
+  
+    description = description || 'n/a';
+  
+    keywords = keywords || 'n/a';
+  
+    author = author || 'n/a';
+  
     dataRow = $('<div>').append($('<tr>')
                         .append($('<th>')
-                        .text(url))
+                        .text(Encoder.htmlDecode(url)))
                         .append($('<td>')
-                        .text(title))
+                        .text(Encoder.htmlDecode(title)))
                         .append($('<td>')
-                        .text(description))
+                        .text(Encoder.htmlDecode(description)))
                         .append($('<td>')
-                        .text(keywords))
+                        .text(Encoder.htmlDecode(keywords)))
                         .append($('<td>')
-                        .text(author)).clone()).html();
+                        .text(Encoder.htmlDecode(author)))
+                        .append($('<td>')
+                        .text('n/a')).clone()).html();
           
-    WatchPug.CrawlPage.pagesTableBody.append(dataRow);
-      
+    SenSEO.CrawlPage.pagesTableBody.append(dataRow);
+    
+    SenSEO.CrawlPage.updateCrawlerStatus();
+    
+  },
+  
+  updateCrawlerStatus: function() {
+  
+    SenSEO.CrawlPage.crawlerStatus.find('.progress').text(SenSEO.CrawlPage.crawledPages + '/' + SenSEO.CrawlPage.allPagesSum);
+  
+    SenSEO.CrawlPage.crawlerStatus.find('.done').css('width', (1200 / SenSEO.CrawlPage.allPagesSum * SenSEO.CrawlPage.crawledPages));
+  
   }
   
 };
 
-WatchPug.CrawlPage.init();
+SenSEO.CrawlPage.init();

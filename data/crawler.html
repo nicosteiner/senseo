@@ -2,21 +2,28 @@
 <html>
   <head>
     <link rel="stylesheet" href="css/reset.css" type="text/css">
-    <link rel="stylesheet" href="css/searchpug.css" type="text/css">
+    <link rel="stylesheet" href="css/crawler.css" type="text/css">
     <link rel="stylesheet" href="css/button-blue-pill.css" type="text/css">
   </head>
   <body>
     <div id="fb-root"></div>
     <header>
-      Page-Crawler
       <div class="fb-like" data-href="http://www.sensational-seo.com" data-send="false" data-layout="button_count" data-width="80" data-show-faces="false" data-action="recommend" data-font="arial"></div>
     </header>
-    <div id="crawl-status">
+    <div id="crawler-status">
       <div class="info"><span class="progress"></span> pages crawled...</div>
       <div class="done"></div>
     </div>
     <section id="crawler-container">
-      <table id="crawl-table">
+      <table id="crawler-table">
+        <thead>
+          <td>URL</td>
+          <td>title</td>
+          <td>description</td>
+          <td>keywords</td>
+          <td>author</td>
+          <td>ranking</td>
+        </thead>
         <tbody></tbody>
       </table>
     </section>
