@@ -591,6 +591,9 @@ WatchPug.Panel = {
   
     if (status === 200) {
   
+      // TODO: refactore this!
+      // https://developer.mozilla.org/en/XUL_School/DOM_Building_and_HTML_Insertion
+  
       validatorW3orgDOM = $('<div>')
                         .append(responseText).clone();
                               
@@ -1127,6 +1130,8 @@ WatchPug.Panel = {
         if (typeof(components[key].data) === 'string' || typeof(components[key].data) === 'number') {
         
           // one dataset
+          
+          // better .text than .append()
           
           dataRow = $('<div>').append($('<tr>')
                               .append($('<th>')

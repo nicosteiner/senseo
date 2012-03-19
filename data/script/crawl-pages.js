@@ -14,6 +14,8 @@ SenSEO.CrawlPage = {
     
       SenSEO.CrawlPage.allPagesSum = data.pages.length;
     
+      SenSEO.CrawlPage.crawledPages = 0;
+    
       SenSEO.CrawlPage.crawlPages(data.pages);
       
     });
@@ -45,7 +47,6 @@ SenSEO.CrawlPage = {
     var url = data.url,
         status = data.status,
         text = data.text,
-        headMarkupDOM,
         headStart, headEnd, headMarkup,
         title, description, keywords, author;
     
@@ -59,23 +60,14 @@ SenSEO.CrawlPage = {
       
         headMarkup = text.substring(headStart, headEnd);
       
-        //console.log(headMarkup);
-      
-        // workaround for getting HTMLtoDOM parser work
-      
-        headMarkup = headMarkup.replace(/http\-equiv/g, 'httpequiv');
-      
-        headMarkupDOM = HTMLtoDOM(headMarkup);
+        title = $('<html>').html(headMarkup).find('title').text();
         
-        title = $(headMarkupDOM).find('title').text();
-        
-        description = $(headMarkupDOM).find('meta[name="description"]').attr('content');
+        description = $('<html>').html(headMarkup).find('meta[name="description"]').attr('content');
 
-        keywords = $(headMarkupDOM).find('meta[name="keywords"]').attr('content');
+        keywords = $('<html>').html(headMarkup).find('meta[name="keywords"]').attr('content');
 
-        author = $(headMarkupDOM).find('meta[name="author"]').attr('content');
+        author = $('<html>').html(headMarkup).find('meta[name="author"]').attr('content');
 
-        
         SenSEO.CrawlPage.addPagesTableRow(url, title, description, keywords, author);
 
       }
@@ -96,32 +88,118 @@ SenSEO.CrawlPage = {
   
   },
   
+  getKeywordMatches: function(text, keywords) {
+
+    var matches = 0,
+        rx,
+        i;
+    
+    if (text && keywords.length) {
+    
+      for (i = 0; i < keywords.length; i += 1) {
+      
+        if (keywords[i] !== '') {
+      
+          rx = new RegExp(keywords[i], 'gi');
+          
+          if (text && text.match && text.match(rx)) {
+          
+            matches = matches + text.match(rx).length;
+            
+          }
+          
+        }
+        
+      }
+      
+    }
+    
+    return matches;
+
+  },
+  
   addPagesTableRow: function(url, title, description, keywords, author) {
 
-    var dataRow;
+    var dataRow,
+        keywordList,
+        ranking = 0,
+        rankingMarkup,
+        i;
   
-    title = title || 'n/a';
+    keywordList = keywords ? keywords.split(',') : null;
   
-    description = description || 'n/a';
+    mainKeyword = keywordList && keywordList[0] !== '' ? keywordList[0] : null;
   
-    keywords = keywords || 'n/a';
+    // min ranking is 0 / max ranking is 5
   
-    author = author || 'n/a';
+    if (title && title !== '') {
+    
+      ranking += 1;
+    
+    }
+  
+    if (description && description !== '') {
+    
+      ranking += 1;
+    
+    }
+  
+    if (mainKeyword && SenSEO.CrawlPage.getKeywordMatches(url, [mainKeyword])) {
+    
+      ranking += 1;
+    
+    }
+  
+    if (mainKeyword && SenSEO.CrawlPage.getKeywordMatches(title, [mainKeyword])) {
+    
+      ranking += 1;
+    
+    }
+  
+    if (mainKeyword && SenSEO.CrawlPage.getKeywordMatches(description, [mainKeyword])) {
+    
+      ranking += 1;
+    
+    }
+  
+    url = url && url !== '' ? $('<span>').text(url) : $('<span class="error">n/a</span>');
+  
+    title = title && title !== '' ? $('<span>').text(title) : $('<span class="error">n/a</span>');
+  
+    description = description && description !== '' ? $('<span>').text(description) : $('<span class="error">n/a</span>');
+  
+    author = author && author !== '' ? $('<span>').text(author) : $('<span class="error">n/a</span>');
+  
+    keywords = keywords && keywords !== '' ? $('<span>').text(keywords) : $('<span class="error">n/a</span>');
+  
+    rankingMarkup = $('<span class="ranking">');
+  
+    for (i = 0; i < ranking; i += 1) {
+  
+      rankingMarkup.append('<img src="img/ranking-top.png" width="12" height="12">');
+      
+    }
+  
+    for (i = 0; i < (5 - ranking); i += 1) {
+  
+      rankingMarkup.append('<img src="img/ranking-flop.png" width="12" height="12">');
+      
+    }
   
     dataRow = $('<div>').append($('<tr>')
                         .append($('<th>')
-                        .text(Encoder.htmlDecode(url)))
+                        .append(url))
                         .append($('<td>')
-                        .text(Encoder.htmlDecode(title)))
+                        .append(title))
                         .append($('<td>')
-                        .text(Encoder.htmlDecode(description)))
+                        .append(description))
                         .append($('<td>')
-                        .text(Encoder.htmlDecode(keywords)))
+                        .append(keywords))
                         .append($('<td>')
-                        .text(Encoder.htmlDecode(author)))
+                        .append(author))
                         .append($('<td>')
-                        .text('n/a')).clone()).html();
-          
+                        .append(rankingMarkup)).clone()).html();
+    
     SenSEO.CrawlPage.pagesTableBody.append(dataRow);
     
     SenSEO.CrawlPage.updateCrawlerStatus();

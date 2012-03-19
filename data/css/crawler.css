@@ -88,12 +88,12 @@ body > header {
   width: 200px;
 }
 
-#crawler-table td span.match {
+#crawler-table td span.found {
   font-style: italic;
   color: #009900;
 }
 
-#crawler-table td span.info {
+#crawler-table td span.error {
   font-style: italic;
   color: #990000;
 }
@@ -101,4 +101,14 @@ body > header {
 #crawler-table td a {
   display: inline-block;
   margin-left: 4px;
+}
+
+#crawler-table td span.ranking {
+  display: inline-block;
+  vertical-align: top;
+  width: 65px;
+}
+
+#crawler-table td span.ranking img {
+  padding-top: 2px;
 }
