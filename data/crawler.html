@@ -8,14 +8,20 @@
   <body>
     <div id="fb-root"></div>
     <header>
+      <button class="blue-pill" id="crawl-start-button"></button>
+      <button class="blue-pill" id="crawl-stop-button" class="hidden"></button>
+      <button class="blue-pill" id="export-button"></button>
       <div class="fb-like" data-href="http://www.sensational-seo.com" data-send="false" data-layout="button_count" data-width="80" data-show-faces="false" data-action="recommend" data-font="arial"></div>
     </header>
     <div id="crawler-status">
-      <div class="info"><span class="progress"></span> pages crawled...</div>
+      <div class="info hidden"><span class="progress"></span> pages crawled ... <span class="finished hidden">(done)</span></div>
       <div class="done"></div>
     </div>
     <section id="crawler-container">
-      <table id="crawler-table">
+      <p id="press-start-button">
+        Press "Start crawling" button to analyze pages.
+      </p>
+      <table id="crawler-table" class="hidden">
         <thead>
           <td>URL</td>
           <td>title</td>
@@ -23,6 +29,8 @@
           <td>keywords</td>
           <td>author</td>
           <td>ranking</td>
+          <td></td>
+          <td></td>
         </thead>
         <tbody></tbody>
       </table>

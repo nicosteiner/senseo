@@ -17,6 +17,19 @@ body > header {
   background: -moz-linear-gradient(top, #ffffff 0%, #f1f1f1 50%, #e1e1e1 51%, #f6f6f6 100%); /* FF3.6+ */
 }
 
+body > header button {
+  float: left;
+  margin-right: 5px;
+}
+
+body > header button {
+  font-size: 10px;
+}
+
+body > header button {
+  margin-top: 1px;
+}
+
 #crawler-status {
   z-index: 10;
   position:relative;
@@ -34,6 +47,10 @@ body > header {
   padding: 8px;
 }
 
+#crawler-status .progress {
+  font-weight: bold;
+}
+
 #crawler-status .done {
   z-index: 1;
   position: absolute;
@@ -48,6 +65,10 @@ body > header {
   overflow-y: scroll;
   height: 626px;
   padding: 8px;
+}
+
+#crawler-container strong {
+  font-weight: bold;
 }
 
 #crawler-table {
@@ -96,11 +117,6 @@ body > header {
 #crawler-table td span.error {
   font-style: italic;
   color: #990000;
-}
-
-#crawler-table td a {
-  display: inline-block;
-  margin-left: 4px;
 }
 
 #crawler-table td span.ranking {

@@ -1,8 +1,30 @@
 var SenSEO = SenSEO || {};
 
+// temp fake strBundle
+  
+SenSEO.StrBundle = {
+
+  string: {
+  
+    'console.StartCrawling': 'Start crawling',
+    'console.StopCrawling': 'Stop crawling',
+    'console.ExportData': 'Export data table'
+    
+  },
+  
+  getString: function(key) {
+  
+    return SenSEO.StrBundle.string[key];
+  
+  }
+  
+};
+
 SenSEO.CrawlPage = {
 
   crawledPages: 0,
+  
+  allPages: [],
   
   allPagesSum: 0,
 
@@ -10,14 +32,10 @@ SenSEO.CrawlPage = {
 
     self.port.on('injectPages', function (data) {
 
-      SenSEO.CrawlPage.preparePagesTable();
+      SenSEO.CrawlPage.allPages = data.pages;
     
       SenSEO.CrawlPage.allPagesSum = data.pages.length;
     
-      SenSEO.CrawlPage.crawledPages = 0;
-    
-      SenSEO.CrawlPage.crawlPages(data.pages);
-      
     });
   
     self.port.on('getPageMarkup', function (data) {
@@ -25,20 +43,114 @@ SenSEO.CrawlPage = {
       SenSEO.CrawlPage.crawledPages += 1;
     
       SenSEO.CrawlPage.analyzePageMarkup(data);
+      
+      // crawling finished?
+      
+      if (SenSEO.CrawlPage.crawledPages === SenSEO.CrawlPage.allPagesSum) {
+      
+        SenSEO.CrawlPage.crawlingFinished();
+      
+      } else {
+      
+        // time for the next 10 pages?
+        
+        if (SenSEO.CrawlPage.crawledPages%10 === 0) {
+        
+          SenSEO.CrawlPage.crawlNextPages();
+        
+        }
+        
+      }
     
     });
   
+    SenSEO.CrawlPage.crawlerStatus = $('#crawler-status');
+    
+    SenSEO.CrawlPage.pagesTableBody = $('#crawler-table tbody');
+    
+    SenSEO.CrawlPage.initInputsAndButtons();
+  
   },
 
-  crawlPages: function(pages) {
-
-    var i;
-
-    for (i = 0; i < pages.length; i++) {
+  initInputsAndButtons: function() {
+  
+    $('#crawl-start-button').text(SenSEO.StrBundle.getString('console.StartCrawling'));
+    $('#crawl-stop-button').text(SenSEO.StrBundle.getString('console.StopCrawling'));
+    $('#export-button').text(SenSEO.StrBundle.getString('console.ExportData'));
     
-      self.port.emit('getPageMarkup', pages[i]);
+    $('#crawl-start-button').click(function(e) {
+        
+      e.preventDefault();
+      
+      $('#crawl-start-button').addClass('hidden');
+      
+      $('#press-start-button').addClass('hidden');
+    
+      $('#crawl-stop-button').removeClass('hidden');
+      
+      $('#crawler-table').removeClass('hidden');
+    
+      SenSEO.CrawlPage.startCrawlingPages();
+      
+    });
+  
+    $('#crawl-stop-button').click(function(e) {
+        
+      e.preventDefault();
+      
+      $('#crawl-stop-button').addClass('hidden');
+    
+      $('#crawl-start-button').removeClass('hidden');
+    
+      SenSEO.CrawlPage.stopCrawlingPages();
+      
+    });
+  
+  },
+    
+  startCrawlingPages: function() {
+
+    SenSEO.CrawlPage.crawledPages = 0;
+    
+    SenSEO.CrawlPage.preparePagesTable();
+    
+    SenSEO.CrawlPage.crawlerStatus.find('.info').removeClass('hidden');
+    
+    SenSEO.CrawlPage.crawlerStatus.find('.finished').addClass('hidden');
+    
+    SenSEO.CrawlPage.crawlNextPages();
+    
+  },
+  
+  crawlNextPages: function() {
+
+    var i, nextFiveOrLess;
+
+    // a maximum of 10 pages are processed at once
+    
+    nextFiveOrLess = SenSEO.CrawlPage.allPagesSum - SenSEO.CrawlPage.crawledPages < 10 ? SenSEO.CrawlPage.allPagesSum - SenSEO.CrawlPage.crawledPages : 10;
+    
+    for (i = SenSEO.CrawlPage.crawledPages; i < SenSEO.CrawlPage.crawledPages + nextFiveOrLess; i += 1) {
+    
+      self.port.emit('getPageMarkup', SenSEO.CrawlPage.allPages[i]);
     
     }
+    
+  },
+    
+  crawlingFinished: function() {
+
+    $('#crawl-stop-button').addClass('hidden');
+  
+    $('#crawl-start-button').removeClass('hidden');
+    
+    SenSEO.CrawlPage.crawlerStatus.find('.finished').removeClass('hidden');
+    
+  },
+  
+  stopCrawlingPages: function() {
+
+    // stop crawling
   
   },
   
@@ -77,10 +189,6 @@ SenSEO.CrawlPage = {
   },
   
   preparePagesTable: function() {
-    
-    SenSEO.CrawlPage.crawlerStatus = $('#crawler-status');
-    
-    SenSEO.CrawlPage.pagesTableBody = $('#crawler-table tbody');
     
     // remove outdated table content
   
@@ -122,8 +230,11 @@ SenSEO.CrawlPage = {
 
     var dataRow,
         keywordList,
+        mainKeyword,
         ranking = 0,
         rankingMarkup,
+        componentsLinkMarkup,
+        inspectLinkMarkup,
         i;
   
     keywordList = keywords ? keywords.split(',') : null;
@@ -186,6 +297,10 @@ SenSEO.CrawlPage = {
       
     }
   
+    componentsLinkMarkup = $('<a href="#">Components</a>');
+  
+    inspectLinkMarkup = $('<a href="#">Inspect</a>');
+  
     dataRow = $('<div>').append($('<tr>')
                         .append($('<th>')
                         .append(url))
@@ -198,7 +313,11 @@ SenSEO.CrawlPage = {
                         .append($('<td>')
                         .append(author))
                         .append($('<td>')
-                        .append(rankingMarkup)).clone()).html();
+                        .append(rankingMarkup))
+                        .append($('<td>')
+                        .append(componentsLinkMarkup))
+                        .append($('<td>')
+                        .append(inspectLinkMarkup)).clone()).html();
     
     SenSEO.CrawlPage.pagesTableBody.append(dataRow);
     

@@ -502,7 +502,7 @@ WatchPug.Panel = {
     
       $('#crawl-instructions .not-found').addClass('hidden');
     
-      $('#crawl-container .crawl-sitemap-pages').html = WatchPug.Panel.activeDocumentComponents['sitemap-file'].pages.length;
+      $('#crawl-container .crawl-sitemap-pages').text(WatchPug.Panel.activeDocumentComponents['sitemap-file'].pages.length);
       
     } else {
   
