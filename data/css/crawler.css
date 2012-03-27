@@ -30,6 +30,15 @@ body > header button {
   margin-top: 1px;
 }
 
+body > header #close-crawl-panel {
+  float: right;
+  margin-top: -1px;
+}
+
+body > header #close-crawl-panel:hover {
+  cursor: pointer;
+}
+
 #crawler-status {
   z-index: 10;
   position:relative;

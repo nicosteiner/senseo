@@ -42,8 +42,6 @@ SenSEO.CrawlPage = {
 
       SenSEO.CrawlPage.crawledPages += 1;
     
-      SenSEO.CrawlPage.analyzePageMarkup(data);
-      
       // crawling finished?
       
       if (SenSEO.CrawlPage.crawledPages === SenSEO.CrawlPage.allPagesSum) {
@@ -62,6 +60,11 @@ SenSEO.CrawlPage = {
         
       }
     
+      // because of race conditions it's important
+      // to place that at the end of function
+    
+      SenSEO.CrawlPage.analyzePageMarkup(data);
+      
     });
   
     SenSEO.CrawlPage.crawlerStatus = $('#crawler-status');
@@ -105,6 +108,14 @@ SenSEO.CrawlPage = {
       SenSEO.CrawlPage.stopCrawlingPages();
       
     });
+    
+    $('#close-crawl-panel').click(function(e) {
+        
+      e.preventDefault();
+      
+      SenSEO.CrawlPage.closeCrawlingPanel();
+      
+    });
   
   },
     
@@ -120,6 +131,24 @@ SenSEO.CrawlPage = {
     
     SenSEO.CrawlPage.crawlNextPages();
     
+  },
+  
+  closeCrawlingPanel: function() {
+
+    self.port.emit('closeCrawlingPanel');
+  
+  },
+  
+  showComponents: function(url, keyword) {
+
+    self.port.emit('showComponents', url, keyword);
+  
+  },
+  
+  inspectResult: function(url, keyword) {
+
+    self.port.emit('inspectResult', url, keyword);
+  
   },
   
   crawlNextPages: function() {
@@ -228,10 +257,10 @@ SenSEO.CrawlPage = {
   
   addPagesTableRow: function(url, title, description, keywords, author) {
 
-    var dataRow,
-        keywordList,
+    var keywordList,
         mainKeyword,
         ranking = 0,
+        urlMarkup,
         rankingMarkup,
         componentsLinkMarkup,
         inspectLinkMarkup,
@@ -273,7 +302,7 @@ SenSEO.CrawlPage = {
     
     }
   
-    url = url && url !== '' ? $('<span>').text(url) : $('<span class="error">n/a</span>');
+    urlMarkup = url && url !== '' ? $('<span>').text(url) : $('<span class="error">n/a</span>');
   
     title = title && title !== '' ? $('<span>').text(title) : $('<span class="error">n/a</span>');
   
@@ -301,9 +330,10 @@ SenSEO.CrawlPage = {
   
     inspectLinkMarkup = $('<a href="#">Inspect</a>');
   
-    dataRow = $('<div>').append($('<tr>')
+    SenSEO.CrawlPage.pagesTableBody.append(
+                        $('<tr>')
                         .append($('<th>')
-                        .append(url))
+                        .append(urlMarkup))
                         .append($('<td>')
                         .append(title))
                         .append($('<td>')
@@ -315,11 +345,12 @@ SenSEO.CrawlPage = {
                         .append($('<td>')
                         .append(rankingMarkup))
                         .append($('<td>')
-                        .append(componentsLinkMarkup))
-                        .append($('<td>')
-                        .append(inspectLinkMarkup)).clone()).html();
-    
-    SenSEO.CrawlPage.pagesTableBody.append(dataRow);
+                        .append(componentsLinkMarkup).click(function() {
+                          SenSEO.CrawlPage.showComponents(url, mainKeyword);
+                        })).append($('<td>')
+                        .append(inspectLinkMarkup).click(function() {
+                          SenSEO.CrawlPage.inspectResult(url, mainKeyword);
+                        })));
     
     SenSEO.CrawlPage.updateCrawlerStatus();
     

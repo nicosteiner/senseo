@@ -14,7 +14,7 @@ WatchPug.Analyze = {
 
       count: title.length,
 
-      data: title && title[0] && title[0].text !== '' ? title[0].text : 'n/a'
+      data: title && title[0] && title[0].text !== '' ? WatchPug.Analyze.convertToTextOnly(title[0]) : 'n/a'
       
     };
   
@@ -48,7 +48,7 @@ WatchPug.Analyze = {
       
       count: metaDescription.length,
       
-      data: metaDescription && metaDescription.attr('content') ? metaDescription.attr('content') : 'n/a'
+      data: metaDescription && metaDescription.attr('content') ? WatchPug.Analyze.convertToTextOnly(metaDescription.attr('content')) : 'n/a'
       
     };
   
@@ -76,7 +76,7 @@ WatchPug.Analyze = {
       
       head: 'keywords meta tag',
       
-      data: metaKeywords && metaKeywords.attr('content') ? metaKeywords.attr('content') : 'n/a'
+      data: metaKeywords && metaKeywords.attr('content') ? WatchPug.Analyze.convertToTextOnly(metaKeywords.attr('content')) : 'n/a'
       
     };
   
@@ -92,7 +92,7 @@ WatchPug.Analyze = {
       
       head: 'robots meta tag',
       
-      data: metaRobots && metaRobots.attr('content') ? metaRobots.attr('content') : 'n/a'
+      data: metaRobots && metaRobots.attr('content') ? WatchPug.Analyze.convertToTextOnly(metaRobots.attr('content')) : 'n/a'
       
     };
   
@@ -108,7 +108,7 @@ WatchPug.Analyze = {
       
       head: 'canonical URL',
       
-      data: linkCanonical && linkCanonical.attr('href') ? linkCanonical.attr('href') : 'n/a'
+      data: linkCanonical && linkCanonical.attr('href') ? WatchPug.Analyze.convertToTextOnly(linkCanonical.attr('href')) : 'n/a'
       
     };
   
@@ -132,6 +132,7 @@ WatchPug.Analyze = {
   getHeadlineData: function(level) {
 
     var headlines = $('body h' + level),
+        textOnlyHeadline,
         highlightHeadlineHTML,
         i;
     
@@ -158,14 +159,20 @@ WatchPug.Analyze = {
       
         if ($(headlines[i]).is(':visible')) {
         
-          highlightHeadlineHTML = $('<div>').text(headlines[i].textContent).append($('<a>').attr({
+          textOnlyHeadline = WatchPug.Analyze.convertToTextOnly(headlines[i]);
+        
+          highlightHeadlineHTML = $('<div>')
+                                  .append(textOnlyHeadline)
+                                  .append($('<a>').attr({
                                     'href': '#',
                                     'class': 'highlight-headline ' + level + '-' + i
                                   }).text('highlight').clone()).html();
                                   
         } else {
         
-          highlightHeadlineHTML = $('<div>').text(headlines[i].textContent).append($('<span>').attr({
+          highlightHeadlineHTML = $('<div>')
+                                  .append(textOnlyHeadline)
+                                  .append($('<span>').attr({
                                     'class': 'info'
                                   }).text(' (hidden)').clone()).html();
           
@@ -407,7 +414,7 @@ WatchPug.Analyze = {
   getBodyData: function() {
   
     var trimtext,
-        bodyText = document.evaluate('/html/body//.[name() != "SCRIPT"]/text()', document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null ),
+        bodyText = document.evaluate('/html/body//.[name() != "SCRIPT" and name() != "STYLE"]/text()', document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null ),
         bodyData = '',
         i;
     
@@ -435,10 +442,46 @@ WatchPug.Analyze = {
       
       head: 'body text',
       
-      data: WatchPug.Analyze.trim(bodyData)
+      data: WatchPug.Analyze.convertToTextOnly(WatchPug.Analyze.trim(bodyData))
       
     };
 
+  },
+  
+  convertToTextOnly: function(textAndMarkup) {
+  
+    var textOnly, wrapper;
+  
+    // convert text containing markup to text only version
+    
+    if (textAndMarkup.textContent) {
+    
+      // when textAndMarkup is an element containing text
+    
+      // see: https://developer.mozilla.org/en/DOM/Node.textContent
+    
+      textOnly = textAndMarkup.textContent;
+    
+    } else {
+
+      // when textAndMarkup is a mix of markup surrounded by text
+    
+      // see: http://stackoverflow.com/questions/5550633/append-html-to-jquery-element-without-running-scripts-inside-the-html
+    
+      wrapper = document.createElement('div');
+      
+      wrapper.innerHTML = textAndMarkup;
+      
+      $(wrapper).find('script').remove();
+      
+      $(wrapper).find('style').remove();
+      
+      textOnly = $(wrapper).text();
+
+    }
+    
+    return textOnly;
+  
   },
   
   getNumberOfElements: function() {
@@ -449,7 +492,7 @@ WatchPug.Analyze = {
       
       head: 'number of elements',
       
-      data: allElements.numberValue
+      data: WatchPug.Analyze.convertToTextOnly(allElements.numberValue)
       
     };
     
@@ -487,7 +530,7 @@ WatchPug.Analyze = {
       
       head: 'URL',
       
-      data: window.location.href
+      data: WatchPug.Analyze.convertToTextOnly(window.location.href)
       
     };
     
@@ -501,7 +544,7 @@ WatchPug.Analyze = {
       
       head: 'protocol',
       
-      data: protocol
+      data: WatchPug.Analyze.convertToTextOnly(protocol)
       
     };
     
@@ -515,7 +558,7 @@ WatchPug.Analyze = {
       
       head: 'hostname',
       
-      data: hostData
+      data: WatchPug.Analyze.convertToTextOnly(hostData)
       
     };
     
@@ -529,7 +572,7 @@ WatchPug.Analyze = {
       
       head: 'path name',
       
-      data: pathName
+      data: WatchPug.Analyze.convertToTextOnly(pathName)
       
     };
     
@@ -543,7 +586,7 @@ WatchPug.Analyze = {
       
       head: 'url params',
       
-      data: urlParams
+      data: WatchPug.Analyze.convertToTextOnly(urlParams)
       
     };
     
@@ -796,17 +839,21 @@ WatchPug.Analyze = {
   sendData: function(data) {
 
     // send data back to addon (and from there to panel.js)
-  
-    if (data) {
-    
-      self.postMessage(data);
-    
-    } else {
-  
-      self.postMessage(WatchPug.Analyze.data);
-      
-    }
 
+    try {
+    
+      if (data) {
+      
+        self.postMessage(data);
+      
+      } else {
+    
+        self.postMessage(WatchPug.Analyze.data);
+        
+      }
+
+    } catch (e) {}
+    
   },
   
   highlightElement: function(highlightInfo) {

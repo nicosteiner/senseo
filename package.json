@@ -13,10 +13,14 @@
         "type": "bool",
         "value": false
     }, {
+        "name": "prefillKeyword",
+        "title": "Prefill keyword if available",
+        "type": "bool",
+        "value": true
+    }, {
         "name": "colorBlindFriendly",
         "title": "Color-blind friendly version",
         "type": "bool",
         "value": false
     }]
 }
-

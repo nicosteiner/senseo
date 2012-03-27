@@ -198,19 +198,41 @@ WatchPug.Panel = {
     
     // reset UI when panel is opened
     
-    self.port.on('resetUI', function handleValidatePageEvent() {
+    self.port.on('resetUI', function() {
 
       WatchPug.Panel.resetUI();
     
-      // asynch data needs longer (is set to true by getResponseText port)
+    });
+    
+    // prefills keyword input field and shows components
+    
+    self.port.on('prepareShowComponents', function(keyword) {
+
+      WatchPug.Panel.resetUI();
+    
+      WatchPug.Panel.setKeywordValue(keyword);
       
-      WatchPug.Panel.resetAsyncProcess();
+      WatchPug.Panel.setActiveTab('components');
+      
+      self.port.emit('panelPrepared');
+      
+    });
+    
+    self.port.on('prepareInspectResult', function(keyword) {
+
+      WatchPug.Panel.resetUI();
+    
+      WatchPug.Panel.setKeywordValue(keyword);
+      
+      WatchPug.Panel.setActiveTab('inspect');
+      
+      self.port.emit('panelPrepared');
       
     });
     
     // asynchronously fetched markup data lands here
 
-    self.port.on('getResponseText', function handleValidatePageEvent(data) {
+    self.port.on('getResponseText', function(data) {
       
       // manual switch for different responses
 
@@ -272,6 +294,22 @@ WatchPug.Panel = {
       
       // init UI
       
+      // keyword prefill feature
+      
+      if (WatchPug.Panel.setting['prefill-keyword'] && $('#keyword-input').val() === '') {
+
+        // check if keyword for prefilling input field is available
+        
+        if (WatchPug.Panel.activeDocumentComponents['meta-keywords'] !== 'n/a' && WatchPug.Panel.activeDocumentComponents['meta-keywords'].data.split(',')[0]) {
+      
+          // prefill first keyword in keyword metatags
+      
+          $('#keyword-input').val(WatchPug.Panel.activeDocumentComponents['meta-keywords'].data.split(',')[0]);
+      
+        }
+        
+      }
+      
       WatchPug.Panel.getKeywordValue();
   
       WatchPug.Panel.getKeywordMatches();
@@ -292,7 +330,7 @@ WatchPug.Panel = {
       
       }
       
-      // after 3 seconds force async data readiness
+      // after 4 seconds force async data readiness
 
       window.setTimeout(function() {
       
@@ -349,13 +387,21 @@ WatchPug.Panel = {
 
   resetUI: function() {
   
-    self.postMessage({
+    // asynch data needs longer (is set to true by getResponseText port)
     
-      command: 'highlight-element',
+    WatchPug.Panel.resetAsyncProcess();
+    
+    try {
+    
+      self.postMessage({
       
-      highlightInfo: 'remove-highlight-element none'
-      
-    });
+        command: 'highlight-element',
+        
+        highlightInfo: 'remove-highlight-element none'
+        
+      });
+    
+    } catch (e) {}
     
     WatchPug.Panel.hideSpeechBubble();
     
@@ -365,6 +411,10 @@ WatchPug.Panel = {
     
     $('#inspect-results').addClass('hidden');
 
+    $('#crawl-sitemap-found').html('<img src="img/roller.gif">');
+  
+    $('#crawl-instructions').addClass('hidden');
+      
     WatchPug.Panel.inspectResultOngoing();
   
   },
@@ -428,22 +478,22 @@ WatchPug.Panel = {
       
       $('#robots-file').empty().append(WatchPug.Panel.activeDocumentComponents['robots-file'].data);
 
-    }
-  
-    robotsData = data.text.split('\n');
-    
-    for (i = 0; i < robotsData.length; i += 1) {
-    
-      robotsDataKey = $.trim(robotsData[i].substring(0, robotsData[i].indexOf(':')).toLowerCase());
-    
-      robotsDataValue = $.trim(robotsData[i].substring(robotsData[i].indexOf(':') + 1, robotsData[i].length));
-    
-      if (robotsDataKey !== '' && robotsDataKey[0] !== '#' && robotsDataValue !== '') {
-    
-        robotsDataMap[robotsDataKey] = robotsDataValue;
+      robotsData = data.text.split('\n');
       
+      for (i = 0; i < robotsData.length; i += 1) {
+      
+        robotsDataKey = $.trim(robotsData[i].substring(0, robotsData[i].indexOf(':')).toLowerCase());
+      
+        robotsDataValue = $.trim(robotsData[i].substring(robotsData[i].indexOf(':') + 1, robotsData[i].length));
+      
+        if (robotsDataKey !== '' && robotsDataKey[0] !== '#' && robotsDataValue !== '') {
+      
+          robotsDataMap[robotsDataKey] = robotsDataValue;
+        
+        }
+        
       }
-      
+    
     }
   
     if (robotsDataMap.sitemap && robotsDataMap.sitemap !== '') {
@@ -458,13 +508,23 @@ WatchPug.Panel = {
     
     } else {
     
-      sitemapLocation = WatchPug.Panel.activeDocumentComponents['location-protocol'].data + '//' + WatchPug.Panel.activeDocumentComponents['location-hostname'].data + '/sitemap.xml';
+      // location-protocol and location-hostname are unset when document is opend with file:
+    
+      if (WatchPug.Panel.activeDocumentComponents['location-protocol'] && WatchPug.Panel.activeDocumentComponents['location-hostname']) {
+    
+        sitemapLocation = WatchPug.Panel.activeDocumentComponents['location-protocol'].data + '//' + WatchPug.Panel.activeDocumentComponents['location-hostname'].data + '/sitemap.xml';
+        
+      }
     
     }
   
     // check sitemap now
   
-    self.port.emit('getResponseText', 'sitemap-file', sitemapLocation);
+    if (sitemapLocation) {
+  
+      self.port.emit('getResponseText', 'sitemap-file', sitemapLocation);
+      
+    }
     
   },
   
@@ -524,24 +584,28 @@ WatchPug.Panel = {
   
     var headers = data.headers;
     
-    // update components table
+    if (headers) {
     
-    if (headers['Content-Type']) {
-    
-      WatchPug.Panel.activeDocumentComponents['content-type'].data = headers['Content-Type'];
-    
-      $('#content-type').empty().append(headers['Content-Type']);
-    
-    }
-    
-    // update components table
-    
-    if (headers['Last-Modified']) {
+      // update components table
+      
+      if (headers['Content-Type']) {
+      
+        WatchPug.Panel.activeDocumentComponents['content-type'].data = headers['Content-Type'];
+      
+        $('#content-type').empty().append(headers['Content-Type']);
+      
+      }
+      
+      // update components table
+      
+      if (headers['Last-Modified']) {
 
-      WatchPug.Panel.activeDocumentComponents['last-modified'].data = headers['Last-Modified'];
-    
-      $('#last-modified').empty().append(headers['Last-Modified']);
-    
+        WatchPug.Panel.activeDocumentComponents['last-modified'].data = headers['Last-Modified'];
+      
+        $('#last-modified').empty().append(headers['Last-Modified']);
+      
+      }
+      
     }
     
   },
@@ -857,6 +921,16 @@ WatchPug.Panel = {
     
   },
   
+  setKeywordValue: function(keyword) {
+  
+    if (keyword) {
+  
+      $('#keyword-input').val(keyword);
+      
+    }
+    
+  },
+  
   handleInspectButton: function() {
   
     if (WatchPug.Panel.keywordsString !== '') {
@@ -875,6 +949,10 @@ WatchPug.Panel = {
       
         WatchPug.Panel.showInspectResultPre();
         
+      } else {
+      
+        WatchPug.Panel.inspectResultOngoing();
+      
       }
       
     } else {
@@ -919,6 +997,14 @@ WatchPug.Panel = {
   
     WatchPug.Panel.setActiveTab('crawl');
     
+    // only if senseo grade bar is completely hidden, show busy indicator
+  
+    if ($('#inspect-result-ongoing').hasClass('hidden') && $('#inspect-result-ready').hasClass('hidden')) {
+  
+      WatchPug.Panel.inspectResultOngoing();
+    
+    }
+    
     // check for sitemap
     
   },
@@ -952,6 +1038,8 @@ WatchPug.Panel = {
     WatchPug.Panel.setActiveTab('settings');
   
     $('#settings-toolbar-icon').html(String(WatchPug.Panel.setting['toolbar-icon']));
+  
+    $('#settings-prefill-keyword').html(String(WatchPug.Panel.setting['prefill-keyword']));
   
     $('#settings-color-blind').html(String(WatchPug.Panel.setting['color-blind']));
   
@@ -1110,8 +1198,7 @@ WatchPug.Panel = {
     
     var i,
         key,
-        componentsTableBody = $('#' + componentsTable + ' tbody'),
-        dataRow;
+        componentsTableBody = $('#' + componentsTable + ' tbody');
     
     // remove outdated table content
   
@@ -1131,17 +1218,11 @@ WatchPug.Panel = {
         
           // one dataset
           
-          // better .text than .append()
-          
-          dataRow = $('<div>').append($('<tr>')
-                              .append($('<th>')
-                              .text(components[key].head))
-                              .append($('<td>')
-                              .append(WatchPug.Panel.formatOutput(components[key].data))).clone()).html();
-          
-          componentsTableBody.append(dataRow);
-          
-          //$(dataRow).click(WatchPug.Panel.highlightDataRow);
+          componentsTableBody.append($('<tr>')
+                             .append($('<th>')
+                             .text(components[key].head))
+                             .append($('<td>')
+                             .append(WatchPug.Panel.formatOutput(components[key].data))));
           
         } else {
         
@@ -1149,23 +1230,12 @@ WatchPug.Panel = {
           
           for (i = 0; i < components[key].head.length; i += 1) {
 
-            dataRow = $('<div>').append($('<tr>')
-                                .append($('<th>')
-                                .text(components[key].head[i]))
-                                .append($('<td>')
-                                .append(WatchPug.Panel.formatOutput(components[key].data[i]))).clone()).html();
-            
-            componentsTableBody.append(dataRow);
-            
-            //$(dataRow).click(WatchPug.Panel.highlightDataRow);
-/*          
             componentsTableBody.append($('<tr>')
                                .append($('<th>')
                                .text(components[key].head[i]))
                                .append($('<td>')
-                               .append(WatchPug.Panel.formatOutput(components[key].data[i]))
-                               ));
-           */ 
+                               .append(WatchPug.Panel.formatOutput(components[key].data[i]))));
+            
           }
 
         }
