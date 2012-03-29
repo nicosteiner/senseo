@@ -80,6 +80,21 @@ body > header #close-crawl-panel:hover {
   font-weight: bold;
 }
 
+#crawl-instructions p {
+  margin-bottom: 10px;
+}
+
+#crawl-instructions ul {
+  margin-left: 10px;
+  margin-bottom: 10px;
+  list-style-type: disc;
+}
+
+#crawl-instructions ul li {
+  margin-bottom: 8px;
+  margin-left: 10px;
+}
+
 #crawler-table {
   border-collapse: collapse;
   background-color: #fff;
@@ -136,4 +151,14 @@ body > header #close-crawl-panel:hover {
 
 #crawler-table td span.ranking img {
   padding-top: 2px;
+}
+
+#crawler-table span.match {
+  font-style: italic;
+  color: #009900;
+}
+
+#crawler-table span.mainkeyword {
+  font-style: italic;
+  color: #000099;
 }

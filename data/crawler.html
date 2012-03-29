@@ -9,7 +9,7 @@
     <div id="fb-root"></div>
     <header>
       <button class="blue-pill" id="crawl-start-button"></button>
-      <button class="blue-pill" id="crawl-stop-button" class="hidden"></button>
+      <button class="blue-pill hidden" id="crawl-stop-button"></button>
       <button class="blue-pill" id="export-button"></button>
       <div class="fb-like" data-href="http://www.sensational-seo.com" data-send="false" data-layout="button_count" data-width="80" data-show-faces="false" data-action="recommend" data-font="arial"></div>
       <img id="close-crawl-panel" src="img/cancel-big.png">
@@ -19,9 +19,24 @@
       <div class="done"></div>
     </div>
     <section id="crawler-container">
-      <p id="press-start-button">
-        Press "Start crawling" button to analyze pages.
-      </p>
+      <article id="crawl-instructions">
+        <p>
+          For the main keyword SenSEO uses the first keyword in keywords meta tag.
+        </p>
+        <p>
+          Ranking is calculated with the following rules:
+        </p>
+        <ul>
+          <li>URL contains keyword: <strong>+1</strong></li>
+          <li>Title exists: <strong>+1</strong></li>
+          <li>Title contains main keyword: <strong>+1</strong></li>
+          <li>Description exists: <strong>+1</strong></li>
+          <li>Description contains main keyword: <strong>+1</strong></li>
+        </ul>
+        <p>
+          <strong>Press "Start crawling" button to analyze pages.</strong>
+        </p>
+      </article>
       <table id="crawler-table" class="hidden">
         <thead>
           <td>URL</td>

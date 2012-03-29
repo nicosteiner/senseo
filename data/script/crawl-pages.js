@@ -87,7 +87,7 @@ SenSEO.CrawlPage = {
       
       $('#crawl-start-button').addClass('hidden');
       
-      $('#press-start-button').addClass('hidden');
+      $('#crawl-instructions').addClass('hidden');
     
       $('#crawl-stop-button').removeClass('hidden');
       
@@ -255,6 +255,61 @@ SenSEO.CrawlPage = {
 
   },
   
+  formatOutput: function(text, mainKeyword) {
+  
+    var replaceString,
+        formattedOutput,
+        rx;
+  
+    if (text && mainKeyword) {
+    
+      rx = new RegExp(mainKeyword, 'gi');
+      
+      if (text && text.replace && text.match(rx)) {
+      
+        replaceString = $('<div>')
+                        .append($('<span>')
+                        .attr('class', 'match')
+                        .text(mainKeyword).clone()).html();
+
+        formattedOutput = text.replace(rx, replaceString);
+        
+      }
+      
+    }
+    
+    return formattedOutput || text;
+    
+  },
+  
+  formatMainKeyword: function(keywords, mainKeyword) {
+  
+    var replaceString,
+        formattedOutput;
+  
+    if (keywords && keywords !== '') {
+    
+      replaceString = $('<div>')
+                      .append($('<span>')
+                      .attr('class', 'mainkeyword')
+                      .text(mainKeyword).clone()).html();
+
+      if (keywords.indexOf(',')) {
+    
+        formattedOutput = replaceString + keywords.substring(keywords.indexOf(','));
+        
+      } else {
+      
+        formattedOutput = replaceString;
+      
+      }
+      
+    }
+    
+    return formattedOutput || text;
+    
+  },
+  
   addPagesTableRow: function(url, title, description, keywords, author) {
 
     var keywordList,
@@ -302,15 +357,15 @@ SenSEO.CrawlPage = {
     
     }
   
-    urlMarkup = url && url !== '' ? $('<span>').text(url) : $('<span class="error">n/a</span>');
+    urlMarkup = url && url !== '' ? SenSEO.CrawlPage.formatOutput(url, mainKeyword) : $('<span class="error">n/a</span>');
   
-    title = title && title !== '' ? $('<span>').text(title) : $('<span class="error">n/a</span>');
+    title = title && title !== '' ? SenSEO.CrawlPage.formatOutput(title, mainKeyword) : $('<span class="error">n/a</span>');
   
-    description = description && description !== '' ? $('<span>').text(description) : $('<span class="error">n/a</span>');
+    description = description && description !== '' ? SenSEO.CrawlPage.formatOutput(description, mainKeyword) : $('<span class="error">n/a</span>');
   
-    author = author && author !== '' ? $('<span>').text(author) : $('<span class="error">n/a</span>');
+    author = author && author !== '' ? author : $('<span class="error">n/a</span>');
   
-    keywords = keywords && keywords !== '' ? $('<span>').text(keywords) : $('<span class="error">n/a</span>');
+    keywords = keywords && keywords !== '' ? SenSEO.CrawlPage.formatMainKeyword(keywords, mainKeyword) : $('<span class="error">n/a</span>');
   
     rankingMarkup = $('<span class="ranking">');
   
