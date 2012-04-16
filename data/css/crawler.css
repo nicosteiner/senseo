@@ -17,7 +17,8 @@ body > header {
   background: -moz-linear-gradient(top, #ffffff 0%, #f1f1f1 50%, #e1e1e1 51%, #f6f6f6 100%); /* FF3.6+ */
 }
 
-body > header button {
+body > header button,
+body > header span {
   float: left;
   margin-right: 5px;
 }
@@ -28,6 +29,14 @@ body > header button {
 
 body > header button {
   margin-top: 1px;
+}
+
+body > header span img {
+  margin-top: 4px;
+}
+
+body > header span span {
+  margin-top: 3px;
 }
 
 body > header #close-crawl-panel {

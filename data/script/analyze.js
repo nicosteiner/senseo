@@ -1,6 +1,6 @@
-var WatchPug = WatchPug || {};
+var SenSEO = SenSEO || {};
 
-WatchPug.Analyze = {
+SenSEO.Analyze = {
 
   data: {},
 
@@ -8,13 +8,13 @@ WatchPug.Analyze = {
 
     var title = $('head title');
 
-    WatchPug.Analyze.data['title-found'] = {
+    SenSEO.Analyze.data['title-found'] = {
 
       head: 'title tag',
 
       count: title.length,
 
-      data: title && title[0] && title[0].text !== '' ? WatchPug.Analyze.convertToTextOnly(title[0]) : 'n/a'
+      data: title && title[0] && title[0].text !== '' ? SenSEO.Analyze.convertToTextOnly(title[0]) : 'n/a'
       
     };
   
@@ -22,11 +22,11 @@ WatchPug.Analyze = {
   
   getTitleLength: function() {
   
-    WatchPug.Analyze.data['title-length'] = {
+    SenSEO.Analyze.data['title-length'] = {
       
       head: 'title tag length',
       
-      data: WatchPug.Analyze.data['title-found'].data !== 'n/a' ? WatchPug.Analyze.data['title-found'].data.length : 'n/a'
+      data: SenSEO.Analyze.data['title-found'].data !== 'n/a' ? SenSEO.Analyze.data['title-found'].data.length : 'n/a'
       
     };
   
@@ -42,13 +42,13 @@ WatchPug.Analyze = {
       
     });
     
-    WatchPug.Analyze.data['meta-description'] = {
+    SenSEO.Analyze.data['meta-description'] = {
       
       head: 'description meta tag',
       
       count: metaDescription.length,
       
-      data: metaDescription && metaDescription.attr('content') ? WatchPug.Analyze.convertToTextOnly(metaDescription.attr('content')) : 'n/a'
+      data: metaDescription && metaDescription.attr('content') ? SenSEO.Analyze.convertToTextOnly(metaDescription.attr('content')) : 'n/a'
       
     };
   
@@ -56,11 +56,11 @@ WatchPug.Analyze = {
   
   getMetaDescriptionLength: function() {
   
-    WatchPug.Analyze.data['meta-description-length'] = {
+    SenSEO.Analyze.data['meta-description-length'] = {
       
       head: 'description meta tag length',
       
-      data: WatchPug.Analyze.data['meta-description'].data !== 'n/a' ? WatchPug.Analyze.data['meta-description'].data.length : 'n/a'
+      data: SenSEO.Analyze.data['meta-description'].data !== 'n/a' ? SenSEO.Analyze.data['meta-description'].data.length : 'n/a'
       
     };
   
@@ -72,11 +72,11 @@ WatchPug.Analyze = {
   
     var metaKeywords = $('head meta[name = "keywords"]');
     
-    WatchPug.Analyze.data['meta-keywords'] = {
+    SenSEO.Analyze.data['meta-keywords'] = {
       
       head: 'keywords meta tag',
       
-      data: metaKeywords && metaKeywords.attr('content') ? WatchPug.Analyze.convertToTextOnly(metaKeywords.attr('content')) : 'n/a'
+      data: metaKeywords && metaKeywords.attr('content') ? SenSEO.Analyze.convertToTextOnly(metaKeywords.attr('content')) : 'n/a'
       
     };
   
@@ -88,11 +88,11 @@ WatchPug.Analyze = {
   
     var metaRobots = $('head meta[name = "robots"]');
     
-    WatchPug.Analyze.data['meta-robots'] = {
+    SenSEO.Analyze.data['meta-robots'] = {
       
       head: 'robots meta tag',
       
-      data: metaRobots && metaRobots.attr('content') ? WatchPug.Analyze.convertToTextOnly(metaRobots.attr('content')) : 'n/a'
+      data: metaRobots && metaRobots.attr('content') ? SenSEO.Analyze.convertToTextOnly(metaRobots.attr('content')) : 'n/a'
       
     };
   
@@ -104,11 +104,11 @@ WatchPug.Analyze = {
   
     var linkCanonical = $('head link[rel = "canonical"]');
     
-    WatchPug.Analyze.data['link-canonical'] = {
+    SenSEO.Analyze.data['link-canonical'] = {
       
       head: 'canonical URL',
       
-      data: linkCanonical && linkCanonical.attr('href') ? WatchPug.Analyze.convertToTextOnly(linkCanonical.attr('href')) : 'n/a'
+      data: linkCanonical && linkCanonical.attr('href') ? SenSEO.Analyze.convertToTextOnly(linkCanonical.attr('href')) : 'n/a'
       
     };
   
@@ -119,11 +119,11 @@ WatchPug.Analyze = {
     var perfData = window.performance.timing,
         pageLoadTime = perfData.loadEventEnd - perfData.navigationStart;
 
-    WatchPug.Analyze.data['page-load-time'] = {
+    SenSEO.Analyze.data['page-load-time'] = {
       
       head: 'page load time (ms)',
       
-      data: pageLoadTime + '<a href="http://gtmetrix.com/?url=' + encodeURIComponent(WatchPug.Analyze.data['location-protocol'].data + '//' + WatchPug.Analyze.data['location-hostname'].data) + '" target="blank">analyze performance</a>'
+      data: pageLoadTime + '<a href="http://gtmetrix.com/?url=' + encodeURIComponent(SenSEO.Analyze.data['location-protocol'].data + '//' + SenSEO.Analyze.data['location-hostname'].data) + '" target="blank">analyze performance</a>'
       
     };
   
@@ -138,7 +138,7 @@ WatchPug.Analyze = {
     
     if (headlines.length) {
       
-      WatchPug.Analyze.data['headline-' + level] = {
+      SenSEO.Analyze.data['headline-' + level] = {
         
         head: [],
         
@@ -150,7 +150,7 @@ WatchPug.Analyze = {
         
       };
       
-      // class of anker maps to the WatchPug.Anaalyze.data key / index
+      // class of anker maps to the SenSEO.Anaalyze.data key / index
       // => class="level-index"
       
       for (i = 0; i < headlines.length; i += 1) {
@@ -159,7 +159,7 @@ WatchPug.Analyze = {
       
         if ($(headlines[i]).is(':visible')) {
         
-          textOnlyHeadline = WatchPug.Analyze.convertToTextOnly(headlines[i]);
+          textOnlyHeadline = SenSEO.Analyze.convertToTextOnly(headlines[i]);
         
           highlightHeadlineHTML = $('<div>')
                                   .append(textOnlyHeadline)
@@ -180,17 +180,17 @@ WatchPug.Analyze = {
       
         // use escape html
       
-        WatchPug.Analyze.data['headline-' + level].head.push('<h' + level + '> heading tag');
+        SenSEO.Analyze.data['headline-' + level].head.push('<h' + level + '> heading tag');
         
-        WatchPug.Analyze.data['headline-' + level].data.push(highlightHeadlineHTML);
+        SenSEO.Analyze.data['headline-' + level].data.push(highlightHeadlineHTML);
         
-        WatchPug.Analyze.data['headline-' + level].element.push(headlines[i]);
+        SenSEO.Analyze.data['headline-' + level].element.push(headlines[i]);
         
       }
     
     } else {
     
-      WatchPug.Analyze.data['headline-' + level] = {
+      SenSEO.Analyze.data['headline-' + level] = {
         
         head: '<h' + level + '> heading tag',
         
@@ -218,15 +218,15 @@ WatchPug.Analyze = {
 
     if (microdata.length) {
       
-      WatchPug.Analyze.data['microdata-found'] = {
+      SenSEO.Analyze.data['microdata-found'] = {
         
         head: 'microdata',
         
-        data: 'found' + '<a id="go-to-testing-tool" target="blank" href="http://www.google.com/webmasters/tools/richsnippets?url=' + encodeURIComponent(WatchPug.Analyze.data['location-href'].data) + '">preview</a>'
+        data: 'found' + '<a id="go-to-testing-tool" target="blank" href="http://www.google.com/webmasters/tools/richsnippets?url=' + encodeURIComponent(SenSEO.Analyze.data['location-href'].data) + '">preview</a>'
         
       };
       
-      WatchPug.Analyze.data['microdata-itemprop'] = {
+      SenSEO.Analyze.data['microdata-itemprop'] = {
         
         head: [],
         
@@ -275,19 +275,19 @@ WatchPug.Analyze = {
                                    
         }
         
-        WatchPug.Analyze.data['microdata-itemprop'].head.push('microdata (' + i + ')');
+        SenSEO.Analyze.data['microdata-itemprop'].head.push('microdata (' + $(microdata[i]).attr('itemtype').substring($(microdata[i]).attr('itemtype').lastIndexOf('/') + 1) + ')');
         
-        WatchPug.Analyze.data['microdata-itemprop'].missing.push(false);
+        SenSEO.Analyze.data['microdata-itemprop'].missing.push(false);
         
-        WatchPug.Analyze.data['microdata-itemprop'].data.push(highlightMicrodataHTML);
+        SenSEO.Analyze.data['microdata-itemprop'].data.push(highlightMicrodataHTML);
         
-        WatchPug.Analyze.data['microdata-itemprop'].element.push(microdata[i]);
+        SenSEO.Analyze.data['microdata-itemprop'].element.push(microdata[i]);
       
       }
     
     } else {
     
-      WatchPug.Analyze.data['microdata-found'] = {
+      SenSEO.Analyze.data['microdata-found'] = {
         
         head: 'microdata',
         
@@ -311,7 +311,7 @@ WatchPug.Analyze = {
         imgAltMissing,
         highlightImageHTML;
     
-    WatchPug.Analyze.data['img-alt'] = {
+    SenSEO.Analyze.data['img-alt'] = {
       
       head: [],
       
@@ -350,13 +350,13 @@ WatchPug.Analyze = {
 
       }
       
-      WatchPug.Analyze.data['img-alt'].head.push(imgFileName);
+      SenSEO.Analyze.data['img-alt'].head.push(imgFileName);
       
-      WatchPug.Analyze.data['img-alt'].missing.push(imgAltMissing);
+      SenSEO.Analyze.data['img-alt'].missing.push(imgAltMissing);
       
-      WatchPug.Analyze.data['img-alt'].data.push(highlightImageHTML);
+      SenSEO.Analyze.data['img-alt'].data.push(highlightImageHTML);
       
-      WatchPug.Analyze.data['img-alt'].element.push(allImages[i]);
+      SenSEO.Analyze.data['img-alt'].element.push(allImages[i]);
       
     }
     
@@ -369,7 +369,7 @@ WatchPug.Analyze = {
     allImagesCount = allImages.length,
     allAltImagesCount = allAltImages.length;
 
-    WatchPug.Analyze.data['img-without-alt'] = {
+    SenSEO.Analyze.data['img-without-alt'] = {
       
       head: 'images without alt attribute',
       
@@ -383,7 +383,7 @@ WatchPug.Analyze = {
 
     var allLinks = $('body a');
     
-    WatchPug.Analyze.data['number-links'] = {
+    SenSEO.Analyze.data['number-links'] = {
       
       head: 'number of links',
       
@@ -430,19 +430,19 @@ WatchPug.Analyze = {
     
       trimtext = trimtext.replace(/\015\012|\015|\012/g, '');
     
-      if (WatchPug.Analyze.trim(trimtext) !== '') {
+      if (SenSEO.Analyze.trim(trimtext) !== '') {
       
-        bodyData = bodyData + WatchPug.Analyze.trim(trimtext) + ' ';
+        bodyData = bodyData + SenSEO.Analyze.trim(trimtext) + ' ';
         
       }
       
     }
 
-    WatchPug.Analyze.data['body-text'] = {
+    SenSEO.Analyze.data['body-text'] = {
       
       head: 'body text',
       
-      data: WatchPug.Analyze.convertToTextOnly(WatchPug.Analyze.trim(bodyData))
+      data: SenSEO.Analyze.convertToTextOnly(SenSEO.Analyze.trim(bodyData))
       
     };
 
@@ -488,11 +488,11 @@ WatchPug.Analyze = {
 
     var allElements = document.evaluate('count(descendant-or-self::*)', document, null, XPathResult.ANY_TYPE, null );
 
-    WatchPug.Analyze.data['number-elements'] = {
+    SenSEO.Analyze.data['number-elements'] = {
       
       head: 'number of elements',
       
-      data: WatchPug.Analyze.convertToTextOnly(allElements.numberValue)
+      data: SenSEO.Analyze.convertToTextOnly(allElements.numberValue)
       
     };
     
@@ -500,11 +500,11 @@ WatchPug.Analyze = {
 
   getNumberOfWords: function() {
 
-    WatchPug.Analyze.data['number-words'] = {
+    SenSEO.Analyze.data['number-words'] = {
       
       head: 'number of words',
       
-      data: WatchPug.Analyze.data['body-text'].data.split(" ").length
+      data: SenSEO.Analyze.data['body-text'].data.split(" ").length
       
     };
   
@@ -512,9 +512,9 @@ WatchPug.Analyze = {
 
   getElementWordRatio: function() {
 
-    var ratio = Math.round(WatchPug.Analyze.data['number-elements'].data / WatchPug.Analyze.data['number-words'].data * 100) / 100;
+    var ratio = Math.round(SenSEO.Analyze.data['number-elements'].data / SenSEO.Analyze.data['number-words'].data * 100) / 100;
     
-    WatchPug.Analyze.data['element-word-ratio'] = {
+    SenSEO.Analyze.data['element-word-ratio'] = {
       
       head: 'element-word ratio',
       
@@ -526,11 +526,11 @@ WatchPug.Analyze = {
 
   getLocationHref: function() {
 
-    WatchPug.Analyze.data['location-href'] = {
+    SenSEO.Analyze.data['location-href'] = {
       
       head: 'URL',
       
-      data: WatchPug.Analyze.convertToTextOnly(window.location.href)
+      data: SenSEO.Analyze.convertToTextOnly(window.location.href)
       
     };
     
@@ -540,11 +540,11 @@ WatchPug.Analyze = {
 
     var protocol = window.location.protocol;
     
-    WatchPug.Analyze.data['location-protocol'] = {
+    SenSEO.Analyze.data['location-protocol'] = {
       
       head: 'protocol',
       
-      data: WatchPug.Analyze.convertToTextOnly(protocol)
+      data: SenSEO.Analyze.convertToTextOnly(protocol)
       
     };
     
@@ -554,11 +554,11 @@ WatchPug.Analyze = {
 
     var hostData = window.location.hostname;
     
-    WatchPug.Analyze.data['location-hostname'] = {
+    SenSEO.Analyze.data['location-hostname'] = {
       
       head: 'hostname',
       
-      data: WatchPug.Analyze.convertToTextOnly(hostData)
+      data: SenSEO.Analyze.convertToTextOnly(hostData)
       
     };
     
@@ -568,11 +568,11 @@ WatchPug.Analyze = {
 
     var pathName = window.location.pathname;
     
-    WatchPug.Analyze.data['path-name'] = {
+    SenSEO.Analyze.data['path-name'] = {
       
       head: 'path name',
       
-      data: WatchPug.Analyze.convertToTextOnly(pathName)
+      data: SenSEO.Analyze.convertToTextOnly(pathName)
       
     };
     
@@ -582,11 +582,11 @@ WatchPug.Analyze = {
 
     var urlParams = window.location.search;
     
-    WatchPug.Analyze.data['url-params'] = {
+    SenSEO.Analyze.data['url-params'] = {
       
       head: 'url params',
       
-      data: WatchPug.Analyze.convertToTextOnly(urlParams)
+      data: SenSEO.Analyze.convertToTextOnly(urlParams)
       
     };
     
@@ -594,9 +594,9 @@ WatchPug.Analyze = {
 
   getDocumentHeaders: function() {
 
-    var url = WatchPug.Analyze.data['location-protocol'].data + '//' + WatchPug.Analyze.data['location-hostname'].data + WatchPug.Analyze.data['path-name'].data + WatchPug.Analyze.data['url-params'].data;
+    var url = SenSEO.Analyze.data['location-protocol'].data + '//' + SenSEO.Analyze.data['location-hostname'].data + SenSEO.Analyze.data['path-name'].data + SenSEO.Analyze.data['url-params'].data;
     
-    WatchPug.Analyze.data['last-modified'] = {
+    SenSEO.Analyze.data['last-modified'] = {
       
       head: 'response-header (Last-Modified)',
       
@@ -604,7 +604,7 @@ WatchPug.Analyze = {
       
     };
     
-    WatchPug.Analyze.data['content-type'] = {
+    SenSEO.Analyze.data['content-type'] = {
       
       head: 'response-header (Content-Type)',
       
@@ -620,9 +620,9 @@ WatchPug.Analyze = {
   
   getValidationResult: function() {
   
-    var url = 'http://validator.w3.org/check?uri=' + encodeURIComponent(WatchPug.Analyze.data['location-protocol'].data + '//' + WatchPug.Analyze.data['location-hostname'].data + '/') + '&charset=(detect+automatically)&doctype=Inline&group=0';
+    var url = 'http://validator.w3.org/check?uri=' + encodeURIComponent(SenSEO.Analyze.data['location-protocol'].data + '//' + SenSEO.Analyze.data['location-hostname'].data + '/') + '&charset=(detect+automatically)&doctype=Inline&group=0';
     
-    WatchPug.Analyze.data['validation-result'] = {
+    SenSEO.Analyze.data['validation-result'] = {
       
       head: 'W3C validation',
       
@@ -638,9 +638,9 @@ WatchPug.Analyze = {
   
   getDomainAge: function() {
   
-    var url = 'http://wayback.archive.org/web/*/' + encodeURIComponent(WatchPug.Analyze.data['location-hostname'].data);
+    var url = 'http://wayback.archive.org/web/*/' + encodeURIComponent(SenSEO.Analyze.data['location-hostname'].data);
     
-    WatchPug.Analyze.data['domain-age'] = {
+    SenSEO.Analyze.data['domain-age'] = {
       
       head: 'domain age',
       
@@ -656,9 +656,9 @@ WatchPug.Analyze = {
   
   getRobotsFileContent: function() {
 
-    var url = WatchPug.Analyze.data['location-protocol'].data + '//' + WatchPug.Analyze.data['location-hostname'].data + '/robots.txt';
+    var url = SenSEO.Analyze.data['location-protocol'].data + '//' + SenSEO.Analyze.data['location-hostname'].data + '/robots.txt';
     
-    WatchPug.Analyze.data['robots-file'] = {
+    SenSEO.Analyze.data['robots-file'] = {
     
       head: 'robots.txt',
       
@@ -666,7 +666,7 @@ WatchPug.Analyze = {
       
     };
     
-    WatchPug.Analyze.data['robots-sitemap-location'] = {
+    SenSEO.Analyze.data['robots-sitemap-location'] = {
     
       head: 'sitemap location in robots.txt',
       
@@ -682,7 +682,7 @@ WatchPug.Analyze = {
   
   getSitemapContent: function() {
   
-    WatchPug.Analyze.data['sitemap-file'] = {
+    SenSEO.Analyze.data['sitemap-file'] = {
       
       head: 'sitemap.xml',
       
@@ -720,7 +720,7 @@ WatchPug.Analyze = {
                                  
       }
 
-      WatchPug.Analyze.data['facebook-like-button'] = {
+      SenSEO.Analyze.data['facebook-like-button'] = {
         
         head: 'Facebook like button',
         
@@ -732,7 +732,7 @@ WatchPug.Analyze = {
     
     } else {
 
-      WatchPug.Analyze.data['facebook-like-button'] = {
+      SenSEO.Analyze.data['facebook-like-button'] = {
         
         head: 'Facebook like button',
         
@@ -766,7 +766,7 @@ WatchPug.Analyze = {
                                  
       }
 
-      WatchPug.Analyze.data['plus-one-button'] = {
+      SenSEO.Analyze.data['plus-one-button'] = {
         
         head: 'Google +1 button',
         
@@ -778,7 +778,7 @@ WatchPug.Analyze = {
     
     } else {
 
-      WatchPug.Analyze.data['plus-one-button'] = {
+      SenSEO.Analyze.data['plus-one-button'] = {
         
         head: 'Google +1 button',
         
@@ -812,7 +812,7 @@ WatchPug.Analyze = {
                                  
       }
 
-      WatchPug.Analyze.data['twitter-button'] = {
+      SenSEO.Analyze.data['twitter-button'] = {
         
         head: 'Twitter button',
         
@@ -824,7 +824,7 @@ WatchPug.Analyze = {
     
     } else {
 
-      WatchPug.Analyze.data['twitter-button'] = {
+      SenSEO.Analyze.data['twitter-button'] = {
         
         head: 'Twitter button',
         
@@ -848,7 +848,7 @@ WatchPug.Analyze = {
       
       } else {
     
-        self.postMessage(WatchPug.Analyze.data);
+        self.postMessage(SenSEO.Analyze.data);
         
       }
 
@@ -868,15 +868,15 @@ WatchPug.Analyze = {
 
     if (targetDataKey === 'remove-highlight-element') {
     
-      if (WatchPug.Analyze.highlightDOMElement) {
+      if (SenSEO.Analyze.highlightDOMElement) {
     
-        WatchPug.Analyze.highlightDOMElement.css('display', 'none');
+        SenSEO.Analyze.highlightDOMElement.css('display', 'none');
         
       }
 
-      if (WatchPug.Analyze.highlightBubbleElement) {
+      if (SenSEO.Analyze.highlightBubbleElement) {
     
-        WatchPug.Analyze.highlightBubbleElement.css('display', 'none');
+        SenSEO.Analyze.highlightBubbleElement.css('display', 'none');
         
       }
 
@@ -890,9 +890,9 @@ WatchPug.Analyze = {
     
       // try to localize target element
       
-      targetElement = WatchPug.Analyze.data['headline-' + level].element[index];
+      targetElement = SenSEO.Analyze.data['headline-' + level].element[index];
       
-      WatchPug.Analyze.highlightTargetElement(targetElement, 'h' + level);
+      SenSEO.Analyze.highlightTargetElement(targetElement, 'h' + level);
       
     }
     
@@ -902,9 +902,9 @@ WatchPug.Analyze = {
     
       // try to localize target element
       
-      targetElement = WatchPug.Analyze.data['img-alt'].element[index];
+      targetElement = SenSEO.Analyze.data['img-alt'].element[index];
       
-      WatchPug.Analyze.highlightTargetElement(targetElement, 'image');
+      SenSEO.Analyze.highlightTargetElement(targetElement, 'image');
       
     }
     
@@ -914,9 +914,9 @@ WatchPug.Analyze = {
     
       // try to localize target element
       
-      targetElement = WatchPug.Analyze.data['microdata-itemprop'].element[index];
+      targetElement = SenSEO.Analyze.data['microdata-itemprop'].element[index];
       
-      WatchPug.Analyze.highlightTargetElement(targetElement, 'microdata');
+      SenSEO.Analyze.highlightTargetElement(targetElement, 'microdata');
       
     }
     
@@ -928,9 +928,9 @@ WatchPug.Analyze = {
 
         // try to localize target element
         
-        targetElement = WatchPug.Analyze.data['facebook-like-button'].element;
+        targetElement = SenSEO.Analyze.data['facebook-like-button'].element;
         
-        WatchPug.Analyze.highlightTargetElement(targetElement, 'Facebook');
+        SenSEO.Analyze.highlightTargetElement(targetElement, 'Facebook');
 
       }
 
@@ -938,9 +938,9 @@ WatchPug.Analyze = {
 
         // try to localize target element
         
-        targetElement = WatchPug.Analyze.data['plus-one-button'].element;
+        targetElement = SenSEO.Analyze.data['plus-one-button'].element;
         
-        WatchPug.Analyze.highlightTargetElement(targetElement, 'Google +1');
+        SenSEO.Analyze.highlightTargetElement(targetElement, 'Google +1');
 
       }
 
@@ -948,9 +948,9 @@ WatchPug.Analyze = {
 
         // try to localize target element
         
-        targetElement = WatchPug.Analyze.data['twitter-button'].element;
+        targetElement = SenSEO.Analyze.data['twitter-button'].element;
         
-        WatchPug.Analyze.highlightTargetElement(targetElement, 'Twitter');
+        SenSEO.Analyze.highlightTargetElement(targetElement, 'Twitter');
 
       }
 
@@ -979,12 +979,12 @@ WatchPug.Analyze = {
 
     if (targetElementWidth && targetElementHeight) {
     
-      if (!WatchPug.Analyze.highlightDOMElement) {
+      if (!SenSEO.Analyze.highlightDOMElement) {
       
         $('body').append($('<div>')
                  .attr('id', 'senseo-highlight-container'));
         
-        WatchPug.Analyze.highlightDOMElement = $('#senseo-highlight-container');
+        SenSEO.Analyze.highlightDOMElement = $('#senseo-highlight-container');
         
         // create own stylesheet for highlight element styles
         // from: https://developer.mozilla.org/en/DOM/CSSStyleSheet/insertRule
@@ -1005,7 +1005,7 @@ WatchPug.Analyze = {
         
       }
       
-      WatchPug.Analyze.highlightDOMElement.css({
+      SenSEO.Analyze.highlightDOMElement.css({
                                               'display': 'block',
                                               'left': targetElementOffset.left,
                                               'top': targetElementOffset.top,
@@ -1013,13 +1013,13 @@ WatchPug.Analyze = {
                                               'height': targetElementHeight
                                             });
                                             
-      if (!WatchPug.Analyze.highlightBubbleElement) {
+      if (!SenSEO.Analyze.highlightBubbleElement) {
       
         $('body').append($('<div>')
                  .attr('id', 'senseo-highlight-bubble')
                  .append($('<p>')));
         
-        WatchPug.Analyze.highlightBubbleElement = $('#senseo-highlight-bubble');
+        SenSEO.Analyze.highlightBubbleElement = $('#senseo-highlight-bubble');
         
         hightlightStylesheet.insertRule('#senseo-highlight-bubble {-moz-transition-property: left, top; -moz-transition-duration: 0.15s; -moz-transition-timing-function: ease-out;}', 0);
         hightlightStylesheet.insertRule('#senseo-highlight-bubble {position: absolute; z-index: 9999; display: inline-block; font-family: Verdana, Arial; width: 80px; padding: 2px; background: -moz-linear-gradient(top, #888 0%,#444 100%); position: absolute; border-radius: 3px; border: 1px #333 solid;}', 0);
@@ -1028,9 +1028,9 @@ WatchPug.Analyze = {
         
       }
 
-      $(WatchPug.Analyze.highlightBubbleElement).find('p').html(content);
+      $(SenSEO.Analyze.highlightBubbleElement).find('p').html(content);
 
-      $(WatchPug.Analyze.highlightBubbleElement).css({
+      $(SenSEO.Analyze.highlightBubbleElement).css({
                                                    'display': 'block',
                                                    'left': targetElementOffset.left + Math.round(targetElementWidth / 2) - 43,
                                                    'top': targetElementOffset.top + targetElementHeight + 4
@@ -1050,77 +1050,77 @@ WatchPug.Analyze = {
   
   init: function() {
 
-    WatchPug.Analyze.getTitle();
+    SenSEO.Analyze.getTitle();
     
-    WatchPug.Analyze.getTitleLength();
+    SenSEO.Analyze.getTitleLength();
     
-    WatchPug.Analyze.getMetaDescription();
+    SenSEO.Analyze.getMetaDescription();
     
-    WatchPug.Analyze.getMetaDescriptionLength();
+    SenSEO.Analyze.getMetaDescriptionLength();
     
-    WatchPug.Analyze.getMetaKeywords();
+    SenSEO.Analyze.getMetaKeywords();
     
-    WatchPug.Analyze.getMetaRobots();
+    SenSEO.Analyze.getMetaRobots();
     
-    WatchPug.Analyze.getHeadlineData(1);
+    SenSEO.Analyze.getHeadlineData(1);
     
-    WatchPug.Analyze.getHeadlineData(2);
+    SenSEO.Analyze.getHeadlineData(2);
     
-    WatchPug.Analyze.getHeadlineData(3);
+    SenSEO.Analyze.getHeadlineData(3);
     
-    WatchPug.Analyze.getHeadlineData(4);
+    SenSEO.Analyze.getHeadlineData(4);
     
-    WatchPug.Analyze.getHeadlineData(5);
+    SenSEO.Analyze.getHeadlineData(5);
     
-    WatchPug.Analyze.getHeadlineData(6);
+    SenSEO.Analyze.getHeadlineData(6);
     
-    WatchPug.Analyze.getImageAltData();
+    SenSEO.Analyze.getImageAltData();
     
-    WatchPug.Analyze.getImagesWithoutAlt();
+    SenSEO.Analyze.getImagesWithoutAlt();
 
-    WatchPug.Analyze.getNumberOfLinks();
+    SenSEO.Analyze.getNumberOfLinks();
 
-    WatchPug.Analyze.getLocationHref();
+    SenSEO.Analyze.getLocationHref();
 
-    WatchPug.Analyze.getLinkCanonical();
+    SenSEO.Analyze.getLinkCanonical();
     
-    WatchPug.Analyze.getProtocol();
+    SenSEO.Analyze.getProtocol();
 
-    WatchPug.Analyze.getHostName();
+    SenSEO.Analyze.getHostName();
 
-    WatchPug.Analyze.getPathName();
+    SenSEO.Analyze.getPathName();
     
-    WatchPug.Analyze.getURLParams();
+    SenSEO.Analyze.getURLParams();
 
-    WatchPug.Analyze.getDocumentHeaders();
+    SenSEO.Analyze.getDocumentHeaders();
 
-    WatchPug.Analyze.getPageLoadTime();
+    SenSEO.Analyze.getPageLoadTime();
     
-    WatchPug.Analyze.getDomainAge();
+    SenSEO.Analyze.getDomainAge();
   
-    WatchPug.Analyze.getMicrodata();
+    SenSEO.Analyze.getMicrodata();
     
-    WatchPug.Analyze.getValidationResult();
+    SenSEO.Analyze.getValidationResult();
   
-    WatchPug.Analyze.getRobotsFileContent();
+    SenSEO.Analyze.getRobotsFileContent();
     
-    WatchPug.Analyze.getSitemapContent();
+    SenSEO.Analyze.getSitemapContent();
     
-    WatchPug.Analyze.getFacebookLikeButton();
+    SenSEO.Analyze.getFacebookLikeButton();
     
-    WatchPug.Analyze.getGooglePlusButton();
+    SenSEO.Analyze.getGooglePlusButton();
     
-    WatchPug.Analyze.getTweetButton();
+    SenSEO.Analyze.getTweetButton();
     
-    WatchPug.Analyze.getBodyData();
+    SenSEO.Analyze.getBodyData();
     
-    WatchPug.Analyze.getNumberOfElements();
+    SenSEO.Analyze.getNumberOfElements();
 
-    WatchPug.Analyze.getNumberOfWords();
+    SenSEO.Analyze.getNumberOfWords();
 
-    WatchPug.Analyze.getElementWordRatio();
+    SenSEO.Analyze.getElementWordRatio();
 
-    WatchPug.Analyze.sendData();
+    SenSEO.Analyze.sendData();
 
     // initialize message listener
     
@@ -1130,7 +1130,7 @@ WatchPug.Analyze = {
       
         if (message.command === 'highlight-element') {
         
-          WatchPug.Analyze.highlightElement(message.highlightInfo);
+          SenSEO.Analyze.highlightElement(message.highlightInfo);
         
         }
         
@@ -1142,4 +1142,4 @@ WatchPug.Analyze = {
 
 };
 
-WatchPug.Analyze.init();
+SenSEO.Analyze.init();

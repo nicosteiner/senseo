@@ -1,8 +1,8 @@
-var WatchPug = WatchPug || {};
+var SenSEO = SenSEO || {};
 
 // temp fake strBundle
-  
-WatchPug.StrBundle = {
+
+SenSEO.StrBundle = {
 
   string: {
   
@@ -54,7 +54,7 @@ WatchPug.StrBundle = {
     'pv.pleaseEnterKeywords': 'Please enter some keywords!',
     'pv.insufficientData': 'Insufficient data to generate the preview.',
 
-    'al.tt.WatchPugGrade': 'SenSEO grade',
+    'al.tt.SenSEOGrade': 'SenSEO grade',
 
     'al.tt.UseTitleTag': 'Use title tag correctly',
     'al.tt.UseMetaDescription': 'Use meta description tag correctly',
@@ -131,13 +131,43 @@ WatchPug.StrBundle = {
   
   getString: function(key) {
   
-    return WatchPug.StrBundle.string[key];
+    return SenSEO.StrBundle.string[key];
   
   }
   
 };
 
-WatchPug.Panel = {
+// clone method for later use
+// see: http://my.opera.com/GreyWyvern/blog/show.dml/1725165
+
+Object.prototype.clone = function() {
+
+  var i,
+      newObj = (this instanceof Array) ? [] : {};
+  
+  for (i in this) {
+  
+    if (this.hasOwnProperty(i)) {
+    
+      if (this[i] && typeof this[i] === "object") {
+      
+        newObj[i] = this[i].clone();
+        
+      } else {
+      
+        newObj[i] = this[i];
+        
+      }
+      
+    }
+    
+  }
+  
+  return newObj;
+  
+};
+
+SenSEO.Panel = {
 
   activeDocumentComponents: [],
   
@@ -190,9 +220,9 @@ WatchPug.Panel = {
       
       // if all containers are hidden, panel is opened first time
     
-      WatchPug.Panel.initPanel();
+      SenSEO.Panel.initPanel();
       
-      WatchPug.Panel.initInputsAndButtons();
+      SenSEO.Panel.initInputsAndButtons();
       
     }
     
@@ -200,7 +230,7 @@ WatchPug.Panel = {
     
     self.port.on('resetUI', function() {
 
-      WatchPug.Panel.resetUI();
+      SenSEO.Panel.resetUI();
     
     });
     
@@ -208,11 +238,11 @@ WatchPug.Panel = {
     
     self.port.on('prepareShowComponents', function(keyword) {
 
-      WatchPug.Panel.resetUI();
+      SenSEO.Panel.resetUI();
     
-      WatchPug.Panel.setKeywordValue(keyword);
+      SenSEO.Panel.setKeywordValue(keyword);
       
-      WatchPug.Panel.setActiveTab('components');
+      SenSEO.Panel.setActiveTab('components');
       
       self.port.emit('panelPrepared');
       
@@ -220,11 +250,11 @@ WatchPug.Panel = {
     
     self.port.on('prepareInspectResult', function(keyword) {
 
-      WatchPug.Panel.resetUI();
+      SenSEO.Panel.resetUI();
     
-      WatchPug.Panel.setKeywordValue(keyword);
+      SenSEO.Panel.setKeywordValue(keyword);
       
-      WatchPug.Panel.setActiveTab('inspect');
+      SenSEO.Panel.setActiveTab('inspect');
       
       self.port.emit('panelPrepared');
       
@@ -238,43 +268,43 @@ WatchPug.Panel = {
 
       if (data.key === 'document-headers') {
       
-        WatchPug.Panel.processDocumentHeaders(data);
+        SenSEO.Panel.processDocumentHeaders(data);
         
-        WatchPug.Panel.processedDocumentHeaders = true;
+        SenSEO.Panel.processedDocumentHeaders = true;
       
       } else if (data.key === 'domain-age') {
       
-        WatchPug.Panel.processDomainAge(data);
+        SenSEO.Panel.processDomainAge(data);
         
-        WatchPug.Panel.processedDomainAge = true;
+        SenSEO.Panel.processedDomainAge = true;
       
       } else if (data.key === 'robots-file') {
       
-        WatchPug.Panel.processRobotsFile(data);
+        SenSEO.Panel.processRobotsFile(data);
       
-        WatchPug.Panel.processedRobotsFile = true;
+        SenSEO.Panel.processedRobotsFile = true;
       
       } else if (data.key === 'sitemap-file') {
 
-        WatchPug.Panel.processSitemapFile(data);
+        SenSEO.Panel.processSitemapFile(data);
       
-        WatchPug.Panel.processedSitemapFile = true;
+        SenSEO.Panel.processedSitemapFile = true;
       
       } else if (data.key === 'validation-result') {
 
-        WatchPug.Panel.processValidationResult(data);
+        SenSEO.Panel.processValidationResult(data);
       
-        WatchPug.Panel.processedValidationResult = true;
+        SenSEO.Panel.processedValidationResult = true;
       
       } else if (data.key === 'related-keywords') {
 
-        WatchPug.Panel.processRelatedKeywords(data);
+        SenSEO.Panel.processRelatedKeywords(data);
       
       }
       
-      if (data.key !== 'related-keywords' && WatchPug.Panel.asyncDataIsReady()) {
+      if (data.key !== 'related-keywords' && SenSEO.Panel.asyncDataIsReady()) {
       
-        WatchPug.Panel.showInspectResultPre();
+        SenSEO.Panel.showInspectResultPre();
         
       }
       
@@ -284,37 +314,37 @@ WatchPug.Panel = {
 
     self.port.on('getSettings', function handleSettingsData(data) {
       
-      WatchPug.Panel.setting = data;
+      SenSEO.Panel.setting = data;
       
     });
   
     self.on('message', function(activeDocumentComponents) {
     
-      WatchPug.Panel.activeDocumentComponents = activeDocumentComponents;
+      SenSEO.Panel.activeDocumentComponents = activeDocumentComponents;
       
       // init UI
       
       // keyword prefill feature
       
-      if (WatchPug.Panel.setting['prefill-keyword'] && $('#keyword-input').val() === '') {
+      if (SenSEO.Panel.setting['prefill-keyword'] && $('#keyword-input').val() === '') {
 
         // check if keyword for prefilling input field is available
         
-        if (WatchPug.Panel.activeDocumentComponents['meta-keywords'] !== 'n/a' && WatchPug.Panel.activeDocumentComponents['meta-keywords'].data.split(',')[0]) {
+        if (SenSEO.Panel.activeDocumentComponents['meta-keywords'] !== 'n/a' && SenSEO.Panel.activeDocumentComponents['meta-keywords'].data.split(',')[0]) {
       
           // prefill first keyword in keyword metatags
       
-          $('#keyword-input').val(WatchPug.Panel.activeDocumentComponents['meta-keywords'].data.split(',')[0]);
+          SenSEO.Panel.setKeywordValue(SenSEO.Panel.activeDocumentComponents['meta-keywords'].data.split(',')[0]);
       
         }
         
       }
       
-      WatchPug.Panel.getKeywordValue();
+      SenSEO.Panel.getKeywordValue();
   
-      WatchPug.Panel.getKeywordMatches();
+      SenSEO.Panel.getKeywordMatches();
   
-      WatchPug.Panel.getKeywordDensity();
+      SenSEO.Panel.getKeywordDensity();
       
       // community wants last tab to be active when panel is reopened
       
@@ -322,11 +352,11 @@ WatchPug.Panel = {
       
       if (!$('#inspect-container').hasClass('hidden')) {
       
-        WatchPug.Panel.handleInspectButton();
+        SenSEO.Panel.handleInspectButton();
       
       } else if (!$('#components-container').hasClass('hidden')) {
       
-        WatchPug.Panel.handleComponentsButton();
+        SenSEO.Panel.handleComponentsButton();
       
       }
       
@@ -334,11 +364,11 @@ WatchPug.Panel = {
 
       window.setTimeout(function() {
       
-        if (WatchPug.Panel.inspectOngoing) {
+        if (SenSEO.Panel.inspectOngoing) {
       
-          WatchPug.Panel.forceAsyncDataIsReady = true;
+          SenSEO.Panel.forceAsyncDataIsReady = true;
           
-          WatchPug.Panel.showInspectResultPre();
+          SenSEO.Panel.showInspectResultPre();
           
         }
       
@@ -350,12 +380,12 @@ WatchPug.Panel = {
   
   asyncDataIsReady: function() {
 
-    if (WatchPug.Panel.forceAsyncDataIsReady || (
-        WatchPug.Panel.processedDocumentHeaders &&
-        WatchPug.Panel.processedDomainAge &&
-        WatchPug.Panel.processedRobotsFile &&
-        WatchPug.Panel.processedSitemapFile &&
-        WatchPug.Panel.processedValidationResult)) {
+    if (SenSEO.Panel.forceAsyncDataIsReady || (
+        SenSEO.Panel.processedDocumentHeaders &&
+        SenSEO.Panel.processedDomainAge &&
+        SenSEO.Panel.processedRobotsFile &&
+        SenSEO.Panel.processedSitemapFile &&
+        SenSEO.Panel.processedValidationResult)) {
       
       return true;
       
@@ -371,15 +401,15 @@ WatchPug.Panel = {
   
     // always show senseo grade
     
-    WatchPug.Panel.analyzeForKeyword();
+    SenSEO.Panel.analyzeForKeyword();
   
-    WatchPug.Panel.showSenSEOGrade();
+    SenSEO.Panel.showSenSEOGrade();
   
-    if (WatchPug.Panel.inspectButtonIsWaiting) {
+    if (SenSEO.Panel.inspectButtonIsWaiting) {
     
-      WatchPug.Panel.inspectButtonIsWaiting = false;
+      SenSEO.Panel.inspectButtonIsWaiting = false;
     
-      WatchPug.Panel.showInspectResult();
+      SenSEO.Panel.showInspectResult();
 
     }
     
@@ -389,7 +419,7 @@ WatchPug.Panel = {
   
     // asynch data needs longer (is set to true by getResponseText port)
     
-    WatchPug.Panel.resetAsyncProcess();
+    SenSEO.Panel.resetAsyncProcess();
     
     try {
     
@@ -403,7 +433,7 @@ WatchPug.Panel = {
     
     } catch (e) {}
     
-    WatchPug.Panel.hideSpeechBubble();
+    SenSEO.Panel.hideSpeechBubble();
     
     // show / hide specific containers
     
@@ -415,13 +445,13 @@ WatchPug.Panel = {
   
     $('#crawl-instructions').addClass('hidden');
       
-    WatchPug.Panel.inspectResultOngoing();
+    SenSEO.Panel.inspectResultOngoing();
   
   },
   
   inspectResultOngoing: function() {
   
-    WatchPug.Panel.inspectOngoing = true;
+    SenSEO.Panel.inspectOngoing = true;
   
     // show active loading indicator
   
@@ -433,7 +463,7 @@ WatchPug.Panel = {
     
   inspectResultReady: function() {
   
-    WatchPug.Panel.inspectOngoing = false;
+    SenSEO.Panel.inspectOngoing = false;
   
     // show inspect result
   
@@ -445,14 +475,14 @@ WatchPug.Panel = {
     
   resetAsyncProcess: function() {
   
-    WatchPug.Panel.processedDocumentHeaders = false;
-    WatchPug.Panel.processedDomainAge = false;
-    WatchPug.Panel.processedRobotsFile = false;
-    WatchPug.Panel.processedSitemapFile = false;
-    WatchPug.Panel.processedValidationResult = false;
-    WatchPug.Panel.processedRelatedKeywords = false;
+    SenSEO.Panel.processedDocumentHeaders = false;
+    SenSEO.Panel.processedDomainAge = false;
+    SenSEO.Panel.processedRobotsFile = false;
+    SenSEO.Panel.processedSitemapFile = false;
+    SenSEO.Panel.processedValidationResult = false;
+    SenSEO.Panel.processedRelatedKeywords = false;
     
-    WatchPug.Panel.forceAsyncDataIsReady = false;
+    SenSEO.Panel.forceAsyncDataIsReady = false;
     
   },
 
@@ -468,7 +498,7 @@ WatchPug.Panel = {
   
     if (status === 200) {
   
-      WatchPug.Panel.activeDocumentComponents['robots-file']
+      SenSEO.Panel.activeDocumentComponents['robots-file']
         .data = $('<div>').text('found').append($('<a>').attr({
                   'href': url,
                   'target': 'blank'
@@ -476,7 +506,7 @@ WatchPug.Panel = {
                 
       // update components table
       
-      $('#robots-file').empty().append(WatchPug.Panel.activeDocumentComponents['robots-file'].data);
+      $('#robots-file').empty().append(SenSEO.Panel.activeDocumentComponents['robots-file'].data);
 
       robotsData = data.text.split('\n');
       
@@ -498,9 +528,9 @@ WatchPug.Panel = {
   
     if (robotsDataMap.sitemap && robotsDataMap.sitemap !== '') {
     
-      WatchPug.Panel.activeDocumentComponents['robots-sitemap-location'].data = robotsDataMap.sitemap;
+      SenSEO.Panel.activeDocumentComponents['robots-sitemap-location'].data = robotsDataMap.sitemap;
                 
-      sitemapLocation = WatchPug.Panel.activeDocumentComponents['robots-sitemap-location'].data;
+      sitemapLocation = SenSEO.Panel.activeDocumentComponents['robots-sitemap-location'].data;
     
       // update components table
       
@@ -510,9 +540,9 @@ WatchPug.Panel = {
     
       // location-protocol and location-hostname are unset when document is opend with file:
     
-      if (WatchPug.Panel.activeDocumentComponents['location-protocol'] && WatchPug.Panel.activeDocumentComponents['location-hostname']) {
+      if (SenSEO.Panel.activeDocumentComponents['location-protocol'] && SenSEO.Panel.activeDocumentComponents['location-hostname']) {
     
-        sitemapLocation = WatchPug.Panel.activeDocumentComponents['location-protocol'].data + '//' + WatchPug.Panel.activeDocumentComponents['location-hostname'].data + '/sitemap.xml';
+        sitemapLocation = SenSEO.Panel.activeDocumentComponents['location-protocol'].data + '//' + SenSEO.Panel.activeDocumentComponents['location-hostname'].data + '/sitemap.xml';
         
       }
     
@@ -536,19 +566,19 @@ WatchPug.Panel = {
   
     if (status === 200) {
   
-      WatchPug.Panel.activeDocumentComponents['sitemap-file']
+      SenSEO.Panel.activeDocumentComponents['sitemap-file']
         .data = $('<div>').text('found').append($('<a>').attr({
                   'href': url,
                   'target': 'blank'
                 }).text('show').clone()).html();
       
-      $('#sitemap-file').empty().append(WatchPug.Panel.activeDocumentComponents['sitemap-file'].data);
+      $('#sitemap-file').empty().append(SenSEO.Panel.activeDocumentComponents['sitemap-file'].data);
 
-      WatchPug.Panel.activeDocumentComponents['sitemap-file'].pages = [];
+      SenSEO.Panel.activeDocumentComponents['sitemap-file'].pages = [];
       
       $(text).find('loc').each(function() {
       
-        WatchPug.Panel.activeDocumentComponents['sitemap-file'].pages.push($(this).text());
+        SenSEO.Panel.activeDocumentComponents['sitemap-file'].pages.push($(this).text());
         
       });
       
@@ -562,7 +592,7 @@ WatchPug.Panel = {
     
       $('#crawl-instructions .not-found').addClass('hidden');
     
-      $('#crawl-container .crawl-sitemap-pages').text(WatchPug.Panel.activeDocumentComponents['sitemap-file'].pages.length);
+      $('#crawl-container .crawl-sitemap-pages').text(SenSEO.Panel.activeDocumentComponents['sitemap-file'].pages.length);
       
     } else {
   
@@ -590,7 +620,7 @@ WatchPug.Panel = {
       
       if (headers['Content-Type']) {
       
-        WatchPug.Panel.activeDocumentComponents['content-type'].data = headers['Content-Type'];
+        SenSEO.Panel.activeDocumentComponents['content-type'].data = headers['Content-Type'];
       
         $('#content-type').empty().append(headers['Content-Type']);
       
@@ -600,7 +630,7 @@ WatchPug.Panel = {
       
       if (headers['Last-Modified']) {
 
-        WatchPug.Panel.activeDocumentComponents['last-modified'].data = headers['Last-Modified'];
+        SenSEO.Panel.activeDocumentComponents['last-modified'].data = headers['Last-Modified'];
       
         $('#last-modified').empty().append(headers['Last-Modified']);
       
@@ -634,13 +664,13 @@ WatchPug.Panel = {
       
       domainAge = d.substring(d.indexOf('>') + 1, d.indexOf('</a>'));
       
-      WatchPug.Panel.activeDocumentComponents['domain-age']
+      SenSEO.Panel.activeDocumentComponents['domain-age']
         .data = $('<div>').text($.trim(domainAge)).append($('<a>').attr({
                   'href': url,
                   'target': 'blank'
                 }).text('show').clone()).html();
       
-      $('#domain-age').empty().append(WatchPug.Panel.activeDocumentComponents['domain-age'].data);
+      $('#domain-age').empty().append(SenSEO.Panel.activeDocumentComponents['domain-age'].data);
       
     }
     
@@ -671,7 +701,7 @@ WatchPug.Panel = {
       
       if (validResult) {
       
-        WatchPug.Panel.activeDocumentComponents['validation-result']
+        SenSEO.Panel.activeDocumentComponents['validation-result']
           .data = $('<div>').text('valid: ' + $.trim(validResult)).append($('<a>').attr({
                     'href': url,
                     'target': 'blank'
@@ -681,7 +711,7 @@ WatchPug.Panel = {
     
       if (invalidResult) {
       
-        WatchPug.Panel.activeDocumentComponents['validation-result']
+        SenSEO.Panel.activeDocumentComponents['validation-result']
           .data = $('<div>').text('invalid: ' + $.trim(invalidResult)).append($('<a>').attr({
                     'href': url,
                     'target': 'blank'
@@ -689,7 +719,7 @@ WatchPug.Panel = {
     
       }
       
-      $('#validation-result').empty().append(WatchPug.Panel.activeDocumentComponents['validation-result'].data);
+      $('#validation-result').empty().append(SenSEO.Panel.activeDocumentComponents['validation-result'].data);
 
     }
   
@@ -699,11 +729,11 @@ WatchPug.Panel = {
   
     var url;
   
-    if (WatchPug.Panel.keywordsString !== '' && WatchPug.Panel.keywordsString !== WatchPug.Panel.requestKeyword) {
+    if (SenSEO.Panel.keywordsString !== '' && SenSEO.Panel.keywordsString !== SenSEO.Panel.requestKeyword) {
       
-      WatchPug.Panel.requestKeyword = WatchPug.Panel.keywordsString;
+      SenSEO.Panel.requestKeyword = SenSEO.Panel.keywordsString;
       
-      url = 'http://us.api.semrush.com/?action=report&type=phrase_related&key=89a72d6e1c56ce52a7eaf077907304e8&display_limit=10&export=api&export_columns=Ph&phrase=' + encodeURIComponent(WatchPug.Panel.keywordsString);
+      url = 'http://us.api.semrush.com/?action=report&type=phrase_related&key=89a72d6e1c56ce52a7eaf077907304e8&display_limit=10&export=api&export_columns=Ph&phrase=' + encodeURIComponent(SenSEO.Panel.keywordsString);
 
       // show loading indicator until response is ready
       
@@ -757,8 +787,8 @@ WatchPug.Panel = {
 
   initPanel: function() {
 
-    $('#intro-enter-keywords').html(WatchPug.StrBundle.getString('intro.EnterSomeKeywords'));
-    $('#intro-click-inspect').html(WatchPug.StrBundle.getString('intro.ClickInspectSEOCriteria'));
+    $('#intro-enter-keywords').html(SenSEO.StrBundle.getString('intro.EnterSomeKeywords'));
+    $('#intro-click-inspect').html(SenSEO.StrBundle.getString('intro.ClickInspectSEOCriteria'));
 
     $('#intro-container').removeClass('hidden');
     
@@ -766,22 +796,22 @@ WatchPug.Panel = {
   
   initInputsAndButtons: function() {
   
-    $('#inspect-button').html(WatchPug.StrBundle.getString('console.InspectSeoCriteria'));
-    $('#components-button').html(WatchPug.StrBundle.getString('console.ShowComponents'));
-    $('#crawl-button').html(WatchPug.StrBundle.getString('console.Crawl'));
-    $('#printview-button').html(WatchPug.StrBundle.getString('console.Printview'));
+    $('#inspect-button').html(SenSEO.StrBundle.getString('console.InspectSeoCriteria'));
+    $('#components-button').html(SenSEO.StrBundle.getString('console.ShowComponents'));
+    $('#crawl-button').html(SenSEO.StrBundle.getString('console.Crawl'));
+    $('#printview-button').html(SenSEO.StrBundle.getString('console.Printview'));
 
     $('#keyword-input').blur(function() {
       
-      WatchPug.Panel.hideSpeechBubble();
+      SenSEO.Panel.hideSpeechBubble();
     
       $('#keyword-input').removeClass('required');
     
-      WatchPug.Panel.getKeywordValue();
+      SenSEO.Panel.getKeywordValue();
   
-      WatchPug.Panel.getKeywordMatches();
+      SenSEO.Panel.getKeywordMatches();
   
-      WatchPug.Panel.getKeywordDensity();
+      SenSEO.Panel.getKeywordDensity();
         
     });
     
@@ -793,7 +823,7 @@ WatchPug.Panel = {
       
         e.target.blur();
       
-        WatchPug.Panel.handleInspectButton();
+        SenSEO.Panel.handleInspectButton();
       
       }
       
@@ -803,7 +833,7 @@ WatchPug.Panel = {
         
       e.preventDefault();
       
-      WatchPug.Panel.handleInspectButton();
+      SenSEO.Panel.handleInspectButton();
       
     });
   
@@ -811,7 +841,7 @@ WatchPug.Panel = {
         
       e.preventDefault();
       
-      WatchPug.Panel.handleComponentsButton();
+      SenSEO.Panel.handleComponentsButton();
   
     });
   
@@ -819,7 +849,7 @@ WatchPug.Panel = {
         
       e.preventDefault();
       
-      WatchPug.Panel.handleCrawlButton();
+      SenSEO.Panel.handleCrawlButton();
   
     });
   
@@ -827,7 +857,7 @@ WatchPug.Panel = {
         
       e.preventDefault();
       
-      WatchPug.Panel.handleCrawlNowButton();
+      SenSEO.Panel.handleCrawlNowButton();
   
     });
   
@@ -835,7 +865,7 @@ WatchPug.Panel = {
         
       e.preventDefault();
       
-      WatchPug.Panel.handlePrintviewButton();
+      SenSEO.Panel.handlePrintviewButton();
   
     });
   
@@ -843,13 +873,13 @@ WatchPug.Panel = {
         
       e.preventDefault();
       
-      WatchPug.Panel.handleHelpButton();
+      SenSEO.Panel.handleHelpButton();
   
     });
   
     $('#bug-button').click(function() {
       
-      WatchPug.Panel.handleBugButton();
+      SenSEO.Panel.handleBugButton();
   
     });
   
@@ -857,19 +887,19 @@ WatchPug.Panel = {
         
       e.preventDefault();
       
-      WatchPug.Panel.handleSettingsButton();
+      SenSEO.Panel.handleSettingsButton();
   
     });
     
     $('#save-result').click(function() {
     
-      WatchPug.Panel.handleSaveResult();
+      SenSEO.Panel.handleSaveResult();
     
     });
     
     $('#compare-result').click(function() {
     
-      WatchPug.Panel.handleCompareResult();
+      SenSEO.Panel.handleCompareResult();
     
     });
     
@@ -883,7 +913,7 @@ WatchPug.Panel = {
   
   readData: function(dataKey, callback) {
   
-    WatchPug.Panel.callback[dataKey] = callback;
+    SenSEO.Panel.callback[dataKey] = callback;
   
     self.postMessage({
     
@@ -915,15 +945,15 @@ WatchPug.Panel = {
   
   getKeywordValue: function() {
   
-    WatchPug.Panel.keywordsString = $('#keyword-input').val();
+    SenSEO.Panel.keywordsString = $('#keyword-input').val();
     
-    WatchPug.Panel.keywords = WatchPug.Panel.keywordsString.split(" ");
+    SenSEO.Panel.keywords = SenSEO.Panel.keywordsString.split(" ");
     
   },
   
   setKeywordValue: function(keyword) {
   
-    if (keyword) {
+    if (keyword && keyword !== 'n/a') {
   
       $('#keyword-input').val(keyword);
       
@@ -933,25 +963,25 @@ WatchPug.Panel = {
   
   handleInspectButton: function() {
   
-    if (WatchPug.Panel.keywordsString !== '') {
+    if (SenSEO.Panel.keywordsString !== '') {
   
-      WatchPug.Panel.setActiveTab('inspect');
+      SenSEO.Panel.setActiveTab('inspect');
       
-      WatchPug.Panel.getRelatedKeywords();
+      SenSEO.Panel.getRelatedKeywords();
       
-      WatchPug.Panel.inspectButtonIsWaiting = true;
+      SenSEO.Panel.inspectButtonIsWaiting = true;
       
       // wait until async data is ready
       
       // if asyncDataIsReady is false, getResponseText message will show inspect result later
       
-      if (WatchPug.Panel.asyncDataIsReady()) {
+      if (SenSEO.Panel.asyncDataIsReady()) {
       
-        WatchPug.Panel.showInspectResultPre();
+        SenSEO.Panel.showInspectResultPre();
         
       } else {
       
-        WatchPug.Panel.inspectResultOngoing();
+        SenSEO.Panel.inspectResultOngoing();
       
       }
       
@@ -961,7 +991,7 @@ WatchPug.Panel = {
       
       $('#keyword-input').focus();
     
-      WatchPug.Panel.showSpeechBubble({top: 34, left: 5}, 'keyword(s) required');
+      SenSEO.Panel.showSpeechBubble({top: 34, left: 5}, 'keyword(s) required');
     
     }
   
@@ -969,13 +999,13 @@ WatchPug.Panel = {
   
   handleComponentsButton: function() {
   
-    WatchPug.Panel.setActiveTab('components');
+    SenSEO.Panel.setActiveTab('components');
     
-    if (WatchPug.Panel.keywordsString !== '') {
+    if (SenSEO.Panel.keywordsString !== '') {
   
-      if (WatchPug.Panel.asyncDataIsReady()) {
+      if (SenSEO.Panel.asyncDataIsReady()) {
       
-        WatchPug.Panel.showInspectResultPre();
+        SenSEO.Panel.showInspectResultPre();
         
       }
       
@@ -985,23 +1015,23 @@ WatchPug.Panel = {
   
     if ($('#inspect-result-ongoing').hasClass('hidden') && $('#inspect-result-ready').hasClass('hidden')) {
   
-      WatchPug.Panel.inspectResultOngoing();
+      SenSEO.Panel.inspectResultOngoing();
     
     }
     
-    WatchPug.Panel.renderComponentsTable('components-table', WatchPug.Panel.activeDocumentComponents);
+    SenSEO.Panel.renderComponentsTable('components-table', SenSEO.Panel.activeDocumentComponents);
   
   },
   
   handleCrawlButton: function() {
   
-    WatchPug.Panel.setActiveTab('crawl');
+    SenSEO.Panel.setActiveTab('crawl');
     
     // only if senseo grade bar is completely hidden, show busy indicator
   
     if ($('#inspect-result-ongoing').hasClass('hidden') && $('#inspect-result-ready').hasClass('hidden')) {
   
-      WatchPug.Panel.inspectResultOngoing();
+      SenSEO.Panel.inspectResultOngoing();
     
     }
     
@@ -1011,9 +1041,9 @@ WatchPug.Panel = {
   
   handleCrawlNowButton: function() {
   
-    if (WatchPug.Panel.activeDocumentComponents['sitemap-file'].pages) {
+    if (SenSEO.Panel.activeDocumentComponents['sitemap-file'].pages) {
     
-      self.port.emit('crawlPages', WatchPug.Panel.activeDocumentComponents['sitemap-file'].pages);
+      self.port.emit('crawlPages', SenSEO.Panel.activeDocumentComponents['sitemap-file'].pages);
     
     }
   
@@ -1035,13 +1065,13 @@ WatchPug.Panel = {
   
   handleSettingsButton: function() {
   
-    WatchPug.Panel.setActiveTab('settings');
+    SenSEO.Panel.setActiveTab('settings');
   
-    $('#settings-toolbar-icon').html(String(WatchPug.Panel.setting['toolbar-icon']));
+    $('#settings-toolbar-icon').html(String(SenSEO.Panel.setting['toolbar-icon']));
   
-    $('#settings-prefill-keyword').html(String(WatchPug.Panel.setting['prefill-keyword']));
+    $('#settings-prefill-keyword').html(String(SenSEO.Panel.setting['prefill-keyword']));
   
-    $('#settings-color-blind').html(String(WatchPug.Panel.setting['color-blind']));
+    $('#settings-color-blind').html(String(SenSEO.Panel.setting['color-blind']));
   
   },
   
@@ -1051,9 +1081,9 @@ WatchPug.Panel = {
   
     // save result
     
-    WatchPug.Panel.savedGrade = WatchPug.Panel.grade;
+    SenSEO.Panel.savedGrade = SenSEO.Panel.grade.clone();
   
-    WatchPug.Panel.savedStatus = WatchPug.Panel.status;
+    SenSEO.Panel.savedStatus = SenSEO.Panel.status.clone();
     
     // what next?
     
@@ -1061,24 +1091,23 @@ WatchPug.Panel = {
 
     bubbleTop = $('#save-result').offset().top + 24;
 
-    WatchPug.Panel.showSpeechBubble({top: bubbleTop, left: bubbleLeft}, 
+    SenSEO.Panel.showSpeechBubble({top: bubbleTop, left: bubbleLeft}, 
                                     '<ul><li><span class="bold">1.</span> Save result. (done)</li>' +
                                     '<li><span class="bold">2.</span> Go to a second page.</li>' +
-                                    '<li><span class="bold">3.</span> Click <img src="img/lightbulb-active.png"> icon to compare results.</li>' +
-                                    '<li><a href="#">close</a> <a href="#">don\'t show again</a></ul>');
+                                    '<li><span class="bold">3.</span> Click <img src="img/lightbulb-active.png"> icon to compare results.</li></ul>');
                                                         
     // remember which URL has been saved
     
-    WatchPug.Panel.savedURL = WatchPug.Panel.activeDocumentComponents['location-hostname'].data + WatchPug.Panel.activeDocumentComponents['path-name'].data + WatchPug.Panel.activeDocumentComponents['url-params'].data;
+    SenSEO.Panel.savedURL = SenSEO.Panel.activeDocumentComponents['location-hostname'].data + SenSEO.Panel.activeDocumentComponents['path-name'].data + SenSEO.Panel.activeDocumentComponents['url-params'].data;
 
   },
   
   handleCompareResult: function() {
   
-    var compareURL = WatchPug.Panel.activeDocumentComponents['location-hostname'].data + WatchPug.Panel.activeDocumentComponents['path-name'].data + WatchPug.Panel.activeDocumentComponents['url-params'].data,
+    var compareURL = SenSEO.Panel.activeDocumentComponents['location-hostname'].data + SenSEO.Panel.activeDocumentComponents['path-name'].data + SenSEO.Panel.activeDocumentComponents['url-params'].data,
                      bubbleLeft, bubbleTop;
 
-    if (WatchPug.Panel.savedURL === compareURL) {
+    if (SenSEO.Panel.savedURL === compareURL) {
 
       // same URL? => show hint
       
@@ -1086,15 +1115,14 @@ WatchPug.Panel = {
 
       bubbleTop = $('#compare-result').offset().top + 24;
 
-      WatchPug.Panel.showSpeechBubble({top: bubbleTop, left: bubbleLeft},
+      SenSEO.Panel.showSpeechBubble({top: bubbleTop, left: bubbleLeft},
                                       '<ul><li>You can\'t compare same pages.</li>' +
                                       '<li><span class="bold">1.</span> Go to a second page.</li>' +
-                                      '<li><span class="bold">2.</span> Click <img src="img/lightbulb-active.png"> again.</li>' +
-                                      '<li><a href="#">close</a></ul>');
+                                      '<li><span class="bold">2.</span> Click <img src="img/lightbulb-active.png"> again.</li></ul>');
   
     } else {
   
-      if (WatchPug.Panel.savedGrade && WatchPug.Panel.savedStatus) {
+      if (SenSEO.Panel.savedGrade && SenSEO.Panel.savedStatus) {
     
         // get comparison html
         
@@ -1102,7 +1130,7 @@ WatchPug.Panel = {
     
             '<img id="close-comparison" class="visible" src="img/cancel.png">' + 
     
-            WatchPug.Panel.generateInspectResultsContainerMarkup(WatchPug.Panel.savedGrade, WatchPug.Panel.savedStatus)
+            SenSEO.Panel.generateInspectResultsContainerMarkup(SenSEO.Panel.savedGrade, SenSEO.Panel.savedStatus)
           
         );
         
@@ -1114,7 +1142,7 @@ WatchPug.Panel = {
             
           e.preventDefault();
           
-          WatchPug.Panel.handleCloseComparison();
+          SenSEO.Panel.handleCloseComparison();
           
         });
       
@@ -1136,19 +1164,19 @@ WatchPug.Panel = {
   
     var i;
   
-    WatchPug.Panel.hideSpeechBubble();
+    SenSEO.Panel.hideSpeechBubble();
   
     $('#inspect-result').removeClass('hidden');
     
-    for (i = 0; i < WatchPug.Panel.tabs.length; i += 1) {
+    for (i = 0; i < SenSEO.Panel.tabs.length; i += 1) {
     
-      if (WatchPug.Panel.tabs[i] === tab) {
+      if (SenSEO.Panel.tabs[i] === tab) {
       
-        $('#' + WatchPug.Panel.tabs[i] + '-container').removeClass('hidden');
+        $('#' + SenSEO.Panel.tabs[i] + '-container').removeClass('hidden');
       
       } else {
       
-        $('#' + WatchPug.Panel.tabs[i] + '-container').addClass('hidden');
+        $('#' + SenSEO.Panel.tabs[i] + '-container').addClass('hidden');
       
       }
     
@@ -1182,15 +1210,15 @@ WatchPug.Panel = {
   
   highlightDataRow: function() {
   
-    if (WatchPug.Panel.highlightedDataRow) {
+    if (SenSEO.Panel.highlightedDataRow) {
     
-      $(WatchPug.Panel.highlightedDataRow).removeClass('clicked');
+      $(SenSEO.Panel.highlightedDataRow).removeClass('clicked');
       
     }
   
     $(this).addClass('clicked');
     
-    WatchPug.Panel.highlightedDataRow = this;
+    SenSEO.Panel.highlightedDataRow = this;
   
   },
   
@@ -1210,7 +1238,7 @@ WatchPug.Panel = {
       
         if (key === 'body-text') {
         
-          components[key].data = WatchPug.Panel.encodeMarkup(components[key].data);
+          components[key].data = SenSEO.Panel.encodeMarkup(components[key].data);
           
         }
       
@@ -1222,7 +1250,7 @@ WatchPug.Panel = {
                              .append($('<th>')
                              .text(components[key].head))
                              .append($('<td>')
-                             .append(WatchPug.Panel.formatOutput(components[key].data))));
+                             .append(SenSEO.Panel.formatOutput(components[key].data))));
           
         } else {
         
@@ -1234,7 +1262,7 @@ WatchPug.Panel = {
                                .append($('<th>')
                                .text(components[key].head[i]))
                                .append($('<td>')
-                               .append(WatchPug.Panel.formatOutput(components[key].data[i]))));
+                               .append(SenSEO.Panel.formatOutput(components[key].data[i]))));
             
           }
 
@@ -1244,15 +1272,15 @@ WatchPug.Panel = {
       
     }
     
-    WatchPug.Panel.createDataRowEvents(componentsTableBody);
+    SenSEO.Panel.createDataRowEvents(componentsTableBody);
     
-    WatchPug.Panel.createHighlightEvents(componentsTable);
+    SenSEO.Panel.createHighlightEvents(componentsTable);
   
   },
   
   createDataRowEvents: function(componentsTableBody) {
   
-    $(componentsTableBody).find('tr').click(WatchPug.Panel.highlightDataRow);
+    $(componentsTableBody).find('tr').click(SenSEO.Panel.highlightDataRow);
   
   },
   
@@ -1272,7 +1300,7 @@ WatchPug.Panel = {
   
       for (i = 0; i < allHighlightElements.length; i += 1) {
   
-        $(allHighlightElements[i]).click(WatchPug.Panel.highlightElementCommand);
+        $(allHighlightElements[i]).click(SenSEO.Panel.highlightElementCommand);
 
       }
       
@@ -1298,18 +1326,18 @@ WatchPug.Panel = {
   
   getKeywordMatches: function() {
 
-    var bodyData = WatchPug.Panel.activeDocumentComponents['body-text'].data,
+    var bodyData = SenSEO.Panel.activeDocumentComponents['body-text'].data,
         matches = 0,
         rx,
         i;
     
-    if (bodyData && WatchPug.Panel.keywords.length) {
+    if (bodyData && SenSEO.Panel.keywords.length) {
     
-      for (i = 0; i < WatchPug.Panel.keywords.length; i += 1) {
+      for (i = 0; i < SenSEO.Panel.keywords.length; i += 1) {
       
-        if (WatchPug.Panel.keywords[i] !== '') {
+        if (SenSEO.Panel.keywords[i] !== '') {
       
-          rx = new RegExp(WatchPug.Panel.keywords[i], 'gi');
+          rx = new RegExp(SenSEO.Panel.keywords[i], 'gi');
           
           if (bodyData && bodyData.match && bodyData.match(rx)) {
           
@@ -1323,7 +1351,7 @@ WatchPug.Panel = {
       
     }
     
-    WatchPug.Panel.activeDocumentComponents['keyword-matches'] = {
+    SenSEO.Panel.activeDocumentComponents['keyword-matches'] = {
       
       head: 'keyword matches',
       
@@ -1351,11 +1379,11 @@ WatchPug.Panel = {
 
     var keywordDensity;
   
-    if (WatchPug.Panel.activeDocumentComponents['keyword-matches']) {
+    if (SenSEO.Panel.activeDocumentComponents['keyword-matches']) {
   
-      keywordDensity = Math.round(WatchPug.Panel.activeDocumentComponents['keyword-matches'].data / WatchPug.Panel.activeDocumentComponents['number-words'].data * 100 * 100) / 100;
+      keywordDensity = Math.round(SenSEO.Panel.activeDocumentComponents['keyword-matches'].data / SenSEO.Panel.activeDocumentComponents['number-words'].data * 100 * 100) / 100;
       
-      WatchPug.Panel.activeDocumentComponents['keyword-density'] = {
+      SenSEO.Panel.activeDocumentComponents['keyword-density'] = {
         
         head: 'keyword density',
         
@@ -1371,20 +1399,22 @@ WatchPug.Panel = {
   
     var i, rx, replaceString, markupIndex, textExtract, textMarkup, formattedOutput;
   
-    if (text && WatchPug.Panel.keywords.length) {
+    if (text && SenSEO.Panel.keywords.length) {
     
-      for (i = 0; i < WatchPug.Panel.keywords.length; i += 1) {
+      for (i = 0; i < SenSEO.Panel.keywords.length; i += 1) {
       
-        if (WatchPug.Panel.keywords[i] !== '') {
+        if (SenSEO.Panel.keywords[i] !== '') {
       
-          rx = new RegExp(WatchPug.Panel.keywords[i], 'gi');
+          rx = new RegExp(SenSEO.Panel.keywords[i], 'gi');
           
           if (text && text.replace && text.match(rx)) {
+          
+            // format keyword
           
             replaceString = $('<div>')
                             .append($('<span>')
                             .attr('class', 'match')
-                            .text(WatchPug.Panel.keywords[i]).clone()).html();
+                            .text(SenSEO.Panel.keywords[i]).clone()).html();
 
             // extract only text and no markup
             
@@ -1402,17 +1432,16 @@ WatchPug.Panel = {
           
         }
         
+        // format n/a
+        
+        if (text && text.replace) {
+        
+          text = text.replace('n/a', '<span class="info">n/a</span>');
+          
+        }
+        
       }
       
-    }
-    
-    if (text && text === 'n/a') {
-    
-      text = $('<div>')
-             .append($('<span>')
-             .attr('class', 'info')
-             .text(text).clone()).html();
-    
     }
     
     return text;
@@ -1468,7 +1497,7 @@ WatchPug.Panel = {
     
       for (i = 0; i < keywords.length; i += 1) {
       
-        rx = new RegExp(WatchPug.Panel.trimWhitespace(keywords[i].replace(/^\W/g, ' ').replace(/\W$/g, ' ')), 'i');
+        rx = new RegExp(SenSEO.Panel.trimWhitespace(keywords[i].replace(/^\W/g, ' ').replace(/\W$/g, ' ')), 'i');
         
         if (text.match) {
         
@@ -1495,7 +1524,7 @@ WatchPug.Panel = {
     
       for (i = 0; i < keywords.length; i += 1) {
       
-        rx = new RegExp(WatchPug.Panel.trimWhitespace(keywords[i].replace(/^\W/g, ' ').replace(/\W$/g, ' ')), 'i');
+        rx = new RegExp(SenSEO.Panel.trimWhitespace(keywords[i].replace(/^\W/g, ' ').replace(/\W$/g, ' ')), 'i');
         
         if (text.match) {
         
@@ -1639,358 +1668,358 @@ WatchPug.Panel = {
         levels,
         i;
   
-    keywords = WatchPug.Panel.keywords;
+    keywords = SenSEO.Panel.keywords;
 
-    titleData = WatchPug.Panel.activeDocumentComponents['title-found'].data;
+    titleData = SenSEO.Panel.activeDocumentComponents['title-found'].data;
     
-    titleCount = WatchPug.Panel.activeDocumentComponents['title-found'].count;
+    titleCount = SenSEO.Panel.activeDocumentComponents['title-found'].count;
     
-    WatchPug.Panel.found.title = titleData === 'n/a' ? false : true;
+    SenSEO.Panel.found.title = titleData === 'n/a' ? false : true;
     
-    if (WatchPug.Panel.found.title && titleCount && titleCount === 1) {
+    if (SenSEO.Panel.found.title && titleCount && titleCount === 1) {
     
-      WatchPug.Panel.status['title-onetime'] = 'pass';
+      SenSEO.Panel.status['title-onetime'] = 'pass';
       
     } else {
     
-      WatchPug.Panel.status['title-onetime'] = 'fail';
+      SenSEO.Panel.status['title-onetime'] = 'fail';
       
     }
     
-    if (WatchPug.Panel.found.title && titleData && WatchPug.Panel.includesAllKeywords(titleData, keywords)) {
+    if (SenSEO.Panel.found.title && titleData && SenSEO.Panel.includesAllKeywords(titleData, keywords)) {
     
-      WatchPug.Panel.status['title-includes'] = 'pass';
+      SenSEO.Panel.status['title-includes'] = 'pass';
       
-    } else if (WatchPug.Panel.found.title && titleData && WatchPug.Panel.includesSomeKeywords(titleData, keywords)) {
+    } else if (SenSEO.Panel.found.title && titleData && SenSEO.Panel.includesSomeKeywords(titleData, keywords)) {
     
-      WatchPug.Panel.status['title-includes'] = 'warning';
+      SenSEO.Panel.status['title-includes'] = 'warning';
       
     } else {
     
-      WatchPug.Panel.status['title-includes'] = 'fail';
+      SenSEO.Panel.status['title-includes'] = 'fail';
       
     }
     
-    if (WatchPug.Panel.found.title && titleData && titleData.length <= 65) {
+    if (SenSEO.Panel.found.title && titleData && titleData.length <= 65) {
     
-      WatchPug.Panel.status['title-length'] = 'pass';
+      SenSEO.Panel.status['title-length'] = 'pass';
       
-    } else if (WatchPug.Panel.found.title && titleData && titleData.length <= 75) {
+    } else if (SenSEO.Panel.found.title && titleData && titleData.length <= 75) {
     
-      WatchPug.Panel.status['title-length'] = 'warning';
+      SenSEO.Panel.status['title-length'] = 'warning';
       
     } else {
     
-      WatchPug.Panel.status['title-length'] = 'fail';
+      SenSEO.Panel.status['title-length'] = 'fail';
       
     }
     
-    if (WatchPug.Panel.found.title && titleData && titleData.split(" ").length <= 15) {
+    if (SenSEO.Panel.found.title && titleData && titleData.split(" ").length <= 15) {
     
-      WatchPug.Panel.status['title-words'] = 'pass';
+      SenSEO.Panel.status['title-words'] = 'pass';
       
-    } else if (WatchPug.Panel.found.title && titleData && titleData.split(" ").length <= 18) {
+    } else if (SenSEO.Panel.found.title && titleData && titleData.split(" ").length <= 18) {
     
-      WatchPug.Panel.status['title-words'] = 'warning';
+      SenSEO.Panel.status['title-words'] = 'warning';
       
     } else {
     
-      WatchPug.Panel.status['title-words'] = 'fail';
+      SenSEO.Panel.status['title-words'] = 'fail';
       
     }
     
-    WatchPug.Panel.grade.title = WatchPug.Panel.calculateGrade([WatchPug.Panel.status['title-onetime'], WatchPug.Panel.status['title-includes'], WatchPug.Panel.status['title-length'], WatchPug.Panel.status['title-words']]);
+    SenSEO.Panel.grade.title = SenSEO.Panel.calculateGrade([SenSEO.Panel.status['title-onetime'], SenSEO.Panel.status['title-includes'], SenSEO.Panel.status['title-length'], SenSEO.Panel.status['title-words']]);
     
-    descriptionData = WatchPug.Panel.activeDocumentComponents['meta-description'].data;
+    descriptionData = SenSEO.Panel.activeDocumentComponents['meta-description'].data;
     
-    WatchPug.Panel.found.description = descriptionData === 'n/a' ? false : true;
+    SenSEO.Panel.found.description = descriptionData === 'n/a' ? false : true;
     
-    if (WatchPug.Panel.found.description && WatchPug.Panel.activeDocumentComponents['meta-description'].count === 1) {
+    if (SenSEO.Panel.found.description && SenSEO.Panel.activeDocumentComponents['meta-description'].count === 1) {
     
-      WatchPug.Panel.status['description-onetime'] = 'pass';
+      SenSEO.Panel.status['description-onetime'] = 'pass';
       
     } else {
     
-      WatchPug.Panel.status['description-onetime'] = 'fail';
+      SenSEO.Panel.status['description-onetime'] = 'fail';
       
     }
     
-    if (WatchPug.Panel.found.description && WatchPug.Panel.includesAllKeywords(descriptionData, keywords)) {
+    if (SenSEO.Panel.found.description && SenSEO.Panel.includesAllKeywords(descriptionData, keywords)) {
     
-      WatchPug.Panel.status['description-includes'] = 'pass';
+      SenSEO.Panel.status['description-includes'] = 'pass';
       
-    } else if (WatchPug.Panel.found.description && descriptionData && WatchPug.Panel.includesSomeKeywords(descriptionData, keywords)) {
+    } else if (SenSEO.Panel.found.description && descriptionData && SenSEO.Panel.includesSomeKeywords(descriptionData, keywords)) {
     
-      WatchPug.Panel.status['description-includes'] = 'warning';
+      SenSEO.Panel.status['description-includes'] = 'warning';
       
     } else {
     
-      WatchPug.Panel.status['description-includes'] = 'fail';
+      SenSEO.Panel.status['description-includes'] = 'fail';
       
     }
     
-    if (WatchPug.Panel.found.description && descriptionData && descriptionData.length <= 150) {
+    if (SenSEO.Panel.found.description && descriptionData && descriptionData.length <= 150) {
     
-      WatchPug.Panel.status['description-length'] = 'pass';
+      SenSEO.Panel.status['description-length'] = 'pass';
       
-    } else if (WatchPug.Panel.found.description && descriptionData && descriptionData.length <= 170) {
+    } else if (SenSEO.Panel.found.description && descriptionData && descriptionData.length <= 170) {
     
-      WatchPug.Panel.status['description-length'] = 'warning';
+      SenSEO.Panel.status['description-length'] = 'warning';
       
     } else {
     
-      WatchPug.Panel.status['description-length'] = 'fail';
+      SenSEO.Panel.status['description-length'] = 'fail';
       
     }
     
-    if (WatchPug.Panel.found.description && descriptionData && descriptionData.split(" ").length <= 30) {
+    if (SenSEO.Panel.found.description && descriptionData && descriptionData.split(" ").length <= 30) {
     
-      WatchPug.Panel.status['description-words'] = 'pass';
+      SenSEO.Panel.status['description-words'] = 'pass';
       
-    } else if (WatchPug.Panel.found.description && descriptionData && descriptionData.split(" ").length <= 35) {
+    } else if (SenSEO.Panel.found.description && descriptionData && descriptionData.split(" ").length <= 35) {
     
-      WatchPug.Panel.status['description-words'] = 'warning';
+      SenSEO.Panel.status['description-words'] = 'warning';
       
     } else {
     
-      WatchPug.Panel.status['description-words'] = 'fail';
+      SenSEO.Panel.status['description-words'] = 'fail';
       
     }
     
-    WatchPug.Panel.grade.description = WatchPug.Panel.calculateGrade([WatchPug.Panel.status['description-onetime'], WatchPug.Panel.status['description-includes'], WatchPug.Panel.status['description-length'], WatchPug.Panel.status['description-words']]);
+    SenSEO.Panel.grade.description = SenSEO.Panel.calculateGrade([SenSEO.Panel.status['description-onetime'], SenSEO.Panel.status['description-includes'], SenSEO.Panel.status['description-length'], SenSEO.Panel.status['description-words']]);
     
-    robotsData = WatchPug.Panel.activeDocumentComponents['meta-robots'];
+    robotsData = SenSEO.Panel.activeDocumentComponents['meta-robots'];
     
-    robotsFile = WatchPug.Panel.activeDocumentComponents['robots-file'];
+    robotsFile = SenSEO.Panel.activeDocumentComponents['robots-file'];
     
     if ((robotsData && robotsData.data !== '') || (robotsFile && robotsFile.data.indexOf('>n/a<') < 0)) {
     
-      WatchPug.Panel.status['robots-exists'] = 'pass';
+      SenSEO.Panel.status['robots-exists'] = 'pass';
       
     } else {
     
-      WatchPug.Panel.status['robots-exists'] = 'fail';
+      SenSEO.Panel.status['robots-exists'] = 'fail';
       
     }
     
-    WatchPug.Panel.found.robots = WatchPug.Panel.status['robots-exists'] === 'pass' ? true : false;
+    SenSEO.Panel.found.robots = SenSEO.Panel.status['robots-exists'] === 'pass' ? true : false;
     
-    WatchPug.Panel.grade.robots = WatchPug.Panel.calculateGrade([WatchPug.Panel.status['robots-exists']]);
+    SenSEO.Panel.grade.robots = SenSEO.Panel.calculateGrade([SenSEO.Panel.status['robots-exists']]);
     
-    sitemapFile = WatchPug.Panel.activeDocumentComponents['sitemap-file'];
+    sitemapFile = SenSEO.Panel.activeDocumentComponents['sitemap-file'];
     
     if (sitemapFile && sitemapFile.data.indexOf('>n/a<') < 0) {
     
-      WatchPug.Panel.status['sitemap-exists'] = 'pass';
+      SenSEO.Panel.status['sitemap-exists'] = 'pass';
       
     } else {
     
-      WatchPug.Panel.status['sitemap-exists'] = 'fail';
+      SenSEO.Panel.status['sitemap-exists'] = 'fail';
       
     }
     
-    WatchPug.Panel.found.sitemap = WatchPug.Panel.status['sitemap-exists'] === 'pass' ? true : false;
+    SenSEO.Panel.found.sitemap = SenSEO.Panel.status['sitemap-exists'] === 'pass' ? true : false;
     
-    WatchPug.Panel.grade.sitemap = WatchPug.Panel.calculateGrade([WatchPug.Panel.status['sitemap-exists']]);
+    SenSEO.Panel.grade.sitemap = SenSEO.Panel.calculateGrade([SenSEO.Panel.status['sitemap-exists']]);
     
-    h1Data = WatchPug.Panel.activeDocumentComponents['headline-1'];
-    h2Data = WatchPug.Panel.activeDocumentComponents['headline-2'];
-    h3Data = WatchPug.Panel.activeDocumentComponents['headline-3'];
-    h4Data = WatchPug.Panel.activeDocumentComponents['headline-4'];
-    h5Data = WatchPug.Panel.activeDocumentComponents['headline-5'];
-    h6Data = WatchPug.Panel.activeDocumentComponents['headline-6'];
+    h1Data = SenSEO.Panel.activeDocumentComponents['headline-1'];
+    h2Data = SenSEO.Panel.activeDocumentComponents['headline-2'];
+    h3Data = SenSEO.Panel.activeDocumentComponents['headline-3'];
+    h4Data = SenSEO.Panel.activeDocumentComponents['headline-4'];
+    h5Data = SenSEO.Panel.activeDocumentComponents['headline-5'];
+    h6Data = SenSEO.Panel.activeDocumentComponents['headline-6'];
     
-    WatchPug.Panel.found.headlines = h1Data || h2Data || h3Data || h4Data || h5Data || h6Data ? true : false;
+    SenSEO.Panel.found.headlines = h1Data || h2Data || h3Data || h4Data || h5Data || h6Data ? true : false;
     
     if (h1Data.missing && h2Data.missing && h3Data.missing && h4Data.missing && h5Data.missing && h6Data.missing) {
     
-      WatchPug.Panel.status['headlines-structure'] = 'fail';
+      SenSEO.Panel.status['headlines-structure'] = 'fail';
       
     } else {
     
-      WatchPug.Panel.status['headlines-structure'] = 'pass';
+      SenSEO.Panel.status['headlines-structure'] = 'pass';
       
     }
 
     if (!h1Data.missing && h1Data.data.length === 1) {
     
-      WatchPug.Panel.status['headlines-onetime'] = 'pass';
+      SenSEO.Panel.status['headlines-onetime'] = 'pass';
       
     } else {
     
-      WatchPug.Panel.status['headlines-onetime'] = 'fail';
+      SenSEO.Panel.status['headlines-onetime'] = 'fail';
       
     }
 
-    if (!h1Data.missing && WatchPug.Panel.includesAllKeywords(h1Data.data[0], keywords)) {
+    if (!h1Data.missing && SenSEO.Panel.includesAllKeywords(h1Data.data[0], keywords)) {
     
-      WatchPug.Panel.status['headlines-includes'] = 'pass';
+      SenSEO.Panel.status['headlines-includes'] = 'pass';
       
-    } else if (!h1Data.missing && WatchPug.Panel.includesSomeKeywords(h1Data.data[0], keywords)) {
+    } else if (!h1Data.missing && SenSEO.Panel.includesSomeKeywords(h1Data.data[0], keywords)) {
     
-      WatchPug.Panel.status['headlines-includes'] = 'warning';
+      SenSEO.Panel.status['headlines-includes'] = 'warning';
       
     } else {
     
-      WatchPug.Panel.status['headlines-includes'] = 'fail';
+      SenSEO.Panel.status['headlines-includes'] = 'fail';
       
     }
     
     if (!h2Data.missing && !h3Data.missing && h2Data.data.length >= 1 && h3Data.data.length >= 1) {
     
-      WatchPug.Panel.status['headlines-other'] = 'pass';
+      SenSEO.Panel.status['headlines-other'] = 'pass';
       
     } else if ((!h2Data.missing && h2Data.data.length >= 1) || (!h3Data.missing && h3Data.data.length >= 1)) {
     
-      WatchPug.Panel.status['headlines-other'] = 'warning';
+      SenSEO.Panel.status['headlines-other'] = 'warning';
       
     } else {
     
-      WatchPug.Panel.status['headlines-other'] = 'fail';
+      SenSEO.Panel.status['headlines-other'] = 'fail';
       
     }
 
-    WatchPug.Panel.grade.headlines = WatchPug.Panel.calculateGrade([WatchPug.Panel.status['headlines-structure'], WatchPug.Panel.status['headlines-onetime'], WatchPug.Panel.status['headlines-includes'], WatchPug.Panel.status['headlines-other']]);
+    SenSEO.Panel.grade.headlines = SenSEO.Panel.calculateGrade([SenSEO.Panel.status['headlines-structure'], SenSEO.Panel.status['headlines-onetime'], SenSEO.Panel.status['headlines-includes'], SenSEO.Panel.status['headlines-other']]);
 
-    WatchPug.Panel.found.content = WatchPug.Panel.activeDocumentComponents['body-text'] && WatchPug.Panel.activeDocumentComponents['body-text'] !== '' ? true : false;
+    SenSEO.Panel.found.content = SenSEO.Panel.activeDocumentComponents['body-text'] && SenSEO.Panel.activeDocumentComponents['body-text'] !== '' ? true : false;
     
-    if (WatchPug.Panel.activeDocumentComponents['last-modified'].data.indexOf('>n/a<') < 0) {
+    if (SenSEO.Panel.activeDocumentComponents['last-modified'].data.indexOf('>n/a<') < 0) {
     
-      WatchPug.Panel.status['content-last-modified'] = 'pass';
+      SenSEO.Panel.status['content-last-modified'] = 'pass';
       
     } else {
     
-      WatchPug.Panel.status['content-last-modified'] = 'fail';
+      SenSEO.Panel.status['content-last-modified'] = 'fail';
     
     }
     
-    if (WatchPug.Panel.activeDocumentComponents['img-without-alt'].data === 0) {
+    if (SenSEO.Panel.activeDocumentComponents['img-without-alt'].data === 0) {
     
       altImagesGrade = 100;
       
     } else {
     
-      altImagesGrade = WatchPug.Panel.activeDocumentComponents['img-without-alt'].data / WatchPug.Panel.activeDocumentComponents['img-alt'].data.length * 100;
+      altImagesGrade = SenSEO.Panel.activeDocumentComponents['img-without-alt'].data / SenSEO.Panel.activeDocumentComponents['img-alt'].data.length * 100;
     
     }
     
     if (altImagesGrade > 90) {
     
-      WatchPug.Panel.status['content-alt'] = 'pass';
+      SenSEO.Panel.status['content-alt'] = 'pass';
       
     } else if (altImagesGrade > 80) {
     
-      WatchPug.Panel.status['content-alt'] = 'warning';
+      SenSEO.Panel.status['content-alt'] = 'warning';
       
     } else {
     
-      WatchPug.Panel.status['content-alt'] = 'fail';
+      SenSEO.Panel.status['content-alt'] = 'fail';
       
     }
     
-    if (WatchPug.Panel.activeDocumentComponents['facebook-like-button'].data !== 'n/a' && WatchPug.Panel.activeDocumentComponents['plus-one-button'].data !== 'n/a' && WatchPug.Panel.activeDocumentComponents['twitter-button'].data !== 'n/a') {
+    if (SenSEO.Panel.activeDocumentComponents['facebook-like-button'].data !== 'n/a' && SenSEO.Panel.activeDocumentComponents['plus-one-button'].data !== 'n/a' && SenSEO.Panel.activeDocumentComponents['twitter-button'].data !== 'n/a') {
     
-      WatchPug.Panel.status['content-social-media'] = 'pass';
+      SenSEO.Panel.status['content-social-media'] = 'pass';
       
     } else {
     
-      if (WatchPug.Panel.activeDocumentComponents['facebook-like-button'].data !== 'n/a' || WatchPug.Panel.activeDocumentComponents['plus-one-button'].data !== 'n/a' || WatchPug.Panel.activeDocumentComponents['twitter-button'].data !== 'n/a') {
+      if (SenSEO.Panel.activeDocumentComponents['facebook-like-button'].data !== 'n/a' || SenSEO.Panel.activeDocumentComponents['plus-one-button'].data !== 'n/a' || SenSEO.Panel.activeDocumentComponents['twitter-button'].data !== 'n/a') {
     
-        WatchPug.Panel.status['content-social-media'] = 'warning';
+        SenSEO.Panel.status['content-social-media'] = 'warning';
       
       } else {
       
-        WatchPug.Panel.status['content-social-media'] = 'fail';
+        SenSEO.Panel.status['content-social-media'] = 'fail';
         
       }
     
     }
     
-    if (WatchPug.Panel.activeDocumentComponents['keyword-matches'].data >= 2 && WatchPug.Panel.activeDocumentComponents['keyword-matches'].data <= 50) {
+    if (SenSEO.Panel.activeDocumentComponents['keyword-matches'].data >= 2 && SenSEO.Panel.activeDocumentComponents['keyword-matches'].data <= 50) {
     
-      WatchPug.Panel.status['content-keywords'] = 'pass';
+      SenSEO.Panel.status['content-keywords'] = 'pass';
       
     } else {
     
-      if (WatchPug.Panel.activeDocumentComponents['keyword-matches'].data === 1 || WatchPug.Panel.activeDocumentComponents['keyword-matches'] > 50) {
+      if (SenSEO.Panel.activeDocumentComponents['keyword-matches'].data === 1 || SenSEO.Panel.activeDocumentComponents['keyword-matches'] > 50) {
     
-        WatchPug.Panel.status['content-keywords'] = 'warning';
+        SenSEO.Panel.status['content-keywords'] = 'warning';
       
       } else {
       
-        WatchPug.Panel.status['content-keywords'] = 'fail';
+        SenSEO.Panel.status['content-keywords'] = 'fail';
         
       }
     
     }
     
-    if (WatchPug.Panel.activeDocumentComponents['number-links'].data < 80) {
+    if (SenSEO.Panel.activeDocumentComponents['number-links'].data < 80) {
     
-      WatchPug.Panel.status['content-links'] = 'pass';
+      SenSEO.Panel.status['content-links'] = 'pass';
       
-    } else if (WatchPug.Panel.activeDocumentComponents['number-links'].data < 100) {
+    } else if (SenSEO.Panel.activeDocumentComponents['number-links'].data < 100) {
     
-      WatchPug.Panel.status['content-links'] = 'warning';
+      SenSEO.Panel.status['content-links'] = 'warning';
       
     } else {
     
-      WatchPug.Panel.status['content-links'] = 'fail';
+      SenSEO.Panel.status['content-links'] = 'fail';
       
     }
 
-    pageLoadTime = parseInt(WatchPug.Panel.activeDocumentComponents['page-load-time'].data.split(' ')[0], 10);
+    pageLoadTime = parseInt(SenSEO.Panel.activeDocumentComponents['page-load-time'].data.split(' ')[0], 10);
     
     if (pageLoadTime < 2000) {
     
-      WatchPug.Panel.status['content-load-time'] = 'pass';
+      SenSEO.Panel.status['content-load-time'] = 'pass';
       
     } else if (pageLoadTime < 3000) {
     
-      WatchPug.Panel.status['content-load-time'] = 'warning';
+      SenSEO.Panel.status['content-load-time'] = 'warning';
       
     } else {
     
-      WatchPug.Panel.status['content-load-time'] = 'fail';
+      SenSEO.Panel.status['content-load-time'] = 'fail';
       
     }
     
-    if (WatchPug.Panel.activeDocumentComponents['microdata-found'].data !== 'n/a') {
+    if (SenSEO.Panel.activeDocumentComponents['microdata-found'].data !== 'n/a') {
     
-      WatchPug.Panel.status['content-microdata'] = 'pass';
+      SenSEO.Panel.status['content-microdata'] = 'pass';
       
     } else {
     
-      WatchPug.Panel.status['content-microdata'] = 'fail';
+      SenSEO.Panel.status['content-microdata'] = 'fail';
       
     }
     
-    if (WatchPug.Panel.activeDocumentComponents['validation-result'].data.toLowerCase().indexOf('passed') >= 0) {
+    if (SenSEO.Panel.activeDocumentComponents['validation-result'].data.toLowerCase().indexOf('passed') >= 0) {
     
       // result starts with valid
     
-      WatchPug.Panel.status['content-validation'] = 'pass';
+      SenSEO.Panel.status['content-validation'] = 'pass';
       
-    } else if (WatchPug.Panel.activeDocumentComponents['validation-result'].data.toLowerCase().indexOf('0 errors') >= 0) {
+    } else if (SenSEO.Panel.activeDocumentComponents['validation-result'].data.toLowerCase().indexOf('0 errors') >= 0) {
     
       // result contains no errors but is invalid
     
-      WatchPug.Panel.status['content-validation'] = 'warning';
+      SenSEO.Panel.status['content-validation'] = 'warning';
       
     } else {
     
       // result contains errors and is invalid
     
-      WatchPug.Panel.status['content-validation'] = 'fail';
+      SenSEO.Panel.status['content-validation'] = 'fail';
       
     }
     
-    WatchPug.Panel.grade.content = WatchPug.Panel.calculateGrade([WatchPug.Panel.status['content-last-modified'], WatchPug.Panel.status['content-alt'], WatchPug.Panel.status['content-social-media'], WatchPug.Panel.status['content-keywords'], WatchPug.Panel.status['content-links'], WatchPug.Panel.status['content-load-time'], WatchPug.Panel.status['content-validation'], WatchPug.Panel.status['content-microdata']]);
+    SenSEO.Panel.grade.content = SenSEO.Panel.calculateGrade([SenSEO.Panel.status['content-last-modified'], SenSEO.Panel.status['content-alt'], SenSEO.Panel.status['content-social-media'], SenSEO.Panel.status['content-keywords'], SenSEO.Panel.status['content-links'], SenSEO.Panel.status['content-load-time'], SenSEO.Panel.status['content-validation'], SenSEO.Panel.status['content-microdata']]);
     
-    WatchPug.Panel.found.host = WatchPug.Panel.activeDocumentComponents['location-hostname'].data ? true : false;
+    SenSEO.Panel.found.host = SenSEO.Panel.activeDocumentComponents['location-hostname'].data ? true : false;
     
-    hostData = WatchPug.Panel.activeDocumentComponents['location-hostname'].data;
+    hostData = SenSEO.Panel.activeDocumentComponents['location-hostname'].data;
     
-    domainAge = parseInt((new Date()).getFullYear(), 10) - parseInt(WatchPug.Panel.activeDocumentComponents['domain-age'].data.split(' ')[2], 10);
+    domainAge = parseInt((new Date()).getFullYear(), 10) - parseInt(SenSEO.Panel.activeDocumentComponents['domain-age'].data.split(' ')[2], 10);
     
     domainKeywords = keywords;
     
@@ -2006,101 +2035,101 @@ WatchPug.Panel = {
     
     }
     
-    if (hostData && WatchPug.Panel.includesAllKeywords(hostData, domainKeywords)) {
+    if (hostData && SenSEO.Panel.includesAllKeywords(hostData, domainKeywords)) {
     
-      WatchPug.Panel.status['host-includes'] = 'pass';
+      SenSEO.Panel.status['host-includes'] = 'pass';
       
-    } else if (hostData && WatchPug.Panel.includesSomeKeywords(hostData, domainKeywords)) {
+    } else if (hostData && SenSEO.Panel.includesSomeKeywords(hostData, domainKeywords)) {
     
-      WatchPug.Panel.status['host-includes'] = 'warning';
+      SenSEO.Panel.status['host-includes'] = 'warning';
       
     } else {
     
-      WatchPug.Panel.status['host-includes'] = 'fail';
+      SenSEO.Panel.status['host-includes'] = 'fail';
       
     }
     
     if (hostData.match(/xn--/)) {
     
-      WatchPug.Panel.status['host-idn'] = 'fail';
+      SenSEO.Panel.status['host-idn'] = 'fail';
       
     } else {
     
-      WatchPug.Panel.status['host-idn'] = 'pass';
+      SenSEO.Panel.status['host-idn'] = 'pass';
       
     }
     
     if (hostData.match(/_/)) {
     
-      WatchPug.Panel.status['host-hyphen'] = 'fail';
+      SenSEO.Panel.status['host-hyphen'] = 'fail';
       
     } else {
     
-      WatchPug.Panel.status['host-hyphen'] = 'pass';
+      SenSEO.Panel.status['host-hyphen'] = 'pass';
       
     }
     
     if (domainAge >= 2) {
     
-      WatchPug.Panel.status['host-age'] = 'pass';
+      SenSEO.Panel.status['host-age'] = 'pass';
       
     } else if (domainAge >= 1) {
     
-      WatchPug.Panel.status['host-age'] = 'warning';
+      SenSEO.Panel.status['host-age'] = 'warning';
       
     } else {
     
-      WatchPug.Panel.status['host-age'] = 'fail';
+      SenSEO.Panel.status['host-age'] = 'fail';
       
     }
     
-    WatchPug.Panel.grade.host = WatchPug.Panel.calculateGrade([WatchPug.Panel.status['host-includes'], WatchPug.Panel.status['host-idn'], WatchPug.Panel.status['host-hyphen'], WatchPug.Panel.status['host-age']]);
+    SenSEO.Panel.grade.host = SenSEO.Panel.calculateGrade([SenSEO.Panel.status['host-includes'], SenSEO.Panel.status['host-idn'], SenSEO.Panel.status['host-hyphen'], SenSEO.Panel.status['host-age']]);
     
-    WatchPug.Panel.found.path = WatchPug.Panel.activeDocumentComponents['path-name'].data ? true : false;
+    SenSEO.Panel.found.path = SenSEO.Panel.activeDocumentComponents['path-name'].data ? true : false;
     
-    pathData = WatchPug.Panel.activeDocumentComponents['path-name'].data;
+    pathData = SenSEO.Panel.activeDocumentComponents['path-name'].data;
     
     if (pathData && pathData.length <= 65) {
     
-      WatchPug.Panel.status['path-length'] = 'pass';
+      SenSEO.Panel.status['path-length'] = 'pass';
       
     } else if (pathData && pathData.length <= 75) {
     
-      WatchPug.Panel.status['path-length'] = 'warning';
+      SenSEO.Panel.status['path-length'] = 'warning';
       
     } else {
     
-      WatchPug.Panel.status['path-length'] = 'fail';
+      SenSEO.Panel.status['path-length'] = 'fail';
       
     }
 
-    if (WatchPug.Panel.activeDocumentComponents['url-params'].data && WatchPug.Panel.activeDocumentComponents['url-params'].data !== '') {
+    if (SenSEO.Panel.activeDocumentComponents['url-params'].data && SenSEO.Panel.activeDocumentComponents['url-params'].data !== '') {
     
-      WatchPug.Panel.status['path-dynparam'] = 'fail';
+      SenSEO.Panel.status['path-dynparam'] = 'fail';
       
     } else {
     
-      WatchPug.Panel.status['path-dynparam'] = 'pass';
+      SenSEO.Panel.status['path-dynparam'] = 'pass';
       
     }
             
     if (pathData.match(/_/)) {
     
-      WatchPug.Panel.status['path-hyphen'] = 'fail';
+      SenSEO.Panel.status['path-hyphen'] = 'fail';
       
     } else {
     
-      WatchPug.Panel.status['path-hyphen'] = 'pass';
+      SenSEO.Panel.status['path-hyphen'] = 'pass';
       
     }
     
     if (pathData.toLowerCase() === pathData) {
     
-      WatchPug.Panel.status['path-lowercase'] = 'pass';
+      SenSEO.Panel.status['path-lowercase'] = 'pass';
       
     } else {
     
-      WatchPug.Panel.status['path-lowercase'] = 'fail';
+      SenSEO.Panel.status['path-lowercase'] = 'fail';
       
     }
     
@@ -2120,17 +2149,17 @@ WatchPug.Panel = {
     
     if (pathData && pathData.match(/\//g).length > levels) {
     
-      WatchPug.Panel.status['path-levels'] = 'fail';
+      SenSEO.Panel.status['path-levels'] = 'fail';
       
     } else {
     
-      WatchPug.Panel.status['path-levels'] = 'pass';
+      SenSEO.Panel.status['path-levels'] = 'pass';
       
     }
     
-    WatchPug.Panel.grade.path = WatchPug.Panel.calculateGrade([WatchPug.Panel.status['path-length'], WatchPug.Panel.status['path-dynparam'], WatchPug.Panel.status['path-hyphen'], WatchPug.Panel.status['path-lowercase'], WatchPug.Panel.status['path-levels']]);
+    SenSEO.Panel.grade.path = SenSEO.Panel.calculateGrade([SenSEO.Panel.status['path-length'], SenSEO.Panel.status['path-dynparam'], SenSEO.Panel.status['path-hyphen'], SenSEO.Panel.status['path-lowercase'], SenSEO.Panel.status['path-levels']]);
     
-    WatchPug.Panel.grade.weighted = WatchPug.Panel.calculateWeightedGrade([[WatchPug.Panel.grade.title[1], 3], [WatchPug.Panel.grade.description[1], 2], [WatchPug.Panel.grade.robots[1], 1], [WatchPug.Panel.grade.sitemap[1], 1], [WatchPug.Panel.grade.headlines[1], 2], [WatchPug.Panel.grade.content[1], 2], [WatchPug.Panel.grade.host[1], 2], [WatchPug.Panel.grade.path[1], 1]]);
+    SenSEO.Panel.grade.weighted = SenSEO.Panel.calculateWeightedGrade([[SenSEO.Panel.grade.title[1], 3], [SenSEO.Panel.grade.description[1], 2], [SenSEO.Panel.grade.robots[1], 1], [SenSEO.Panel.grade.sitemap[1], 1], [SenSEO.Panel.grade.headlines[1], 2], [SenSEO.Panel.grade.content[1], 2], [SenSEO.Panel.grade.host[1], 2], [SenSEO.Panel.grade.path[1], 1]]);
     
   },
   
@@ -2142,7 +2171,7 @@ WatchPug.Panel = {
     notFound = found ? '' : $('<div>')
                             .append($('<span>')
                             .attr('class', 'error')
-                            .text(' (' + WatchPug.StrBundle.getString('al.tt.NotFound') + ')').clone()).html();
+                            .text(' (' + SenSEO.StrBundle.getString('al.tt.NotFound') + ')').clone()).html();
     
     
     for (key in data) {
@@ -2162,7 +2191,7 @@ WatchPug.Panel = {
           criteriaList = criteriaList + $('<div>')
                                         .append($('<li>')
                                         .attr('class', data[key].status)
-                                        .text(WatchPug.StrBundle.getString(data[key].strBundleKey)).clone()).html();
+                                        .text(SenSEO.StrBundle.getString(data[key].strBundleKey)).clone()).html();
           
         }
       
@@ -2183,7 +2212,7 @@ WatchPug.Panel = {
                  'href': infoUrl,
                  'target': 'blank'
                })
-               .append(savedMode ? '<img src="img/floppy-disk.png">' : WatchPug.StrBundle.getString(titleStrBundleKey) + ' [' + WatchPug.StrBundle.getString('al.tt.MoreInfo') + ']')
+               .append(savedMode ? '<img src="img/floppy-disk.png">' : SenSEO.StrBundle.getString(titleStrBundleKey) + ' [' + SenSEO.StrBundle.getString('al.tt.MoreInfo') + ']')
                .append(notFound))
                .append($('<ul>')
                .append(criteriaList))).clone()).html();
@@ -2194,21 +2223,21 @@ WatchPug.Panel = {
   
   showSenSEOGrade: function() {
 
-    if (WatchPug.Panel.grade.weighted) {
+    if (SenSEO.Panel.grade.weighted) {
     
-      WatchPug.Panel.inspectResultReady();
+      SenSEO.Panel.inspectResultReady();
     
-      $('#searchpug-grade').html(WatchPug.StrBundle.getString('al.tt.WatchPugGrade'));
+      $('#searchpug-grade').html(SenSEO.StrBundle.getString('al.tt.SenSEOGrade'));
     
-      $('#inspect-keyword').html(WatchPug.Panel.keywordsString);
+      $('#inspect-keyword').html(SenSEO.Panel.keywordsString);
       
-      $('#inspect-grade').html(WatchPug.Panel.grade.weighted[0] + ' (' + WatchPug.Panel.grade.weighted[1] + '/100)');
+      $('#inspect-grade').html(SenSEO.Panel.grade.weighted[0] + ' (' + SenSEO.Panel.grade.weighted[1] + '/100)');
       
       // update twitter area
       
-      $('#twitter-grade').html(WatchPug.Panel.grade.weighted[0]);
+      $('#twitter-grade').html(SenSEO.Panel.grade.weighted[0]);
       
-      $('#tweet-this').attr('href', 'http://twitter.com/home?status=' + encodeURIComponent('I got grade ' + WatchPug.Panel.grade.weighted[0] + ' (' + WatchPug.Panel.grade.weighted[1] + '/100) for optimizing my website with SenSEO Firefox extension http://goo.gl/d7dp'));
+      $('#tweet-this').attr('href', 'http://twitter.com/home?status=' + encodeURIComponent('I got grade ' + SenSEO.Panel.grade.weighted[0] + ' (' + SenSEO.Panel.grade.weighted[1] + '/100) for optimizing my website with SenSEO Firefox extension http://goo.gl/d7dp'));
   
     } else {
     
@@ -2226,7 +2255,7 @@ WatchPug.Panel = {
   
     inspectResultsContainer.removeClass('hidden');
   
-    if (WatchPug.Panel.setting['color-blind']) {
+    if (SenSEO.Panel.setting['color-blind']) {
     
       inspectResultsContainer.addClass('color-blind-friendly');
     
@@ -2238,20 +2267,20 @@ WatchPug.Panel = {
   
     inspectResultsContainer.find('.saved-mode-false').html(
   
-        WatchPug.Panel.generateInspectResultsContainerMarkup() + $('<div>').append($('<div>')
+        SenSEO.Panel.generateInspectResultsContainerMarkup() + $('<div>').append($('<div>')
                                                                 .attr('class', 'legend')
                                                               .append($('<span>')
                                                                 .attr('class', 'legend pass')
-                                                                .text(WatchPug.StrBundle.getString('al.lg.Pass')))
+                                                                .text(SenSEO.StrBundle.getString('al.lg.Pass')))
                                                               .append($('<span>')
                                                                 .attr('class', 'legend warning')
-                                                                .text(WatchPug.StrBundle.getString('al.lg.Warning')))
+                                                                .text(SenSEO.StrBundle.getString('al.lg.Warning')))
                                                               .append($('<span>')
                                                                 .attr('class', 'legend fail')
-                                                                .text(WatchPug.StrBundle.getString('al.lg.Fail')))
+                                                                .text(SenSEO.StrBundle.getString('al.lg.Fail')))
                                                               .append($('<span>')
                                                                 .attr('class', 'legend neutral')
-                                                                .text(WatchPug.StrBundle.getString('al.lg.NotChecked'))).clone()).html()
+                                                                .text(SenSEO.StrBundle.getString('al.lg.NotChecked'))).clone()).html()
                                                               
                               );
       
@@ -2259,11 +2288,11 @@ WatchPug.Panel = {
   
   generateInspectResultsContainerMarkup: function(savedGrade, savedStatus) {
   
-    var grade = savedGrade || WatchPug.Panel.grade,
-        status = savedStatus || WatchPug.Panel.status,
+    var grade = savedGrade || SenSEO.Panel.grade,
+        status = savedStatus || SenSEO.Panel.status,
         savedMode = savedGrade && savedStatus ? true : false;
-  
-    return WatchPug.Panel.generateInspectResultMarkup('title-found', grade.title[0], 'al.tt.UseTitleTag', 'http://sensational-seo.com/on-page-criteria.html#title', WatchPug.Panel.found.title, {
+
+    return SenSEO.Panel.generateInspectResultMarkup('title-found', grade.title[0], 'al.tt.UseTitleTag', 'http://sensational-seo.com/on-page-criteria.html#title', SenSEO.Panel.found.title, {
     
       1: {
         status: status['title-onetime'],
@@ -2287,7 +2316,7 @@ WatchPug.Panel = {
 
     }, savedMode) +
     
-    WatchPug.Panel.generateInspectResultMarkup('description', grade.description[0], 'al.tt.UseMetaDescription', 'http://sensational-seo.com/on-page-criteria.html#metadescription', WatchPug.Panel.found.description, {
+    SenSEO.Panel.generateInspectResultMarkup('description', grade.description[0], 'al.tt.UseMetaDescription', 'http://sensational-seo.com/on-page-criteria.html#metadescription', SenSEO.Panel.found.description, {
     
       1: {
         status: status['description-onetime'],
@@ -2311,7 +2340,7 @@ WatchPug.Panel = {
 
     }, savedMode) +
     
-    WatchPug.Panel.generateInspectResultMarkup('robots', grade.robots[0], 'al.tt.UseMetaRobots', 'http://sensational-seo.com/on-page-criteria.html#robots', WatchPug.Panel.found.robots, {
+    SenSEO.Panel.generateInspectResultMarkup('robots', grade.robots[0], 'al.tt.UseMetaRobots', 'http://sensational-seo.com/on-page-criteria.html#robots', SenSEO.Panel.found.robots, {
     
       1: {
         status: status['robots-exists'],
@@ -2320,7 +2349,7 @@ WatchPug.Panel = {
       
     }, savedMode) +
        
-    WatchPug.Panel.generateInspectResultMarkup('sitemap', grade.sitemap[0], 'al.tt.UseSitemap', 'http://sensational-seo.com/on-page-criteria.html#robots', WatchPug.Panel.found.sitemap, {
+    SenSEO.Panel.generateInspectResultMarkup('sitemap', grade.sitemap[0], 'al.tt.UseSitemap', 'http://sensational-seo.com/on-page-criteria.html#robots', SenSEO.Panel.found.sitemap, {
     
       1: {
         status: status['sitemap-exists'],
@@ -2329,7 +2358,7 @@ WatchPug.Panel = {
       
     }, savedMode) +
     
-    WatchPug.Panel.generateInspectResultMarkup('headlines', grade.headlines[0], 'al.tt.HeadlineTags', 'http://sensational-seo.com/on-page-criteria.html#headline', WatchPug.Panel.found.headlines, {
+    SenSEO.Panel.generateInspectResultMarkup('headlines', grade.headlines[0], 'al.tt.HeadlineTags', 'http://sensational-seo.com/on-page-criteria.html#headline', SenSEO.Panel.found.headlines, {
     
       1: {
         status: status['headlines-structure'],
@@ -2353,7 +2382,7 @@ WatchPug.Panel = {
 
     }, savedMode) +
     
-    WatchPug.Panel.generateInspectResultMarkup('content', grade.content[0], 'al.tt.PageContent', 'http://sensational-seo.com/on-page-criteria.html#pagecontent', WatchPug.Panel.found.content, {
+    SenSEO.Panel.generateInspectResultMarkup('content', grade.content[0], 'al.tt.PageContent', 'http://sensational-seo.com/on-page-criteria.html#pagecontent', SenSEO.Panel.found.content, {
     
       1: {
         status: 'neutral',
@@ -2427,7 +2456,7 @@ WatchPug.Panel = {
 
     }, savedMode) +
     
-    WatchPug.Panel.generateInspectResultMarkup('host', grade.host[0], 'al.tt.Domain', 'http://sensational-seo.com/on-page-criteria.html#domain', WatchPug.Panel.found.host, {
+    SenSEO.Panel.generateInspectResultMarkup('host', grade.host[0], 'al.tt.Domain', 'http://sensational-seo.com/on-page-criteria.html#domain', SenSEO.Panel.found.host, {
     
       1: {
         status: status['host-includes'],
@@ -2461,7 +2490,7 @@ WatchPug.Panel = {
 
     }, savedMode) +
     
-    WatchPug.Panel.generateInspectResultMarkup('path', grade.path[0], 'al.tt.Path', 'http://sensational-seo.com/on-page-criteria.html#path', WatchPug.Panel.found.path, {
+    SenSEO.Panel.generateInspectResultMarkup('path', grade.path[0], 'al.tt.Path', 'http://sensational-seo.com/on-page-criteria.html#path', SenSEO.Panel.found.path, {
     
       1: {
         status: status['path-length'],
@@ -2494,4 +2523,4 @@ WatchPug.Panel = {
   
 };
 
-WatchPug.Panel.init();
+SenSEO.Panel.init();

@@ -9,9 +9,10 @@
     <div id="fb-root"></div>
     <header>
       <button class="blue-pill" id="crawl-start-button"></button>
-      <button class="blue-pill hidden" id="crawl-stop-button"></button>
-      <button class="blue-pill" id="export-button"></button>
-      <div class="fb-like" data-href="http://www.sensational-seo.com" data-send="false" data-layout="button_count" data-width="80" data-show-faces="false" data-action="recommend" data-font="arial"></div>
+      <span class="hidden" id="crawl-crawling"><span></span> <img src="img/roller.gif"></span>
+      <!--<button class="blue-pill hidden" id="crawl-stop-button"></button>
+      <span class="hidden" id="crawl-stop-crawling"><span></span> <img src="img/roller.gif"></span>-->
+      <button class="blue-pill hidden" id="export-button"></button>
       <img id="close-crawl-panel" src="img/cancel-big.png">
     </header>
     <div id="crawler-status">
@@ -24,10 +25,13 @@
           For the main keyword SenSEO uses the first keyword in keywords meta tag.
         </p>
         <p>
+          The exported values are seperated by the pipe "|" symbol.
+        </p>
+        <p>
           Ranking is calculated with the following rules:
         </p>
         <ul>
-          <li>URL contains keyword: <strong>+1</strong></li>
+          <li>URL contains main keyword: <strong>+1</strong></li>
           <li>Title exists: <strong>+1</strong></li>
           <li>Title contains main keyword: <strong>+1</strong></li>
           <li>Description exists: <strong>+1</strong></li>
@@ -51,12 +55,5 @@
         <tbody></tbody>
       </table>
     </section>
-    <script>(function(d, s, id) {
-      var js, fjs = d.getElementsByTagName(s)[0];
-      if (d.getElementById(id)) { return; }
-      js = d.createElement(s); js.id = id;
-      js.src = "http://connect.facebook.net/de_DE/all.js#xfbml=1";
-      fjs.parentNode.insertBefore(js, fjs);
-    }(document, 'script', 'facebook-jssdk'));</script>
   </body>
 </html>

@@ -6,9 +6,11 @@ SenSEO.StrBundle = {
 
   string: {
   
-    'console.StartCrawling': 'Start crawling',
-    'console.StopCrawling': 'Stop crawling',
-    'console.ExportData': 'Export data table'
+    'console.StartCrawlingButton': 'Start crawling',
+    'console.Crawling': 'Crawling',
+    'console.StopCrawlingButton': 'Stop crawling',
+    'console.StopCrawling': 'Crawling stops',
+    'console.ExportDataButton': 'Export data table'
     
   },
   
@@ -27,6 +29,12 @@ SenSEO.CrawlPage = {
   allPages: [],
   
   allPagesSum: 0,
+  
+  stopCrawling: false,
+  
+  dataURI: '',
+  
+  dataURIRaw: [],
 
   init: function() {
 
@@ -44,7 +52,7 @@ SenSEO.CrawlPage = {
     
       // crawling finished?
       
-      if (SenSEO.CrawlPage.crawledPages === SenSEO.CrawlPage.allPagesSum) {
+      if (SenSEO.CrawlPage.crawledPages === SenSEO.CrawlPage.allPagesSum || SenSEO.CrawlPage.stopCrawling) {
       
         SenSEO.CrawlPage.crawlingFinished();
       
@@ -77,9 +85,11 @@ SenSEO.CrawlPage = {
 
   initInputsAndButtons: function() {
   
-    $('#crawl-start-button').text(SenSEO.StrBundle.getString('console.StartCrawling'));
-    $('#crawl-stop-button').text(SenSEO.StrBundle.getString('console.StopCrawling'));
-    $('#export-button').text(SenSEO.StrBundle.getString('console.ExportData'));
+    $('#crawl-start-button').text(SenSEO.StrBundle.getString('console.StartCrawlingButton'));
+    $('#crawl-crawling span').text(SenSEO.StrBundle.getString('console.Crawling'));
+    $('#crawl-stop-button').text(SenSEO.StrBundle.getString('console.StopCrawlingButton'));
+    $('#crawl-stop-crawling span').text(SenSEO.StrBundle.getString('console.StopCrawling'));
+    $('#export-button').text(SenSEO.StrBundle.getString('console.ExportDataButton'));
     
     $('#crawl-start-button').click(function(e) {
         
@@ -89,6 +99,10 @@ SenSEO.CrawlPage = {
       
       $('#crawl-instructions').addClass('hidden');
     
+      $('#export-button').addClass('hidden');
+    
+      $('#crawl-crawling').removeClass('hidden');
+      
       $('#crawl-stop-button').removeClass('hidden');
       
       $('#crawler-table').removeClass('hidden');
@@ -103,9 +117,19 @@ SenSEO.CrawlPage = {
       
       $('#crawl-stop-button').addClass('hidden');
     
-      $('#crawl-start-button').removeClass('hidden');
+      $('#crawl-crawling').addClass('hidden');
+      
+      $('#crawl-stop-crawling').removeClass('hidden');
     
       SenSEO.CrawlPage.stopCrawlingPages();
+      
+    });
+    
+    $('#export-button').click(function(e) {
+        
+      e.preventDefault();
+      
+      SenSEO.CrawlPage.exportDataURI();
       
     });
     
@@ -123,7 +147,11 @@ SenSEO.CrawlPage = {
 
     SenSEO.CrawlPage.crawledPages = 0;
     
+    SenSEO.CrawlPage.stopCrawling = false;
+    
     SenSEO.CrawlPage.preparePagesTable();
+    
+    SenSEO.CrawlPage.prepareDataURI();
     
     SenSEO.CrawlPage.crawlerStatus.find('.info').removeClass('hidden');
     
@@ -131,6 +159,47 @@ SenSEO.CrawlPage = {
     
     SenSEO.CrawlPage.crawlNextPages();
     
+  },
+  
+  prepareDataURI: function() {
+  
+    SenSEO.CrawlPage.dataURI = 'data:application/csv;charset=utf-8,' + encodeURIComponent('url|title|description|keywords|author|ranking\n');
+  
+  },
+  
+  exportDataURI: function() {
+  
+    var i, j,
+        concatenatedDataURI = '';
+    
+    if (SenSEO.CrawlPage.dataURIRaw && SenSEO.CrawlPage.dataURIRaw.length) {
+    
+      for (i = 0; i < SenSEO.CrawlPage.dataURIRaw.length; i += 1) {
+    
+        for (j = 0; j < SenSEO.CrawlPage.dataURIRaw[i].length; j += 1) {
+      
+          concatenatedDataURI += SenSEO.CrawlPage.dataURIRaw[i][j];
+          
+          if (j < SenSEO.CrawlPage.dataURIRaw[i].length - 1) {
+          
+            concatenatedDataURI += '|';
+          
+          }
+          
+        }
+        
+        concatenatedDataURI += '\n';
+        
+        SenSEO.CrawlPage.dataURI += encodeURIComponent(concatenatedDataURI);
+      
+      }
+      
+      // starts download because of csv content type
+      
+      document.location.href = SenSEO.CrawlPage.dataURI;
+  
+    }
+  
   },
   
   closeCrawlingPanel: function() {
@@ -171,7 +240,13 @@ SenSEO.CrawlPage = {
 
     $('#crawl-stop-button').addClass('hidden');
   
+    $('#crawl-stop-crawling').addClass('hidden');
+    
+    $('#crawl-crawling').addClass('hidden');
+      
     $('#crawl-start-button').removeClass('hidden');
+    
+    $('#export-button').removeClass('hidden');
     
     SenSEO.CrawlPage.crawlerStatus.find('.finished').removeClass('hidden');
     
@@ -179,7 +254,7 @@ SenSEO.CrawlPage = {
   
   stopCrawlingPages: function() {
 
-    // stop crawling
+    SenSEO.CrawlPage.stopCrawling = true;
   
   },
   
@@ -189,9 +264,10 @@ SenSEO.CrawlPage = {
         status = data.status,
         text = data.text,
         headStart, headEnd, headMarkup,
-        title, description, keywords, author;
+        title, description, keywords, author, keywordList, mainKeyword,
+        ranking;
     
-    if (status === 200) {
+    if (status === 200 && !SenSEO.CrawlPage.stopCrawling) {
     
       if (url !== '' && text !== '') {
       
@@ -209,7 +285,15 @@ SenSEO.CrawlPage = {
 
         author = $('<html>').html(headMarkup).find('meta[name="author"]').attr('content');
 
-        SenSEO.CrawlPage.addPagesTableRow(url, title, description, keywords, author);
+        keywordList = keywords ? keywords.split(',') : null;
+      
+        mainKeyword = keywordList && keywordList[0] !== '' ? keywordList[0] : null;
+  
+        ranking = SenSEO.CrawlPage.calculateRanking(url, title, description, mainKeyword);
+  
+        SenSEO.CrawlPage.addPagesTableRow(url, title, description, keywords, author, mainKeyword, ranking);
+
+        SenSEO.CrawlPage.addDataURIRow(url, title, description, keywords, author, ranking);
 
       }
 
@@ -294,7 +378,7 @@ SenSEO.CrawlPage = {
                       .attr('class', 'mainkeyword')
                       .text(mainKeyword).clone()).html();
 
-      if (keywords.indexOf(',')) {
+      if (keywords.indexOf(',') !== -1) {
     
         formattedOutput = replaceString + keywords.substring(keywords.indexOf(','));
         
@@ -306,24 +390,44 @@ SenSEO.CrawlPage = {
       
     }
     
-    return formattedOutput || text;
+    return formattedOutput || keywords;
     
   },
   
-  addPagesTableRow: function(url, title, description, keywords, author) {
-
-    var keywordList,
-        mainKeyword,
-        ranking = 0,
-        urlMarkup,
-        rankingMarkup,
-        componentsLinkMarkup,
-        inspectLinkMarkup,
-        i;
+  addDataURIRow: function(url, title, description, keywords, author, ranking) {
   
-    keywordList = keywords ? keywords.split(',') : null;
+    SenSEO.CrawlPage.dataURIRaw.push([
+                                      SenSEO.CrawlPage.replacePipeByComma(url),
+                                      SenSEO.CrawlPage.replacePipeByComma(title),
+                                      SenSEO.CrawlPage.replacePipeByComma(description),
+                                      SenSEO.CrawlPage.replacePipeByComma(keywords),
+                                      SenSEO.CrawlPage.replacePipeByComma(author),
+                                      ranking
+                                     ]);
   
-    mainKeyword = keywordList && keywordList[0] !== '' ? keywordList[0] : null;
+  },
+  
+  replacePipeByComma: function(text) {
+    
+    // this is important because we generate semicolon seperated values
+  
+    if (text) {
+  
+      return text.replace('|', ',');
+      
+    } else {
+    
+      // all strange stuff is normalized to empty string
+    
+      return '';
+    
+    }
+  
+  },
+  
+  calculateRanking: function(url, title, description, mainKeyword) {
+  
+    var ranking = 0;
   
     // min ranking is 0 / max ranking is 5
   
@@ -356,6 +460,18 @@ SenSEO.CrawlPage = {
       ranking += 1;
     
     }
+  
+    return ranking;
+  
+  },
+  
+  addPagesTableRow: function(url, title, description, keywords, author, mainKeyword, ranking) {
+
+    var urlMarkup,
+        rankingMarkup,
+        componentsLinkMarkup,
+        inspectLinkMarkup,
+        i;
   
     urlMarkup = url && url !== '' ? SenSEO.CrawlPage.formatOutput(url, mainKeyword) : $('<span class="error">n/a</span>');
   
