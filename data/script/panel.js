@@ -137,36 +137,6 @@ SenSEO.StrBundle = {
   
 };
 
-// clone method for later use
-// see: http://my.opera.com/GreyWyvern/blog/show.dml/1725165
-
-Object.prototype.clone = function() {
-
-  var i,
-      newObj = (this instanceof Array) ? [] : {};
-  
-  for (i in this) {
-  
-    if (this.hasOwnProperty(i)) {
-    
-      if (this[i] && typeof this[i] === "object") {
-      
-        newObj[i] = this[i].clone();
-        
-      } else {
-      
-        newObj[i] = this[i];
-        
-      }
-      
-    }
-    
-  }
-  
-  return newObj;
-  
-};
-
 SenSEO.Panel = {
 
   activeDocumentComponents: [],
@@ -176,6 +146,10 @@ SenSEO.Panel = {
   status: [],
   
   grade: [],
+  
+  savedStatus: [],
+  
+  savedGrade: [],
   
   setting: [],
   
@@ -204,10 +178,6 @@ SenSEO.Panel = {
   inspectOngoing: true,
   
   highlightedDataRow: null,
-  
-  savedGrade: null,
-  
-  savedStatus: null,
   
   init: function() {
 
@@ -1077,13 +1047,30 @@ SenSEO.Panel = {
   
   handleSaveResult: function() {
   
-    var bubbleLeft, bubbleTop;
+    var bubbleLeft, bubbleTop, key;
   
-    // save result
+    // save result by cloning status and grade
+    // see: http://my.opera.com/GreyWyvern/blog/show.dml/1725165
     
-    SenSEO.Panel.savedGrade = SenSEO.Panel.grade.clone();
-  
-    SenSEO.Panel.savedStatus = SenSEO.Panel.status.clone();
+    for (key in SenSEO.Panel.status) {
+    
+      if (SenSEO.Panel.status.hasOwnProperty(key)) {
+      
+        SenSEO.Panel.savedStatus[key] = SenSEO.Panel.status[key];
+
+      }
+      
+    }
+
+    for (key in SenSEO.Panel.grade) {
+    
+      if (SenSEO.Panel.grade.hasOwnProperty(key)) {
+      
+        SenSEO.Panel.savedGrade[key] = SenSEO.Panel.grade[key];
+
+      }
+      
+    }
     
     // what next?
     
