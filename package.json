@@ -3,7 +3,7 @@
     "description": "SenSEO ist an extension checking SEO-critical on page criteria.",
     "license": "MPL 1.1/GPL 2.0/LGPL 2.1",
     "author": "Nico Steiner",
-    "version": "2.3.1",
+    "version": "2.4.0",
     "fullName": "SenSEO",
     "id": "senseo@nicosteiner.de",
     "homepage": "http://www.sensational-seo.com/",
@@ -17,6 +17,11 @@
         "title": "Prefill keyword if available",
         "type": "bool",
         "value": true
+    }, {
+        "name": "numberOfPagesCrawled",
+        "title": "Number of pages to be crawled (max. 250)",
+        "type": "integer",
+        "value": 50
     }, {
         "name": "colorBlindFriendly",
         "title": "Color-blind friendly version",

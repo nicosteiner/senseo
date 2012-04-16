@@ -92,9 +92,16 @@ body > header button#help-button {
   float: right;
 }
 
-body > header a#bug-button {
+body > header a#bug-button,
+body > header a#home-button,
+body > header a#flattr-button {
   float: right;
   padding: 1px 1px 0 1px;
+}
+
+body > header a#home-button,
+body > header a#flattr-button {
+  margin-right: 5px;
 }
 
 body > header button#settings-button,

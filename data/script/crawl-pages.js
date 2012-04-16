@@ -235,7 +235,7 @@ SenSEO.CrawlPage = {
     }
     
   },
-    
+  
   crawlingFinished: function() {
 
     $('#crawl-stop-button').addClass('hidden');
