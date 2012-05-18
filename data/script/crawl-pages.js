@@ -176,6 +176,10 @@ SenSEO.CrawlPage = {
     
       for (i = 0; i < SenSEO.CrawlPage.dataURIRaw.length; i += 1) {
     
+        // reset string for every run
+    
+        concatenatedDataURI = '';
+    
         for (j = 0; j < SenSEO.CrawlPage.dataURIRaw[i].length; j += 1) {
       
           concatenatedDataURI += SenSEO.CrawlPage.dataURIRaw[i][j];
@@ -222,13 +226,13 @@ SenSEO.CrawlPage = {
   
   crawlNextPages: function() {
 
-    var i, nextFiveOrLess;
+    var i, nextTenOrLess;
 
     // a maximum of 10 pages are processed at once
     
-    nextFiveOrLess = SenSEO.CrawlPage.allPagesSum - SenSEO.CrawlPage.crawledPages < 10 ? SenSEO.CrawlPage.allPagesSum - SenSEO.CrawlPage.crawledPages : 10;
+    nextTenOrLess = SenSEO.CrawlPage.allPagesSum - SenSEO.CrawlPage.crawledPages < 10 ? SenSEO.CrawlPage.allPagesSum - SenSEO.CrawlPage.crawledPages : 10;
     
-    for (i = SenSEO.CrawlPage.crawledPages; i < SenSEO.CrawlPage.crawledPages + nextFiveOrLess; i += 1) {
+    for (i = SenSEO.CrawlPage.crawledPages; i < SenSEO.CrawlPage.crawledPages + nextTenOrLess; i += 1) {
     
       self.port.emit('getPageMarkup', SenSEO.CrawlPage.allPages[i]);
     

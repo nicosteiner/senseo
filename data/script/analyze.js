@@ -157,9 +157,9 @@ SenSEO.Analyze = {
       
         // try to find out if headline is visible
       
-        if ($(headlines[i]).is(':visible')) {
+        textOnlyHeadline = SenSEO.Analyze.convertToTextOnly(headlines[i]);
         
-          textOnlyHeadline = SenSEO.Analyze.convertToTextOnly(headlines[i]);
+        if ($(headlines[i]).is(':visible')) {
         
           highlightHeadlineHTML = $('<div>')
                                   .append(textOnlyHeadline)
@@ -453,7 +453,7 @@ SenSEO.Analyze = {
     var textOnly, wrapper;
   
     // convert text containing markup to text only version
-    
+
     if (textAndMarkup.textContent) {
     
       // when textAndMarkup is an element containing text
