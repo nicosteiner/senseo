@@ -592,9 +592,29 @@ SenSEO.Analyze = {
     
   },
 
+  getPort: function() {
+
+    var port = window.location.port;
+    
+    if (!port) {
+    
+      port = '80';
+    
+    }
+    
+    SenSEO.Analyze.data['location-port'] = {
+      
+      head: 'port',
+      
+      data: SenSEO.Analyze.convertToTextOnly(port)
+      
+    };
+    
+  },
+
   getDocumentHeaders: function() {
 
-    var url = SenSEO.Analyze.data['location-protocol'].data + '//' + SenSEO.Analyze.data['location-hostname'].data + SenSEO.Analyze.data['path-name'].data + SenSEO.Analyze.data['url-params'].data;
+    var url = SenSEO.Analyze.data['location-protocol'].data + '//' + SenSEO.Analyze.data['location-hostname'].data + SenSEO.Analyze.data['path-name'].data + ':' + SenSEO.Analyze.data['location-port'].data + SenSEO.Analyze.data['url-params'].data;
     
     SenSEO.Analyze.data['last-modified'] = {
       
@@ -656,7 +676,7 @@ SenSEO.Analyze = {
   
   getRobotsFileContent: function() {
 
-    var url = SenSEO.Analyze.data['location-protocol'].data + '//' + SenSEO.Analyze.data['location-hostname'].data + '/robots.txt';
+    var url = SenSEO.Analyze.data['location-protocol'].data + '//' + SenSEO.Analyze.data['location-hostname'].data + ':' + SenSEO.Analyze.data['location-port'].data + '/robots.txt';
     
     SenSEO.Analyze.data['robots-file'] = {
     
@@ -1091,6 +1111,8 @@ SenSEO.Analyze = {
     SenSEO.Analyze.getPathName();
     
     SenSEO.Analyze.getURLParams();
+
+    SenSEO.Analyze.getPort();
 
     SenSEO.Analyze.getDocumentHeaders();
 

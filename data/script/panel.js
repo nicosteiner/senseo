@@ -530,7 +530,7 @@ SenSEO.Panel = {
     
       if (SenSEO.Panel.activeDocumentComponents['location-protocol'] && SenSEO.Panel.activeDocumentComponents['location-hostname']) {
     
-        sitemapLocation = SenSEO.Panel.activeDocumentComponents['location-protocol'].data + '//' + SenSEO.Panel.activeDocumentComponents['location-hostname'].data + '/sitemap.xml';
+        sitemapLocation = SenSEO.Panel.activeDocumentComponents['location-protocol'].data + '//' + SenSEO.Panel.activeDocumentComponents['location-hostname'].data + ':' + SenSEO.Panel.activeDocumentComponents['location-port'].data + '/sitemap.xml';
         
       }
     
