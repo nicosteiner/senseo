@@ -124,6 +124,21 @@ body > header #close-crawl-panel:hover {
   background-image: -moz-linear-gradient(top, #c5d8fa, #90a9d3);
 }
 
+#crawler-table tr.error th,
+#crawler-table tr.error td {
+  background-color: rgba(255, 180, 180, 0.5);
+}
+
+#crawler-table tr.softerror th,
+#crawler-table tr.softerror td {
+  background-color: rgba(255, 180, 180, 0.25);
+}
+
+#crawler-table tr.perfect th,
+#crawler-table tr.perfect td {
+  background-color: rgba(180, 255, 180, 0.25);
+}
+
 #crawler-table th,
 #crawler-table td {
   padding: 2px;

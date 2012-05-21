@@ -58,13 +58,7 @@ SenSEO.CrawlPage = {
       
       } else {
       
-        // time for the next 10 pages?
-        
-        if (SenSEO.CrawlPage.crawledPages%10 === 0) {
-        
-          SenSEO.CrawlPage.crawlNextPages();
-        
-        }
+        SenSEO.CrawlPage.crawlNextPage();
         
       }
     
@@ -157,7 +151,7 @@ SenSEO.CrawlPage = {
     
     SenSEO.CrawlPage.crawlerStatus.find('.finished').addClass('hidden');
     
-    SenSEO.CrawlPage.crawlNextPages();
+    SenSEO.CrawlPage.crawlNextPage();
     
   },
   
@@ -182,7 +176,15 @@ SenSEO.CrawlPage = {
     
         for (j = 0; j < SenSEO.CrawlPage.dataURIRaw[i].length; j += 1) {
       
-          concatenatedDataURI += SenSEO.CrawlPage.dataURIRaw[i][j];
+          if (SenSEO.CrawlPage.dataURIRaw[i][j].ranking) {
+      
+            concatenatedDataURI += SenSEO.CrawlPage.dataURIRaw[i][j].ranking;
+            
+          } else {
+      
+            concatenatedDataURI += SenSEO.CrawlPage.dataURIRaw[i][j];
+            
+          }
           
           if (j < SenSEO.CrawlPage.dataURIRaw[i].length - 1) {
           
@@ -224,19 +226,9 @@ SenSEO.CrawlPage = {
   
   },
   
-  crawlNextPages: function() {
+  crawlNextPage: function() {
 
-    var i, nextTenOrLess;
-
-    // a maximum of 10 pages are processed at once
-    
-    nextTenOrLess = SenSEO.CrawlPage.allPagesSum - SenSEO.CrawlPage.crawledPages < 10 ? SenSEO.CrawlPage.allPagesSum - SenSEO.CrawlPage.crawledPages : 10;
-    
-    for (i = SenSEO.CrawlPage.crawledPages; i < SenSEO.CrawlPage.crawledPages + nextTenOrLess; i += 1) {
-    
-      self.port.emit('getPageMarkup', SenSEO.CrawlPage.allPages[i]);
-    
-    }
+    self.port.emit('getPageMarkup', SenSEO.CrawlPage.allPages[SenSEO.CrawlPage.crawledPages]);
     
   },
   
@@ -266,42 +258,84 @@ SenSEO.CrawlPage = {
   
     var url = data.url,
         status = data.status,
+        contentType = data.contentType,
         text = data.text,
         headStart, headEnd, headMarkup,
         title, description, keywords, author, keywordList, mainKeyword,
         ranking;
-    
-    if (status === 200 && !SenSEO.CrawlPage.stopCrawling) {
-    
-      if (url !== '' && text !== '') {
-      
-        headStart = text.indexOf('<head>');
-      
-        headEnd = text.indexOf('</head>') + 7;
-      
-        headMarkup = text.substring(headStart, headEnd);
-      
-        title = $('<html>').html(headMarkup).find('title').text();
+
+    if (!SenSEO.CrawlPage.stopCrawling) {
         
-        description = $('<html>').html(headMarkup).find('meta[name="description"]').attr('content');
-
-        keywords = $('<html>').html(headMarkup).find('meta[name="keywords"]').attr('content');
-
-        author = $('<html>').html(headMarkup).find('meta[name="author"]').attr('content');
-
-        keywordList = keywords ? keywords.split(',') : null;
+      if (status === 200) {
       
-        mainKeyword = keywordList && keywordList[0] !== '' ? keywordList[0] : null;
-  
-        ranking = SenSEO.CrawlPage.calculateRanking(url, title, description, mainKeyword);
-  
-        SenSEO.CrawlPage.addPagesTableRow(url, title, description, keywords, author, mainKeyword, ranking);
+        if (url !== '' && text !== '') {
+          
+          if (contentType.indexOf('text/html') !== -1) {
+          
+            try {
+          
+              headStart = text.indexOf('<head>');
+            
+              headEnd = text.indexOf('</head>') + 7;
+            
+              headMarkup = text.substring(headStart, headEnd);
+            
+              title = $('<html>').html(headMarkup).find('title').text();
+              
+              description = $('<html>').html(headMarkup).find('meta[name="description"]').attr('content');
 
-        SenSEO.CrawlPage.addDataURIRow(url, title, description, keywords, author, ranking);
+              keywords = $('<html>').html(headMarkup).find('meta[name="keywords"]').attr('content');
 
+              author = $('<html>').html(headMarkup).find('meta[name="author"]').attr('content');
+
+              keywordList = keywords ? keywords.split(',') : null;
+            
+              mainKeyword = keywordList && keywordList[0] !== '' ? keywordList[0] : null;
+        
+              ranking = SenSEO.CrawlPage.calculateRanking(url, title, description, mainKeyword);
+        
+              SenSEO.CrawlPage.addPagesTableRow(url, title, description, keywords, author, mainKeyword, ranking);
+
+              SenSEO.CrawlPage.addDataURIRow(url, title, description, keywords, author, ranking);
+              
+            } catch(e) {
+            
+              SenSEO.CrawlPage.showError(url, 'Unkown error: ' + e);
+            
+            }
+
+          } else {
+          
+            SenSEO.CrawlPage.showError(url, 'Content-Type of document is not text/html but ' + contentType);
+            
+          }
+
+        } else {
+          
+          SenSEO.CrawlPage.showError(url, 'No URL and/or no document content');
+            
+        }
+        
+      } else {
+          
+        SenSEO.CrawlPage.showError(url, 'Error while loading document: ' + status);
+          
       }
-
+      
     }
+  
+  },
+  
+  showError: function(url, message) {
+  
+    SenSEO.CrawlPage.pagesTableBody.append(
+                        $('<tr class="error">')
+                        .append($('<th>')
+                        .append(url))
+                        .append($('<td colspan="8">')
+                        .append(message)));
+                            
+    SenSEO.CrawlPage.updateCrawlerStatus();
   
   },
   
@@ -431,9 +465,11 @@ SenSEO.CrawlPage = {
   
   calculateRanking: function(url, title, description, mainKeyword) {
   
-    var ranking = 0;
+    var ranking = 0, cause = '', i, td, dd;
   
     // min ranking is 0 / max ranking is 5
+  
+    // positives
   
     if (title && title !== '') {
     
@@ -464,8 +500,98 @@ SenSEO.CrawlPage = {
       ranking += 1;
     
     }
+    
+    // negatives
+    
+    // Title has wrong length
+    
+    if (title && (title.length < 20 || title.length > 65)) {
+    
+      ranking -= 1;
+      
+      cause += '<span title="Title has wrong length">tl</span> ';
+    
+    }
+    
+    // Description has wrong length
   
-    return ranking;
+    if (description && (description.length < 50 || description.length > 150)) {
+    
+      ranking -= 1;
+    
+      cause += '<span title="Description has wrong length">dl</span> ';
+    
+    }
+  
+    // Duplicate title/description
+    
+    if (SenSEO.CrawlPage.dataURIRaw && SenSEO.CrawlPage.dataURIRaw.length) {
+    
+      td = false;
+      
+      dd = false;
+    
+      for (i = 0; i < SenSEO.CrawlPage.dataURIRaw.length; i += 1) {
+    
+        // index 1: title / index 2: description
+    
+        if (SenSEO.CrawlPage.dataURIRaw[i][1] === title) {
+        
+          td = true;
+        
+        }
+    
+        if (SenSEO.CrawlPage.dataURIRaw[i][2] === description) {
+        
+          dd = true;
+        
+        }
+    
+        if (td && dd) {
+        
+          break;
+          
+        }
+    
+      }
+      
+      if (td) {
+      
+        ranking -= 1;
+      
+        cause += '<span title="Duplicate title">td</span> ';
+      
+      }
+    
+      if (dd) {
+      
+        ranking -= 1;
+      
+        cause += '<span title="Duplicate description">dd</span> ';
+      
+      }
+    
+    }
+
+    if (ranking < 0) {
+    
+      ranking = 0;
+      
+    }
+    
+    if (cause === '') {
+    
+      cause = '-';
+      
+    }
+    
+    return {
+    
+      ranking: ranking,
+      
+      cause: cause
+      
+    };
   
   },
   
@@ -475,6 +601,7 @@ SenSEO.CrawlPage = {
         rankingMarkup,
         componentsLinkMarkup,
         inspectLinkMarkup,
+        errorRow,
         i;
   
     urlMarkup = url && url !== '' ? SenSEO.CrawlPage.formatOutput(url, mainKeyword) : $('<span class="error">n/a</span>');
@@ -489,13 +616,13 @@ SenSEO.CrawlPage = {
   
     rankingMarkup = $('<span class="ranking">');
   
-    for (i = 0; i < ranking; i += 1) {
+    for (i = 0; i < ranking.ranking; i += 1) {
   
       rankingMarkup.append('<img src="img/ranking-top.png" width="12" height="12">');
       
     }
   
-    for (i = 0; i < (5 - ranking); i += 1) {
+    for (i = 0; i < (5 - ranking.ranking); i += 1) {
   
       rankingMarkup.append('<img src="img/ranking-flop.png" width="12" height="12">');
       
@@ -505,8 +632,13 @@ SenSEO.CrawlPage = {
   
     inspectLinkMarkup = $('<a href="#">Inspect</a>');
   
+    errorRow = ranking.cause !== '-' ? 'softerror' : 'noerror';
+  
+    errorRow = ranking.ranking === 5 ? 'perfect' : errorRow;
+  
     SenSEO.CrawlPage.pagesTableBody.append(
                         $('<tr>')
+                        .addClass(errorRow)
                         .append($('<th>')
                         .append(urlMarkup))
                         .append($('<td>')
@@ -519,6 +651,8 @@ SenSEO.CrawlPage = {
                         .append(author))
                         .append($('<td>')
                         .append(rankingMarkup))
+                        .append($('<td>')
+                        .append(ranking.cause))
                         .append($('<td>')
                         .append(componentsLinkMarkup).click(function() {
                           SenSEO.CrawlPage.showComponents(url, mainKeyword);

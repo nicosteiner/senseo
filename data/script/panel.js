@@ -151,6 +151,8 @@ SenSEO.Panel = {
   
   savedGrade: [],
   
+  lastVisitedURL: '',
+  
   setting: [],
   
   callback: [],
@@ -290,22 +292,38 @@ SenSEO.Panel = {
   
     self.on('message', function(activeDocumentComponents) {
     
+      var currentURL;
+    
       SenSEO.Panel.activeDocumentComponents = activeDocumentComponents;
       
       // init UI
       
       // keyword prefill feature
       
-      if (SenSEO.Panel.setting['prefill-keyword'] && $('#keyword-input').val() === '') {
-
-        // check if keyword for prefilling input field is available
+      if (SenSEO.Panel.setting['prefill-keyword']) {
+      
+        // check if URL has changed
         
-        if (SenSEO.Panel.activeDocumentComponents['meta-keywords'] !== 'n/a' && SenSEO.Panel.activeDocumentComponents['meta-keywords'].data.split(',')[0]) {
-      
-          // prefill first keyword in keyword metatags
-      
-          SenSEO.Panel.setKeywordValue(SenSEO.Panel.activeDocumentComponents['meta-keywords'].data.split(',')[0]);
-      
+        // this prevents overwriting of manually changed keywords
+        
+        currentURL = SenSEO.Panel.activeDocumentComponents['location-hostname'].data + SenSEO.Panel.activeDocumentComponents['path-name'].data + SenSEO.Panel.activeDocumentComponents['url-params'].data;
+        
+        if (SenSEO.Panel.lastVisitedURL !== currentURL) {
+
+          // save new current URL
+        
+          SenSEO.Panel.lastVisitedURL = currentURL;
+        
+          // check if keyword for prefilling input field is available
+          
+          if (SenSEO.Panel.activeDocumentComponents['meta-keywords'] !== 'n/a' && SenSEO.Panel.activeDocumentComponents['meta-keywords'].data.split(',')[0]) {
+        
+            // prefill first keyword in keyword metatags
+        
+            SenSEO.Panel.setKeywordValue(SenSEO.Panel.activeDocumentComponents['meta-keywords'].data.split(',')[0]);
+        
+          }
+          
         }
         
       }
