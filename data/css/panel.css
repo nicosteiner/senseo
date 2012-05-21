@@ -296,12 +296,15 @@ section#crawl-container #crawl-instructions {
   padding: 8px 0;
 }
 
-section#crawl-container #crawl-instructions form {
+section#crawl-container #crawl-instructions {
   padding: 5px 0;
 }
 
-section#crawl-container #crawl-instructions form button {
+section#crawl-container #crawl-instructions button {
+  display: block;
+  float: none;
   font-size: 10px;
+  margin-top: 5px;
 }
 
 #inspect-related {
