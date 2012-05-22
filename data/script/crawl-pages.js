@@ -176,7 +176,15 @@ SenSEO.CrawlPage = {
     
         for (j = 0; j < SenSEO.CrawlPage.dataURIRaw[i].length; j += 1) {
       
-          if (SenSEO.CrawlPage.dataURIRaw[i][j].ranking) {
+          // for export convert undifend to empty string
+      
+          if (typeof SenSEO.CrawlPage.dataURIRaw[i][j] === 'undefined') {
+          
+            SenSEO.CrawlPage.dataURIRaw[i][j] = '';
+          
+          }
+      
+          if (SenSEO.CrawlPage.dataURIRaw[i][j] && SenSEO.CrawlPage.dataURIRaw[i][j].ranking) {
       
             concatenatedDataURI += SenSEO.CrawlPage.dataURIRaw[i][j].ranking;
             
@@ -195,7 +203,7 @@ SenSEO.CrawlPage = {
         }
         
         concatenatedDataURI += '\n';
-        
+        console.log(concatenatedDataURI);
         SenSEO.CrawlPage.dataURI += encodeURIComponent(concatenatedDataURI);
       
       }
@@ -260,8 +268,15 @@ SenSEO.CrawlPage = {
         status = data.status,
         contentType = data.contentType,
         text = data.text,
-        headStart, headEnd, headMarkup,
-        title, description, keywords, author, keywordList, mainKeyword,
+        i,
+        metaMarkupArray = [],
+        headMarkup,
+        markupStart, markupEnd,
+        title = '',
+        description = '',
+        keywords = '',
+        author = '',
+        keywordList, mainKeyword,
         ranking;
 
     if (!SenSEO.CrawlPage.stopCrawling) {
@@ -274,29 +289,94 @@ SenSEO.CrawlPage = {
           
             try {
           
-              headStart = text.indexOf('<head>');
+              markupStart = text.indexOf('<head>');
             
-              headEnd = text.indexOf('</head>') + 7;
+              markupEnd = text.indexOf('</head>') + 7;
             
-              headMarkup = text.substring(headStart, headEnd);
-            
-              title = $('<html>').html(headMarkup).find('title').text();
+              if (markupStart && markupEnd) {
               
-              description = $('<html>').html(headMarkup).find('meta[name="description"]').attr('content');
+                headMarkup = text.substring(markupStart, markupEnd);
+              
+                markupStart = headMarkup.indexOf('<title>') + 7;
+              
+                markupEnd = headMarkup.indexOf('</title>');
+                
+                if (markupStart && markupEnd) {
+                
+                  title = headMarkup.substring(markupStart, markupEnd);
+                
+                  // transform entities
+                  
+                  title = $("<div/>").html(title).text();
+                  
+                }
+                
+                // is there an other meta element?
+                
+                while (headMarkup.indexOf('<meta ') !== -1 && headMarkup !== '') {
+                
+                  markupStart = headMarkup.indexOf('<meta ');
+                  
+                  markupEnd = headMarkup.indexOf('>', headMarkup.indexOf('<meta '));
+                
+                  metaMarkupArray.push(headMarkup.substring(markupStart, markupEnd + 1));
+                
+                  headMarkup = headMarkup.substring(markupEnd + 2, headMarkup.length);
+                  
+                }
+                
+                for (i = 0; i < metaMarkupArray.length; i += 1) {
+                
+                  if (metaMarkupArray[i].toLowerCase().indexOf('name="description"') !== -1) {
+                  
+                    markupStart = metaMarkupArray[i].indexOf('content="') + 9;
+                  
+                    markupEnd = metaMarkupArray[i].indexOf('"', markupStart);
+                  
+                    description = metaMarkupArray[i].substring(markupStart, markupEnd);
+                  
+                    description = $("<div/>").html(description).text();
+                  
+                  }
+                
+                  if (metaMarkupArray[i].indexOf('name="keywords"') !== -1) {
+                  
+                    markupStart = metaMarkupArray[i].toLowerCase().indexOf('content="') + 9;
+                  
+                    markupEnd = metaMarkupArray[i].indexOf('"', markupStart);
+                  
+                    keywords = metaMarkupArray[i].substring(markupStart, markupEnd);
+                  
+                    keywords = $("<div/>").html(keywords).text();
+                  
+                  }
+                
+                  if (metaMarkupArray[i].indexOf('name="author"') !== -1) {
+                  
+                    markupStart = metaMarkupArray[i].toLowerCase().indexOf('content="') + 9;
+                  
+                    markupEnd = metaMarkupArray[i].indexOf('"', markupStart);
+                  
+                    author = metaMarkupArray[i].substring(markupStart, markupEnd);
+                  
+                    author = $("<div/>").html(author).text();
+                  
+                  }
+                
+                }
+                
+                keywordList = keywords ? keywords.split(',') : null;
+              
+                mainKeyword = keywordList && keywordList[0] !== '' ? keywordList[0] : null;
+          
+                ranking = SenSEO.CrawlPage.calculateRanking(url, title, description, mainKeyword);
+          
+                SenSEO.CrawlPage.addPagesTableRow(url, title, description, keywords, author, mainKeyword, ranking);
 
-              keywords = $('<html>').html(headMarkup).find('meta[name="keywords"]').attr('content');
-
-              author = $('<html>').html(headMarkup).find('meta[name="author"]').attr('content');
-
-              keywordList = keywords ? keywords.split(',') : null;
-            
-              mainKeyword = keywordList && keywordList[0] !== '' ? keywordList[0] : null;
-        
-              ranking = SenSEO.CrawlPage.calculateRanking(url, title, description, mainKeyword);
-        
-              SenSEO.CrawlPage.addPagesTableRow(url, title, description, keywords, author, mainKeyword, ranking);
-
-              SenSEO.CrawlPage.addDataURIRow(url, title, description, keywords, author, ranking);
+                SenSEO.CrawlPage.addDataURIRow(url, title, description, keywords, author, ranking);
+                
+                
+              }
               
             } catch(e) {
             
@@ -453,12 +533,6 @@ SenSEO.CrawlPage = {
   
       return text.replace('|', ',');
       
-    } else {
-    
-      // all strange stuff is normalized to empty string
-    
-      return '';
-    
     }
   
   },
@@ -505,7 +579,7 @@ SenSEO.CrawlPage = {
     
     // Title has wrong length
     
-    if (title && (title.length < 20 || title.length > 65)) {
+    if (title && (title.length < 20 || title.length > 70)) {
     
       ranking -= 1;
       
@@ -515,7 +589,7 @@ SenSEO.CrawlPage = {
     
     // Description has wrong length
   
-    if (description && (description.length < 50 || description.length > 150)) {
+    if (description && (description.length < 50 || description.length > 160)) {
     
       ranking -= 1;
     
