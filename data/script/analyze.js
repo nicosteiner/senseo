@@ -14,7 +14,7 @@ SenSEO.Analyze = {
 
       count: title.length,
 
-      data: title && title[0] && title[0].text !== '' ? SenSEO.Analyze.convertToTextOnly(title[0]) : 'n/a'
+      data: title && title[0] ? SenSEO.Analyze.convertToTextOnly(title[0]) : 'n/a'
       
     };
   
@@ -123,7 +123,9 @@ SenSEO.Analyze = {
       
       head: 'page load time (ms)',
       
-      data: pageLoadTime + '<a href="http://gtmetrix.com/?url=' + encodeURIComponent(SenSEO.Analyze.data['location-protocol'].data + '//' + SenSEO.Analyze.data['location-hostname'].data) + '" target="blank">analyze performance</a>'
+      data: pageLoadTime,
+
+      anker: '<a href="http://gtmetrix.com/?url=' + encodeURIComponent(SenSEO.Analyze.data['location-protocol'].data + '//' + SenSEO.Analyze.data['location-hostname'].data) + '" target="blank">analyze performance</a>'
       
     };
   
@@ -132,7 +134,6 @@ SenSEO.Analyze = {
   getHeadlineData: function(level) {
 
     var headlines = $('body h' + level),
-        textOnlyHeadline,
         highlightHeadlineHTML,
         i;
     
@@ -146,6 +147,8 @@ SenSEO.Analyze = {
       
         data: [],
         
+        markup: [],
+        
         element: []
         
       };
@@ -157,32 +160,21 @@ SenSEO.Analyze = {
       
         // try to find out if headline is visible
       
-        textOnlyHeadline = SenSEO.Analyze.convertToTextOnly(headlines[i]);
-        
         if ($(headlines[i]).is(':visible')) {
         
-          highlightHeadlineHTML = $('<div>')
-                                  .append(textOnlyHeadline)
-                                  .append($('<a>').attr({
-                                    'href': '#',
-                                    'class': 'highlight-headline ' + level + '-' + i
-                                  }).text('highlight').clone()).html();
-                                  
+          highlightHeadlineHTML = '<a href="#" class="highlight-headline ' + level + '-' + i + '">highlight</a>';
+        
         } else {
         
-          highlightHeadlineHTML = $('<div>')
-                                  .append(textOnlyHeadline)
-                                  .append($('<span>').attr({
-                                    'class': 'info'
-                                  }).text(' (hidden)').clone()).html();
-          
+          highlightHeadlineHTML = '<span class="info"> (hidden)</span>';
+        
         }
-      
-        // use escape html
       
         SenSEO.Analyze.data['headline-' + level].head.push('<h' + level + '> heading tag');
         
-        SenSEO.Analyze.data['headline-' + level].data.push(highlightHeadlineHTML);
+        SenSEO.Analyze.data['headline-' + level].data.push(SenSEO.Analyze.convertToTextOnly(headlines[i]));
+        
+        SenSEO.Analyze.data['headline-' + level].markup.push(highlightHeadlineHTML);
         
         SenSEO.Analyze.data['headline-' + level].element.push(headlines[i]);
         
@@ -222,7 +214,9 @@ SenSEO.Analyze = {
         
         head: 'microdata',
         
-        data: 'found' + '<a id="go-to-testing-tool" target="blank" href="http://www.google.com/webmasters/tools/richsnippets?url=' + encodeURIComponent(SenSEO.Analyze.data['location-href'].data) + '">preview</a>'
+        data: 'found',
+        
+        markup: '<a id="go-to-testing-tool" target="blank" href="http://www.google.com/webmasters/tools/richsnippets?url=' + encodeURIComponent(SenSEO.Analyze.data['location-href'].data) + '">preview</a>'
         
       };
       
@@ -262,16 +256,11 @@ SenSEO.Analyze = {
       
         if ($(microdata[i]).is(':visible')) {
         
-          highlightMicrodataHTML = $('<div>').text(itemprops).append($('<a>').attr({
-                                     'href': '#',
-                                     'class': 'highlight-microdata index-' + i
-                                   }).text('highlight').clone()).html();
+          highlightMicrodataHTML = '<a href="#" class="highlight-microdata index-' + i + '>highlight</a>';
                                   
         } else {
         
-          highlightMicrodataHTML = $('<div>').text(itemprops).append($('<span>').attr({
-                                     'class': 'info'
-                                   }).text(' (hidden)').clone()).html();
+          highlightMicrodataHTML = '<span class="info"> (hidden)</span>';
                                    
         }
         
@@ -279,7 +268,9 @@ SenSEO.Analyze = {
         
         SenSEO.Analyze.data['microdata-itemprop'].missing.push(false);
         
-        SenSEO.Analyze.data['microdata-itemprop'].data.push(highlightMicrodataHTML);
+        SenSEO.Analyze.data['microdata-itemprop'].data.push(itemprops);
+        
+        SenSEO.Analyze.data['microdata-itemprop'].markup.push(highlightMicrodataHTML);
         
         SenSEO.Analyze.data['microdata-itemprop'].element.push(microdata[i]);
       
@@ -319,6 +310,8 @@ SenSEO.Analyze = {
       
       data: [],
       
+      markup: [],
+      
       element: []
       
     };
@@ -337,16 +330,11 @@ SenSEO.Analyze = {
     
       if ($(allImages[i]).is(':visible')) {
       
-        highlightImageHTML = $('<div>').text(imgAlt).append($('<a>').attr({
-                               'href': '#',
-                               'class': 'highlight-image index-' + i
-                             }).text('highlight').clone()).html();
+        highlightImageHTML = '<a href="#" class="highlight-image index-' + i + '">highlight</a>';
                                 
       } else {
       
-        highlightImageHTML = $('<div>').text(imgAlt).append($('<span>').attr({
-                               'class': 'info'
-                             }).text(' (hidden)').clone()).html();
+        highlightImageHTML = '<span class="info"> (hidden)</span>';
 
       }
       
@@ -354,7 +342,9 @@ SenSEO.Analyze = {
       
       SenSEO.Analyze.data['img-alt'].missing.push(imgAltMissing);
       
-      SenSEO.Analyze.data['img-alt'].data.push(highlightImageHTML);
+      SenSEO.Analyze.data['img-alt'].data.push(imgAlt);
+      
+      SenSEO.Analyze.data['img-alt'].markup.push(highlightImageHTML);
       
       SenSEO.Analyze.data['img-alt'].element.push(allImages[i]);
       
@@ -442,46 +432,30 @@ SenSEO.Analyze = {
       
       head: 'body text',
       
-      data: SenSEO.Analyze.convertToTextOnly(SenSEO.Analyze.trim(bodyData))
+      data: SenSEO.Analyze.trim(bodyData)
       
     };
 
   },
   
   convertToTextOnly: function(textAndMarkup) {
-  
-    var textOnly, wrapper;
-  
-    // convert text containing markup to text only version
-
+    
     if (textAndMarkup.textContent) {
     
-      // when textAndMarkup is an element containing text
-    
-      // see: https://developer.mozilla.org/en/DOM/Node.textContent
-    
-      textOnly = textAndMarkup.textContent;
-    
-    } else {
-
-      // when textAndMarkup is a mix of markup surrounded by text
-    
-      // see: http://stackoverflow.com/questions/5550633/append-html-to-jquery-element-without-running-scripts-inside-the-html
-    
-      wrapper = document.createElement('div');
+      textAndMarkup = textAndMarkup.textContent;
       
-      wrapper.innerHTML = textAndMarkup;
-      
-      $(wrapper).find('script').remove();
-      
-      $(wrapper).find('style').remove();
-      
-      textOnly = $(wrapper).text();
-
     }
     
-    return textOnly;
+    if (textAndMarkup === '') {
+    
+      textAndMarkup = 'n/a';
+    
+    }
   
+    // output sanitization is done with jQuery text() when data is written into components table
+  
+    return textAndMarkup;
+    
   },
   
   getNumberOfElements: function() {
@@ -614,7 +588,9 @@ SenSEO.Analyze = {
       
       head: 'response-header (Last-Modified)',
       
-      data: '<span id="last-modified"><span class="info">n/a</span></span>'
+      data: 'n/a',
+      
+      markup: '<span id="last-modified" class="container"></span>'
       
     };
     
@@ -622,7 +598,9 @@ SenSEO.Analyze = {
       
       head: 'response-header (Content-Type)',
       
-      data: '<span id="content-type"><span class="info">n/a</span></span>'
+      data: 'n/a',
+      
+      markup: '<span id="content-type" class="container"></span>'
       
     };
     
@@ -640,7 +618,9 @@ SenSEO.Analyze = {
       
       head: 'W3C validation',
       
-      data: '<span id="validation-result"><span class="info">n/a</span></span>'
+      data: 'n/a',
+      
+      markup: '<span id="validation-result" class="container"></span>'
       
     };
     
@@ -658,7 +638,9 @@ SenSEO.Analyze = {
       
       head: 'domain age',
       
-      data: '<span id="domain-age"><span class="info">n/a</span></span>'
+      data: 'n/a',
+      
+      markup: '<span id="domain-age" class="container"></span>'
       
     };
     
@@ -676,7 +658,9 @@ SenSEO.Analyze = {
     
       head: 'robots.txt',
       
-      data: '<span id="robots-file"><span class="info">n/a</span></span>'
+      data: 'n/a',
+      
+      markup: '<span id="robots-file" class="container"></span>'
       
     };
     
@@ -684,7 +668,9 @@ SenSEO.Analyze = {
     
       head: 'sitemap location in robots.txt',
       
-      data: '<span id="robots-sitemap-location"><span class="info">n/a</span></span>'
+      data: 'n/a',
+      
+      markup: '<span id="robots-sitemap-location" class="container"></span>'
       
     };
     
@@ -700,7 +686,9 @@ SenSEO.Analyze = {
       
       head: 'sitemap.xml',
       
-      data: '<span id="sitemap-file"><span class="info">n/a</span></span>'
+      data: 'n/a',
+      
+      markup: '<span id="sitemap-file" class="container"></span>'
       
     };
     
@@ -719,16 +707,11 @@ SenSEO.Analyze = {
     
       if ($(button).width() && $(button).height() && $(button).css('display') !== 'none' && $(button).css('visibility') !== 'hidden') {
       
-        highlightButton = $('<div>').text('found').append($('<a>').attr({
-                            'href': '#',
-                            'class': 'highlight-button facebook'
-                          }).text('highlight').clone()).html();
+        highlightButton = '<a href="#" class="highlight-button facebook">highlight</a>';
                                 
       } else {
       
-        highlightButton = $('<div>').text('found').append($('<span>').attr({
-                            'class': 'info'
-                          }).text(' (hidden)').clone()).html();
+        highlightButton = '<span class="info"> (hidden)</span>';
                                  
       }
 
@@ -736,7 +719,9 @@ SenSEO.Analyze = {
         
         head: 'Facebook like button',
         
-        data: highlightButton,
+        data: 'found',
+        
+        markup: highlightButton,
         
         element: button
         
@@ -765,16 +750,11 @@ SenSEO.Analyze = {
     
       if ($(button).width() && $(button).height() && $(button).css('display') !== 'none' && $(button).css('visibility') !== 'hidden') {
       
-        highlightButton = $('<div>').text('found').append($('<a>').attr({
-                            'href': '#',
-                            'class': 'highlight-button plus-one'
-                          }).text('highlight').clone()).html();
+        highlightButton = '<a href="#" class="highlight-button plus-one">highlight</a>';
                                 
       } else {
       
-        highlightButton = $('<div>').text('found').append($('<span>').attr({
-                            'class': 'info'
-                          }).text(' (hidden)').clone()).html();
+        highlightButton = '<span class="info"> (hidden)</span>';
                                  
       }
 
@@ -782,7 +762,9 @@ SenSEO.Analyze = {
         
         head: 'Google +1 button',
         
-        data: highlightButton,
+        data: 'found',
+        
+        markup: highlightButton,
         
         element: button
         
@@ -811,16 +793,11 @@ SenSEO.Analyze = {
     
       if ($(button).width() && $(button).height() && $(button).css('display') !== 'none' && $(button).css('visibility') !== 'hidden') {
       
-        highlightButton = $('<div>').text('found').append($('<a>').attr({
-                            'href': '#',
-                            'class': 'highlight-button twitter'
-                          }).text('highlight').clone()).html();
+        highlightButton = '<a href="#" class="highlight-button twitter">highlight</a>';
                                 
       } else {
       
-        highlightButton = $('<div>').text('found').append($('<span>').attr({
-                            'class': 'info'
-                          }).text(' (hidden)').clone()).html();
+        highlightButton = '<span class="info"> (hidden)</span>';
                                  
       }
 
@@ -828,7 +805,9 @@ SenSEO.Analyze = {
         
         head: 'Twitter button',
         
-        data: highlightButton,
+        data: 'found',
+        
+        markup: highlightButton,
         
         element: button
         

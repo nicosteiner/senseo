@@ -377,11 +377,9 @@ SenSEO.Panel = {
       
       return true;
       
-    } else {
-    
-      return false;
-      
     }
+    
+    return false;
     
   },
 
@@ -486,15 +484,13 @@ SenSEO.Panel = {
   
     if (status === 200) {
   
-      SenSEO.Panel.activeDocumentComponents['robots-file']
-        .data = $('<div>').text('found').append($('<a>').attr({
-                  'href': url,
-                  'target': 'blank'
-                }).text('show').clone()).html();
-                
+      SenSEO.Panel.activeDocumentComponents['robots-file'].data = 'found';
+        
+      SenSEO.Panel.activeDocumentComponents['robots-file'].markup = '<a href="' + encodeURIComponent(url) + '" target="blank">show</a><span id="robots-file" class="container"></span>';
+      
       // update components table
       
-      $('#robots-file').empty().append(SenSEO.Panel.activeDocumentComponents['robots-file'].data);
+      $('#robots-file').parent().empty().append(SenSEO.Panel.activeDocumentComponents['robots-file'].data);
 
       robotsData = data.text.split('\n');
       
@@ -522,7 +518,7 @@ SenSEO.Panel = {
     
       // update components table
       
-      $('#robots-sitemap-location').empty().append(sitemapLocation);
+      $('#robots-sitemap-location').parent().empty().append(sitemapLocation);
     
     } else {
     
@@ -554,13 +550,12 @@ SenSEO.Panel = {
   
     if (status === 200) {
   
-      SenSEO.Panel.activeDocumentComponents['sitemap-file']
-        .data = $('<div>').text('found').append($('<a>').attr({
-                  'href': url,
-                  'target': 'blank'
-                }).text('show').clone()).html();
+      SenSEO.Panel.activeDocumentComponents['sitemap-file'].data = 'found';
+        
+      SenSEO.Panel.activeDocumentComponents['sitemap-file'].markup = '<a href="' + encodeURIComponent(url) + '" target="blank">show</a><span id="sitemap-file" class="container"></span>';
       
-      $('#sitemap-file').empty().append(SenSEO.Panel.activeDocumentComponents['sitemap-file'].data);
+      $('#sitemap-file').parent().empty().text(SenSEO.Panel.activeDocumentComponents['sitemap-file'].data);
+      $('#sitemap-file').parent().empty().append(SenSEO.Panel.activeDocumentComponents['sitemap-file'].markup);
 
       SenSEO.Panel.activeDocumentComponents['sitemap-file'].pages = [];
       
@@ -572,7 +567,7 @@ SenSEO.Panel = {
       
       // trigger crawl tab actions
       
-      $('#crawl-sitemap-found').html('<span class="found">found</span>');
+      $('#crawl-sitemap-found').parent().empty().html('<span class="found">found</span>');
     
       $('#crawl-instructions').removeClass('hidden');
     
@@ -586,7 +581,7 @@ SenSEO.Panel = {
   
       // trigger crawl tab actions
       
-      $('#crawl-sitemap-found').html('<span class="not-found">n/a</span>');
+      $('#crawl-sitemap-found').parent().empty().html('<span class="not-found">n/a</span>');
       
       $('#crawl-instructions').removeClass('hidden');
     
@@ -610,7 +605,7 @@ SenSEO.Panel = {
       
         SenSEO.Panel.activeDocumentComponents['content-type'].data = headers['Content-Type'];
       
-        $('#content-type').empty().append(headers['Content-Type']);
+        $('#content-type').parent().empty().text(SenSEO.Panel.activeDocumentComponents['content-type'].data);
       
       }
       
@@ -620,7 +615,7 @@ SenSEO.Panel = {
 
         SenSEO.Panel.activeDocumentComponents['last-modified'].data = headers['Last-Modified'];
       
-        $('#last-modified').empty().append(headers['Last-Modified']);
+        $('#last-modified').parent().empty().text(SenSEO.Panel.activeDocumentComponents['last-modified'].data);
       
       }
       
@@ -652,13 +647,12 @@ SenSEO.Panel = {
       
       domainAge = d.substring(d.indexOf('>') + 1, d.indexOf('</a>'));
       
-      SenSEO.Panel.activeDocumentComponents['domain-age']
-        .data = $('<div>').text($.trim(domainAge)).append($('<a>').attr({
-                  'href': url,
-                  'target': 'blank'
-                }).text('show').clone()).html();
+      SenSEO.Panel.activeDocumentComponents['domain-age'].data = domainAge;
+      SenSEO.Panel.activeDocumentComponents['domain-age'].markup = '<a href="' + encodeURIComponent(url) + '" target="blank">show</a> <span id="domain-age" class="container"></span>';
       
-      $('#domain-age').empty().append(SenSEO.Panel.activeDocumentComponents['domain-age'].data);
+      $('#domain-age').parent().empty()
+                      .text(SenSEO.Panel.activeDocumentComponents['domain-age'].data )
+                      .append(SenSEO.Panel.activeDocumentComponents['domain-age'].markup);
       
     }
     
@@ -689,25 +683,21 @@ SenSEO.Panel = {
       
       if (validResult) {
       
-        SenSEO.Panel.activeDocumentComponents['validation-result']
-          .data = $('<div>').text('valid: ' + $.trim(validResult)).append($('<a>').attr({
-                    'href': url,
-                    'target': 'blank'
-                  }).text('show').clone()).html();
+        SenSEO.Panel.activeDocumentComponents['validation-result'].data = 'valid: ' + $.trim(validResult);
+        SenSEO.Panel.activeDocumentComponents['validation-result'].markup = '<a href="' + encodeURIComponent(url) + '" target="blank">show</a><span id="validation-result" class="container"></span>';
 
       }
     
       if (invalidResult) {
       
-        SenSEO.Panel.activeDocumentComponents['validation-result']
-          .data = $('<div>').text('invalid: ' + $.trim(invalidResult)).append($('<a>').attr({
-                    'href': url,
-                    'target': 'blank'
-                  }).text('show').clone()).html();
+        SenSEO.Panel.activeDocumentComponents['validation-result'].data = 'invalid: ' + $.trim(invalidResult);
+        SenSEO.Panel.activeDocumentComponents['validation-result'].markup = '<a href="' + encodeURIComponent(url) + '" target="blank">show</a><span id="validation-result" class="container"></span>';
     
       }
       
-      $('#validation-result').empty().append(SenSEO.Panel.activeDocumentComponents['validation-result'].data);
+      $('#validation-result').parent().empty()
+                             .text(SenSEO.Panel.activeDocumentComponents['validation-result'].data )
+                             .append(SenSEO.Panel.activeDocumentComponents['validation-result'].markup);
 
     }
   
@@ -1229,8 +1219,7 @@ SenSEO.Panel = {
   
   renderComponentsTable: function(componentsTable, components) {
     
-    var i,
-        key,
+    var key, i, markup,
         componentsTableBody = $('#' + componentsTable + ' tbody');
     
     // remove outdated table content
@@ -1246,31 +1235,57 @@ SenSEO.Panel = {
           components[key].data = SenSEO.Panel.encodeMarkup(components[key].data);
           
         }
-      
-        if (typeof(components[key].data) === 'string' || typeof(components[key].data) === 'number') {
-        
-          // one dataset
-          
-          componentsTableBody.append($('<tr>')
-                             .append($('<th>')
-                             .text(components[key].head))
-                             .append($('<td>')
-                             .append(SenSEO.Panel.formatOutput(components[key].data))));
-          
-        } else {
+
+        if (typeof components[key].head === 'object') {
         
           // multible datasets
           
           for (i = 0; i < components[key].head.length; i += 1) {
 
-            componentsTableBody.append($('<tr>')
-                               .append($('<th>')
-                               .text(components[key].head[i]))
-                               .append($('<td>')
-                               .append(SenSEO.Panel.formatOutput(components[key].data[i]))));
+            markup = $('<tr>')
+                     .append($('<th>')
+                     .text(components[key].head[i]));
+            
+            if (components[key].markup[i]) {
+              
+              markup.append($('<td>')
+                            .text(components[key].data[i])
+                            .append(components[key].markup[i]));
+            
+            } else {
+            
+              markup.append($('<td>')
+                            .text(components[key].data[i]));
+            
+            }
+            
+            componentsTableBody.append(markup);
             
           }
 
+        } else {
+        
+          // one dataset
+          
+          markup = $('<tr>')
+                   .append($('<th>')
+                           .text(components[key].head));
+                       
+          if (components[key].markup) {
+          
+            markup.append($('<td>')
+                          .text(components[key].data)
+                          .append(components[key].markup));
+
+          } else {
+            
+            markup.append($('<td>')
+                          .text(components[key].data));
+          
+          }
+          
+          componentsTableBody.append(markup);
+          
         }
         
       }
@@ -1402,53 +1417,8 @@ SenSEO.Panel = {
 
   formatOutput: function(text) {
   
-    var i, rx, replaceString, markupIndex, textExtract, textMarkup, formattedOutput;
+    // not used
   
-    if (text && SenSEO.Panel.keywords.length) {
-    
-      for (i = 0; i < SenSEO.Panel.keywords.length; i += 1) {
-      
-        if (SenSEO.Panel.keywords[i] !== '') {
-      
-          rx = new RegExp(SenSEO.Panel.keywords[i], 'gi');
-          
-          if (text && text.replace && text.match(rx)) {
-          
-            // format keyword
-          
-            replaceString = $('<div>')
-                            .append($('<span>')
-                            .attr('class', 'match')
-                            .text(SenSEO.Panel.keywords[i]).clone()).html();
-
-            // extract only text and no markup
-            
-            markupIndex = text.indexOf('<');
-            
-            textExtract = markupIndex >= 0 ? text.substr(0, markupIndex) : text;
-
-            textMarkup = markupIndex >= 0 ? text.substr(markupIndex, text.length - markupIndex) : '';
-            
-            formattedOutput = textExtract.replace(rx, replaceString);
-            
-            text = formattedOutput + textMarkup;
-            
-          }
-          
-        }
-        
-        // format n/a
-        
-        if (text && text.replace) {
-        
-          text = text.replace('n/a', '<span class="info">n/a</span>');
-          
-        }
-        
-      }
-      
-    }
-    
     return text;
     
   },
@@ -1580,27 +1550,33 @@ SenSEO.Panel = {
       
         return ['A', percent];
         
-      } else if (percent >= 80) {
+      }
+      
+      if (percent >= 80) {
       
         return ['B', percent];
         
-      } else if (percent >= 70) {
+      }
+      
+      if (percent >= 70) {
       
         return ['C', percent];
         
-      } else if (percent >= 60) {
+      }
+      
+      if (percent >= 60) {
       
         return ['D', percent];
         
-      } else if (percent >= 50) {
+      }
+      
+      if (percent >= 50) {
       
         return ['E', percent];
         
-      } else {
-      
-        return ['F', percent];
-      
       }
+      
+      return ['F', percent];
       
     }
     
@@ -1630,27 +1606,33 @@ SenSEO.Panel = {
       
         return ['A', percent];
         
-      } else if (percent > 80) {
+      }
+      
+      if (percent > 80) {
       
         return ['B', percent];
         
-      } else if (percent > 70) {
+      }
+      
+      if (percent > 70) {
       
         return ['C', percent];
         
-      } else if (percent > 60) {
+      }
+      
+      if (percent > 60) {
       
         return ['D', percent];
         
-      } else if (percent > 50) {
+      }
+      
+      if (percent > 50) {
       
         return ['E', percent];
         
-      } else {
-      
-        return ['F', percent];
-      
       }
+      
+      return ['F', percent];
       
     }
     
@@ -1972,9 +1954,13 @@ SenSEO.Panel = {
       
     }
 
-    pageLoadTime = parseInt(SenSEO.Panel.activeDocumentComponents['page-load-time'].data.split(' ')[0], 10);
+    pageLoadTime = parseInt(SenSEO.Panel.activeDocumentComponents['page-load-time'], 10);
     
-    if (pageLoadTime < 2000) {
+    if (!pageLoadTime || pageLoadTime <= 0) {
+    
+      SenSEO.Panel.status['content-load-time'] = 'neutral';
+      
+    } else if (pageLoadTime < 2000) {
     
       SenSEO.Panel.status['content-load-time'] = 'pass';
       
