@@ -567,7 +567,7 @@ SenSEO.Panel = {
       
       // trigger crawl tab actions
       
-      $('#crawl-sitemap-found').parent().empty().html('<span class="found">found</span>');
+      $('#crawl-sitemap-found').empty().html('<span class="found">found</span>');
     
       $('#crawl-instructions').removeClass('hidden');
     
@@ -581,7 +581,7 @@ SenSEO.Panel = {
   
       // trigger crawl tab actions
       
-      $('#crawl-sitemap-found').parent().empty().html('<span class="not-found">n/a</span>');
+      $('#crawl-sitemap-found').empty().html('<span class="not-found">n/a</span>');
       
       $('#crawl-instructions').removeClass('hidden');
     

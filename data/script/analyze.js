@@ -228,6 +228,8 @@ SenSEO.Analyze = {
       
         data: [],
         
+        markup: [],
+        
         element: []
         
       };

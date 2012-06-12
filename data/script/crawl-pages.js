@@ -38,6 +38,10 @@ SenSEO.CrawlPage = {
 
   init: function() {
 
+    // init encoder.js for encoding parts of analyzed document (title etc.)
+    
+    Encoder.EncodeType = 'numerical';
+  
     self.port.on('injectPages', function (data) {
 
       SenSEO.CrawlPage.allPages = data.pages;
@@ -203,12 +207,12 @@ SenSEO.CrawlPage = {
         }
         
         concatenatedDataURI += '\n';
-        console.log(concatenatedDataURI);
+        
         SenSEO.CrawlPage.dataURI += encodeURIComponent(concatenatedDataURI);
       
       }
       
-      // starts download because of csv content type
+      // triggers download because of csv content type
       
       document.location.href = SenSEO.CrawlPage.dataURI;
   
@@ -307,7 +311,7 @@ SenSEO.CrawlPage = {
                 
                   // transform entities
                   
-                  title = $("<div/>").html(title).text();
+                  title = Encoder.htmlDecode(title);
                   
                 }
                 
@@ -335,7 +339,7 @@ SenSEO.CrawlPage = {
                   
                     description = metaMarkupArray[i].substring(markupStart, markupEnd);
                   
-                    description = $("<div/>").html(description).text();
+                    description = Encoder.htmlDecode(description);
                   
                   }
                 
@@ -347,7 +351,7 @@ SenSEO.CrawlPage = {
                   
                     keywords = metaMarkupArray[i].substring(markupStart, markupEnd);
                   
-                    keywords = $("<div/>").html(keywords).text();
+                    keywords = Encoder.htmlDecode(keywords);
                   
                   }
                 
@@ -359,7 +363,7 @@ SenSEO.CrawlPage = {
                   
                     author = metaMarkupArray[i].substring(markupStart, markupEnd);
                   
-                    author = $("<div/>").html(author).text();
+                    author = Encoder.htmlDecode(author);
                   
                   }
                 
@@ -411,9 +415,9 @@ SenSEO.CrawlPage = {
     SenSEO.CrawlPage.pagesTableBody.append(
                         $('<tr class="error">')
                         .append($('<th>')
-                        .append(url))
+                        .text(url))
                         .append($('<td colspan="8">')
-                        .append(message)));
+                        .text(message)));
                             
     SenSEO.CrawlPage.updateCrawlerStatus();
   
@@ -469,12 +473,18 @@ SenSEO.CrawlPage = {
       
       if (text && text.replace && text.match(rx)) {
       
+        // refactore!
+      
+        /*
+      
         replaceString = $('<div>')
                         .append($('<span>')
                         .attr('class', 'match')
                         .text(mainKeyword).clone()).html();
 
         formattedOutput = text.replace(rx, replaceString);
+        
+        */
         
       }
       
@@ -486,29 +496,25 @@ SenSEO.CrawlPage = {
   
   formatMainKeyword: function(keywords, mainKeyword) {
   
-    var replaceString,
-        formattedOutput;
+    var markup;
   
     if (keywords && keywords !== '') {
     
-      replaceString = $('<div>')
-                      .append($('<span>')
-                      .attr('class', 'mainkeyword')
-                      .text(mainKeyword).clone()).html();
-
+      markup = $('<span>')
+                 .attr('class', 'mainkeyword')
+                 .text(mainKeyword);
+                
       if (keywords.indexOf(',') !== -1) {
     
-        formattedOutput = replaceString + keywords.substring(keywords.indexOf(','));
+        markup.append($('<span>')
+                .text(keywords.substring(keywords.indexOf(',')))
+              );
         
-      } else {
-      
-        formattedOutput = replaceString;
-      
       }
       
     }
     
-    return formattedOutput || keywords;
+    return markup || keywords;
     
   },
   
@@ -714,15 +720,15 @@ SenSEO.CrawlPage = {
                         $('<tr>')
                         .addClass(errorRow)
                         .append($('<th>')
-                        .append(urlMarkup))
+                        .text(urlMarkup))
                         .append($('<td>')
-                        .append(title))
+                        .text(title))
                         .append($('<td>')
-                        .append(description))
+                        .text(description))
                         .append($('<td>')
-                        .append(keywords))
+                        .text(keywords))
                         .append($('<td>')
-                        .append(author))
+                        .text(author))
                         .append($('<td>')
                         .append(rankingMarkup))
                         .append($('<td>')
