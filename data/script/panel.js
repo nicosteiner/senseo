@@ -161,7 +161,7 @@ SenSEO.Panel = {
   
   keywordsString: '',
   
-  keywords: '',
+  keywords: false,
 
   requestKeyword: '',
   
@@ -923,9 +923,17 @@ SenSEO.Panel = {
   
   getKeywordValue: function() {
   
-    SenSEO.Panel.keywordsString = $('#keyword-input').val();
+    SenSEO.Panel.keywordsString = $.trim($('#keyword-input').val());
     
-    SenSEO.Panel.keywords = SenSEO.Panel.keywordsString.split(" ");
+    if (SenSEO.Panel.keywordsString !== '') {
+    
+      SenSEO.Panel.keywords = SenSEO.Panel.keywordsString.split(" ");
+      
+    } else {
+    
+      SenSEO.Panel.keywords = false;
+    
+    }
     
   },
   
@@ -1220,7 +1228,8 @@ SenSEO.Panel = {
   renderComponentsTable: function(componentsTable, components) {
     
     var key, i, markup,
-        componentsTableBody = $('#' + componentsTable + ' tbody');
+        componentsTableBody = $('#' + componentsTable + ' tbody'),
+        formattedOutput;
     
     // remove outdated table content
   
@@ -1246,19 +1255,10 @@ SenSEO.Panel = {
                      .append($('<th>')
                      .text(components[key].head[i]));
             
-            if (components[key].markup[i]) {
+            formattedOutput = SenSEO.Panel.formatOutput(components[key].data[i], components[key].markup[i]);
+            
+            markup.append(formattedOutput);
               
-              markup.append($('<td>')
-                            .text(components[key].data[i])
-                            .append(components[key].markup[i]));
-            
-            } else {
-            
-              markup.append($('<td>')
-                            .text(components[key].data[i]));
-            
-            }
-            
             componentsTableBody.append(markup);
             
           }
@@ -1271,21 +1271,12 @@ SenSEO.Panel = {
                    .append($('<th>')
                            .text(components[key].head));
                        
-          if (components[key].markup) {
+          formattedOutput = SenSEO.Panel.formatOutput(components[key].data, components[key].markup);
           
-            markup.append($('<td>')
-                          .text(components[key].data)
-                          .append(components[key].markup));
-
-          } else {
+          markup.append(formattedOutput);
             
-            markup.append($('<td>')
-                          .text(components[key].data));
-          
-          }
-          
           componentsTableBody.append(markup);
-          
+            
         }
         
       }
@@ -1415,11 +1406,111 @@ SenSEO.Panel = {
   
   },
 
-  formatOutput: function(text) {
+  formatOutput: function(text, markup) {
   
-    // not used
+    var start, startTemp, nextKeyword, end, i, output,
+        index;
   
-    return text;
+    if (text.toString) {
+  
+      text = text.toString();
+      
+    } else {
+    
+      text = '';
+    
+    }
+  
+    output = $('<td>');
+  
+    if (text === 'n/a') {
+    
+      output.append($('<span class="info">')
+              .text(text)
+            );
+              
+    } else {
+  
+      // mark keywords in text
+      
+      if (SenSEO.Panel.keywords && SenSEO.Panel.keywords.length) {
+      
+        index = 0;
+        
+        // do this until there is no next keyword (break)
+        
+        while (true) {
+        
+          start = text.length;
+          
+          nextKeyword = false;
+          
+          // find closest next matching keyword
+          
+          for (i = 0; i < SenSEO.Panel.keywords.length; i += 1) {
+          
+            if (SenSEO.Panel.keywords[i] !== '') {
+          
+              startTemp = text.toLowerCase().indexOf(SenSEO.Panel.keywords[i].toLowerCase(), index);
+              
+              if (startTemp !== -1 && startTemp < start) {
+              
+                nextKeyword = i;
+                
+                start = startTemp;
+              
+              }
+              
+            }
+            
+          }
+          
+          // if there is a next keyword
+          
+          if (nextKeyword !== false) {
+
+            // mark keyword and correct index
+          
+            end = start + SenSEO.Panel.keywords[nextKeyword].length;
+            
+            output.append($('<span>')
+                    .text(text.substring(index, start))
+                    .append($('<span class="match">')
+                      .text(text.substring(start, end))
+                    )
+                  );
+            
+            index = end;
+          
+          } else {
+          
+            output.append($('<span>')
+                    .text(text.substring(index, text.length))
+                  );
+          
+            break;
+            
+          }
+          
+        }
+      
+      } else {
+      
+        output.append($('<span>')
+                .text(text)
+              );
+      
+      }
+      
+    }
+    
+    if (markup) {
+      
+      output.append(markup);
+    
+    }
+    
+    return output;
     
   },
   
@@ -2014,18 +2105,6 @@ SenSEO.Panel = {
     
     domainKeywords = keywords;
     
-    for (i = 0; i < domainKeywords.length; i += 1) {
-    
-      // TODO: localize & replacement
-    
-      domainKeywords[i] = domainKeywords[i].replace(/ä/g, 'ae')
-                                           .replace(/ö/g, 'oe')
-                                           .replace(/ü/g, 'ue')
-                                           .replace(/ß/g, 'ss')
-                                           .replace(/&/g, 'und');
-    
-    }
-    
     if (hostData && SenSEO.Panel.includesAllKeywords(hostData, domainKeywords)) {
     
       SenSEO.Panel.status['host-includes'] = 'pass';
@@ -2094,7 +2173,7 @@ SenSEO.Panel = {
       
     }
 
-    if (SenSEO.Panel.activeDocumentComponents['url-params'].data && SenSEO.Panel.activeDocumentComponents['url-params'].data !== '') {
+    if (SenSEO.Panel.activeDocumentComponents['url-params'].data && SenSEO.Panel.activeDocumentComponents['url-params'].data !== 'n/a') {
     
       SenSEO.Panel.status['path-dynparam'] = 'fail';
       
