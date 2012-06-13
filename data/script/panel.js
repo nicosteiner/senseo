@@ -496,7 +496,9 @@ SenSEO.Panel = {
       
       // update components table
       
-      $('#robots-file').parent().empty().append(SenSEO.Panel.activeDocumentComponents['robots-file'].data);
+      $('#robots-file').parent().empty()
+                       .text(SenSEO.Panel.activeDocumentComponents['robots-file'].data)
+                       .append(SenSEO.Panel.activeDocumentComponents['robots-file'].markup);
 
       robotsData = data.text.split('\n');
       
@@ -566,8 +568,9 @@ SenSEO.Panel = {
                                                                       .text('show')
                                                                       .append('<span id="sitemap-file" class="container"></span>');
                                                                       
-      $('#sitemap-file').parent().empty().text(SenSEO.Panel.activeDocumentComponents['sitemap-file'].data);
-      $('#sitemap-file').parent().empty().append(SenSEO.Panel.activeDocumentComponents['sitemap-file'].markup);
+      $('#sitemap-file').parent().empty()
+                        .text(SenSEO.Panel.activeDocumentComponents['sitemap-file'].data)
+                        .append(SenSEO.Panel.activeDocumentComponents['sitemap-file'].markup);
 
       SenSEO.Panel.activeDocumentComponents['sitemap-file'].pages = [];
       
@@ -669,7 +672,7 @@ SenSEO.Panel = {
                                                                      .text('show')
                                                                      .append('<span id="domain-age" class="container"></span>');
       $('#domain-age').parent().empty()
-                      .text(SenSEO.Panel.activeDocumentComponents['domain-age'].data )
+                      .text(SenSEO.Panel.activeDocumentComponents['domain-age'].data)
                       .append(SenSEO.Panel.activeDocumentComponents['domain-age'].markup);
       
     }
