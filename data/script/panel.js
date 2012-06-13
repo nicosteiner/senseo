@@ -485,8 +485,14 @@ SenSEO.Panel = {
     if (status === 200) {
   
       SenSEO.Panel.activeDocumentComponents['robots-file'].data = 'found';
-        
-      SenSEO.Panel.activeDocumentComponents['robots-file'].markup = '<a href="' + encodeURIComponent(url) + '" target="blank">show</a><span id="robots-file" class="container"></span>';
+      
+      SenSEO.Panel.activeDocumentComponents['robots-file'].markup = $('<a>')
+                                                                      .attr('href', '#')
+                                                                      .click(function() {
+                                                                        SenSEO.Panel.openTabInActiveWindow(url);
+                                                                      })
+                                                                      .text('show')
+                                                                      .append('<span id="robots-file" class="container"></span>');
       
       // update components table
       
@@ -552,8 +558,14 @@ SenSEO.Panel = {
   
       SenSEO.Panel.activeDocumentComponents['sitemap-file'].data = 'found';
         
-      SenSEO.Panel.activeDocumentComponents['sitemap-file'].markup = '<a href="' + encodeURIComponent(url) + '" target="blank">show</a><span id="sitemap-file" class="container"></span>';
-      
+      SenSEO.Panel.activeDocumentComponents['sitemap-file'].markup = $('<a>')
+                                                                      .attr('href', '#')
+                                                                      .click(function() {
+                                                                        SenSEO.Panel.openTabInActiveWindow(url);
+                                                                      })
+                                                                      .text('show')
+                                                                      .append('<span id="sitemap-file" class="container"></span>');
+                                                                      
       $('#sitemap-file').parent().empty().text(SenSEO.Panel.activeDocumentComponents['sitemap-file'].data);
       $('#sitemap-file').parent().empty().append(SenSEO.Panel.activeDocumentComponents['sitemap-file'].markup);
 
@@ -648,8 +660,14 @@ SenSEO.Panel = {
       domainAge = d.substring(d.indexOf('>') + 1, d.indexOf('</a>'));
       
       SenSEO.Panel.activeDocumentComponents['domain-age'].data = domainAge;
-      SenSEO.Panel.activeDocumentComponents['domain-age'].markup = '<a href="' + encodeURIComponent(url) + '" target="blank">show</a> <span id="domain-age" class="container"></span>';
       
+      SenSEO.Panel.activeDocumentComponents['domain-age'].markup = $('<a>')
+                                                                     .attr('href', '#')
+                                                                     .click(function() {
+                                                                       SenSEO.Panel.openTabInActiveWindow(url);
+                                                                     })
+                                                                     .text('show')
+                                                                     .append('<span id="domain-age" class="container"></span>');
       $('#domain-age').parent().empty()
                       .text(SenSEO.Panel.activeDocumentComponents['domain-age'].data )
                       .append(SenSEO.Panel.activeDocumentComponents['domain-age'].markup);
@@ -684,25 +702,37 @@ SenSEO.Panel = {
       if (validResult) {
       
         SenSEO.Panel.activeDocumentComponents['validation-result'].data = 'valid: ' + $.trim(validResult);
-        SenSEO.Panel.activeDocumentComponents['validation-result'].markup = '<a href="' + encodeURIComponent(url) + '" target="blank">show</a><span id="validation-result" class="container"></span>';
 
       }
     
       if (invalidResult) {
       
         SenSEO.Panel.activeDocumentComponents['validation-result'].data = 'invalid: ' + $.trim(invalidResult);
-        SenSEO.Panel.activeDocumentComponents['validation-result'].markup = '<a href="' + encodeURIComponent(url) + '" target="blank">show</a><span id="validation-result" class="container"></span>';
     
       }
-      
+
+      SenSEO.Panel.activeDocumentComponents['validation-result'].markup = $('<a>')
+                                                                            .attr('href', '#')
+                                                                            .click(function() {
+                                                                              SenSEO.Panel.openTabInActiveWindow(url);
+                                                                            })
+                                                                            .text('show')
+                                                                            .append('<span id="validation-result" class="container"></span>');
+
       $('#validation-result').parent().empty()
-                             .text(SenSEO.Panel.activeDocumentComponents['validation-result'].data )
+                             .text(SenSEO.Panel.activeDocumentComponents['validation-result'].data)
                              .append(SenSEO.Panel.activeDocumentComponents['validation-result'].markup);
 
     }
   
   },
   
+  openTabInActiveWindow: function(url) {
+  
+    self.port.emit('openTab', url);
+    
+  },
+      
   getRelatedKeywords: function() {
   
     var url;
@@ -1743,8 +1773,7 @@ SenSEO.Panel = {
         domainKeywords,
         domainAge,
         pathData,
-        levels,
-        i;
+        levels;
   
     keywords = SenSEO.Panel.keywords;
 

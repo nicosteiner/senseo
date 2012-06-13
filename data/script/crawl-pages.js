@@ -372,7 +372,9 @@ SenSEO.CrawlPage = {
                 keywordList = keywords ? keywords.split(',') : null;
               
                 mainKeyword = keywordList && keywordList[0] !== '' ? keywordList[0] : null;
-          
+                
+                mainKeyword = $.trim(mainKeyword);
+                
                 ranking = SenSEO.CrawlPage.calculateRanking(url, title, description, mainKeyword);
           
                 SenSEO.CrawlPage.addPagesTableRow(url, title, description, keywords, author, mainKeyword, ranking);
@@ -461,63 +463,86 @@ SenSEO.CrawlPage = {
 
   },
   
-  formatOutput: function(text, mainKeyword) {
+  formatOutput: function(text, keyword) {
   
-    var replaceString,
-        formattedOutput,
-        rx;
+    var start, end, output,
+        index;
   
-    if (text && mainKeyword) {
+    if (text.toString) {
+  
+      text = text.toString();
+      
+    } else {
     
-      rx = new RegExp(mainKeyword, 'gi');
+      text = '';
+    
+    }
+  
+    output = $('<span>');
+  
+    if (text === 'n/a') {
+    
+      output.append($('<span class="error">')
+              .text(text)
+            );
+              
+    } else {
+  
+      // mark keywords in text
       
-      if (text && text.replace && text.match(rx)) {
+      if (keyword && keyword !== '') {
       
-        // refactore!
-      
-        /*
-      
-        replaceString = $('<div>')
-                        .append($('<span>')
-                        .attr('class', 'match')
-                        .text(mainKeyword).clone()).html();
+        index = 0;
+        
+        // do this until there is no next keyword (break)
+        
+        while (true) {
+        
+          start = text.toLowerCase().indexOf(keyword.toLowerCase(), index);
+          
+          // if there is a next keyword
+          
+          if (start !== -1) {
 
-        formattedOutput = text.replace(rx, replaceString);
-        
-        */
-        
-      }
+            // mark keyword and correct index
+          
+            end = start + keyword.length;
+            
+            output.append($('<span>')
+                    .text(text.substring(index, start))
+                    .append($('<span class="match">')
+                      .text(text.substring(start, end))
+                    )
+                  );
+            
+            index = end;
+          
+          } else {
+          
+            output.append($('<span>')
+                    .text(text.substring(index, text.length))
+                  );
+          
+            break;
+            
+          }
+          
+        }
       
-    }
-    
-    return formattedOutput || text;
-    
-  },
-  
-  formatMainKeyword: function(keywords, mainKeyword) {
-  
-    var markup;
-  
-    if (keywords && keywords !== '') {
-    
-      markup = $('<span>')
-                 .attr('class', 'mainkeyword')
-                 .text(mainKeyword);
-                
-      if (keywords.indexOf(',') !== -1) {
-    
-        markup.append($('<span>')
-                .text(keywords.substring(keywords.indexOf(',')))
+      } else {
+      
+        output.append($('<span>')
+                .text(text)
               );
-        
+      
       }
       
     }
     
-    return markup || keywords;
+    return output;
     
   },
-  
+
   addDataURIRow: function(url, title, description, keywords, author, ranking) {
   
     SenSEO.CrawlPage.dataURIRaw.push([
@@ -677,22 +702,13 @@ SenSEO.CrawlPage = {
   
   addPagesTableRow: function(url, title, description, keywords, author, mainKeyword, ranking) {
 
-    var urlMarkup,
+    var markup,
+        formattedOutput,
         rankingMarkup,
         componentsLinkMarkup,
         inspectLinkMarkup,
         errorRow,
         i;
-  
-    urlMarkup = url && url !== '' ? SenSEO.CrawlPage.formatOutput(url, mainKeyword) : $('<span class="error">n/a</span>');
-  
-    title = title && title !== '' ? SenSEO.CrawlPage.formatOutput(title, mainKeyword) : $('<span class="error">n/a</span>');
-  
-    description = description && description !== '' ? SenSEO.CrawlPage.formatOutput(description, mainKeyword) : $('<span class="error">n/a</span>');
-  
-    author = author && author !== '' ? author : $('<span class="error">n/a</span>');
-  
-    keywords = keywords && keywords !== '' ? SenSEO.CrawlPage.formatMainKeyword(keywords, mainKeyword) : $('<span class="error">n/a</span>');
   
     rankingMarkup = $('<span class="ranking">');
   
@@ -716,30 +732,48 @@ SenSEO.CrawlPage = {
   
     errorRow = ranking.ranking === 5 ? 'perfect' : errorRow;
   
-    SenSEO.CrawlPage.pagesTableBody.append(
-                        $('<tr>')
-                        .addClass(errorRow)
-                        .append($('<th>')
-                        .text(urlMarkup))
-                        .append($('<td>')
-                        .text(title))
-                        .append($('<td>')
-                        .text(description))
-                        .append($('<td>')
-                        .text(keywords))
-                        .append($('<td>')
-                        .text(author))
-                        .append($('<td>')
-                        .append(rankingMarkup))
-                        .append($('<td>')
-                        .append(ranking.cause))
-                        .append($('<td>')
-                        .append(componentsLinkMarkup).click(function() {
-                          SenSEO.CrawlPage.showComponents(url, mainKeyword);
-                        })).append($('<td>')
-                        .append(inspectLinkMarkup).click(function() {
-                          SenSEO.CrawlPage.inspectResult(url, mainKeyword);
-                        })));
+    markup = $('<tr>')
+               .addClass(errorRow);
+             
+    formattedOutput = SenSEO.CrawlPage.formatOutput(url, mainKeyword);
+    
+    markup.append($('<th>')
+            .append(formattedOutput));
+      
+    formattedOutput = SenSEO.CrawlPage.formatOutput(title, mainKeyword);
+    
+    markup.append($('<td>')
+            .append(formattedOutput));
+      
+    formattedOutput = SenSEO.CrawlPage.formatOutput(description, mainKeyword);
+    
+    markup.append($('<td>')
+            .append(formattedOutput));
+      
+    formattedOutput = SenSEO.CrawlPage.formatOutput(keywords, mainKeyword);
+    
+    markup.append($('<td>')
+            .append(formattedOutput));
+      
+    formattedOutput = SenSEO.CrawlPage.formatOutput(author, mainKeyword);
+    
+    markup.append($('<td>')
+            .append(formattedOutput));
+    
+    markup.append($('<td>')
+            .append(rankingMarkup))
+          .append($('<td>')
+            .append(ranking.cause))
+          .append($('<td>')
+            .append(componentsLinkMarkup).click(function() {
+               SenSEO.CrawlPage.showComponents(url, mainKeyword);
+             })).append($('<td>')
+            .append(inspectLinkMarkup).click(function() {
+               SenSEO.CrawlPage.inspectResult(url, mainKeyword);
+             }));
+
+    
+    SenSEO.CrawlPage.pagesTableBody.append(markup);
     
     SenSEO.CrawlPage.updateCrawlerStatus();
     
