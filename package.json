@@ -22,5 +22,10 @@
         "title": "Color-blind friendly version",
         "type": "bool",
         "value": false
+    }, {
+      "name": "firstRun",
+      "title": "toolbarbutton set on first run",
+      "type": "bool",
+      "value": false
     }]
 }
