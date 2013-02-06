@@ -8,11 +8,6 @@
     "id": "senseo@nicosteiner.de",
     "homepage": "http://www.sensational-seo.com/",
     "preferences": [{
-        "name": "hideToolbarIcon",
-        "title": "Do not show toolbar icon",
-        "type": "bool",
-        "value": false
-    }, {
         "name": "prefillKeyword",
         "title": "Prefill keyword if available",
         "type": "bool",
@@ -27,5 +22,10 @@
         "title": "Color-blind friendly version",
         "type": "bool",
         "value": false
+    }, {
+      "name": "firstRun",
+      "title": "toolbarbutton set on first run",
+      "type": "bool",
+      "value": false
     }]
 }
